@@ -10,6 +10,7 @@ using System.Linq;
 
 namespace Nemerle.Pinvoke
 {
+    
   [PegGrammar(Options = EmitDebugSources, start,
   grammar
   {
@@ -188,8 +189,56 @@ namespace Nemerle.Pinvoke
       
       #region A.2.1 Expressions
       
-      constantExpression = any;   //TODO: DO!
+      primaryExpression = identifier             /
+                          constant               /
+                          stringLiteral          /
+                          '(' s expression s ')' /
+                          genericSelection;
+                          
+      genericSelection = "_Generic" s '(' s assignmentExpression s ',' s genericAssocList s ')';
+      
+      genericAssocList = genericAssociation (s ',' s genericAssociation)*;
+      
+      genericAssociation = typeName  s ':' s assignmentExpression /
+                           "default" s ':' s assignmentExpression;
+                           
+      postfixExpression = primaryExpression /
+      /*postfix-expression [ expression ]
+postfix-expression ( argument-expression-listopt )
+postfix-expression . identifier
+postfix-expression -> identifier
+postfix-expression ++
+postfix-expression --*/
+                         '(' s typeName s ')' s '{' s initializerList s ','? s '}';
+                         
+      argumentExpressionList = assignmentExpression (s ',' s assignmentExpression)*;
+      
+      unaryExpression = postfixExpression               /
+                        "++" s unaryExpression          /
+                        "--" s unaryExpression          /
+                        unaryOperator castExpression    /
+                        "sizeof" s unaryExpression      /
+                        "sizeof" s '(' s typeName s ')' /
+                        "_Alignof" s '(' s typeName s ')';
+                        
+      unaryOperator = '&' / '*' / '+' / '-' / '~' / '!';
+      
+      castExpression = unaryExpression /
+                       '(' s typeName s ')' castExpression;
+                       
+      multiplicativeExpression = castExpression /*/
+                                 multiplicative-expression * cast-expression
+                                 multiplicative-expression / cast-expression
+                                 multiplicative-expression % cast-expression*/;
+                                 
       assignmentExpression = integerConstant; //TODO: DO!
+      
+      assignmentOperator = "=" / "*=" / "/=" / "%=" / "+=" / "-=" / "<<=" / ">>=" / "&=" / "^=" / "|=";
+      
+      expression = assignmentExpression (s ',' s assignmentExpression)*;
+      
+      constantExpression = any;   //TODO: DO!
+      
       
       #endregion
       
@@ -255,6 +304,20 @@ direct-abstract-declaratoropt [ * ]
 direct-abstract-declaratoropt ( parameter-type-listopt )*/;
                        
       typedefName    = identifier;
+      
+      initializer    = assignmentExpression        / 
+                       '{' s initializerList s '}' /
+                       '{' s initializerList s ',' s '}';
+      
+      initializerList = designation? initializer /*/
+                        initializerList s ',' s designation? initializer*/;
+                        
+      designation = designatorList s '=' s;
+      
+      designatorList = designator+;
+      
+      designator = '[' s constantExpression s ']' /
+                    '.' identifier;
       
       typeQualifier = "const"    / 
                       "restrict" /
