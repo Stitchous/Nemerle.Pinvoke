@@ -1,0 +1,290 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Peg;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Nemerle.Pinvoke
+{
+  [PegGrammar(Options = EmitDebugSources, start,
+  grammar
+  {
+      start : NToken      = ";"s;
+      any                 = ['\u0000'..'\uFFFF'];
+      
+      #region Line terminators
+
+      newLineCharacter = '\n'
+                        / '\r'
+                        / '\u2028'    /*  line separator       */
+                        / '\u2029';   /*  paragraph separator  */
+      newLine   = "\r\n" / newLineCharacter;
+
+      #endregion
+
+      #region White space
+
+      whitespace = [Zs]
+                / '\t'
+                / '\v'        /*  vertial tab          */
+                / '\f';       /*  form feed            */
+
+      #endregion
+
+      #region Spacer
+
+      space = whitespace / newLine;
+      
+      [InlineAllSubrules]
+      s : void = space*;                      /* optional spacer          */
+      S : void = !identifierBody s;           /* identifier break spacer  */
+      
+      #endregion
+      
+      #region A.1.2 Keywords
+      
+      keyword = ("auto"           / "break"         / "case"      /
+                 "char"           / "const"         / "continue"  /
+                 "default"        / "do"            / "double"    /
+                 "else"           / "enum"          / "extern"    /
+                 "float"          / "for"           / "goto"      /
+                 "if"             / "inline"        / "int"       /
+                 "long"           / "register"      / "restrict"  /
+                 "return"         / "short"         / "signed"    /
+                 "sizeof"         / "static"        / "struct"    /
+                 "switch"         / "typedef"       / "union"     /
+                 "unsigned"       / "void"          / "volatile"  /
+                 "while"          / "_Alignas"      / "_Alignof"  /
+                 "_Atomic"        / "_Bool"         / "_Complex"  /
+                 "_Generic"       / "_Imaginary"    / "_Noreturn" /
+                 "_Static_assert" / "_Thread_local" ) !identifierBody;
+                 
+      #endregion
+
+      #region A.1.5 Constants
+      
+      constant        = integerConstant     /
+                        floatingConstant    /
+                        enumerationConstant /
+                        characterConstant;
+                        
+      integerConstant = decimalConstant integerSuffix? /
+                        octalConstant integerSuffix?   /
+                        hexadecimalConstant integerSuffix?;
+                        
+      decimalConstant = nonzeroDigit digit+;
+                        
+      octalConstant   = '0' octalDigit+;
+                        
+      hexadecimalConstant = hexadecimalPrefix hexadecimalDigit+;
+      
+      hexadecimalPrefix   = "0x" / "0X";
+      
+      nonzeroDigit          = ['1'..'9'];
+      
+      octalDigit            = ['0'..'7'];
+      
+      hexadecimalDigit      = ['0'..'9', 'A'..'F', 'a'..'f'];
+      
+      integerSuffix = unsignedSuffix longSuffix?     /
+                      unsignedSuffix longLongSuffix  /
+                      longSuffix     unsignedSuffix? /
+                      longLongSuffix unsignedSuffix?;
+                      
+      unsignedSuffix = 'u' / 'U';
+      
+      longSuffix     = 'l' / 'L';
+      
+      longLongSuffix = "ll" / "LL";
+      
+      floatingConstant = decimalFloatingConstant /
+                         hexadecimalFloatingConstant;
+                         
+      decimalFloatingConstant = fractionalConstant exponentPart? floatingSuffix?
+                                digitSequence exponentPart floatingSuffix?;
+                                
+      hexadecimalFloatingConstant = hexadecimalPrefix hexadecimalFractionalConstant binaryExponentPart floatingSuffix? /
+                                    hexadecimalPrefix hexadecimalDigitSequence binaryExponentPart floatingSuffix?;
+                                    
+      fractionalConstant         = digitSequence? '.' digitSequence / 
+                                   digitSequence '.';
+                                   
+      exponentPart               = 'e' sign? digitSequence /
+                                   'E' sign? digitSequence;
+                                   
+      sign                       = '+' / 
+                                   '-';
+                                   
+      digitSequence              =  digit+;
+      
+      hexadecimalFractionalConstant = hexadecimalDigitSequence? '.' hexadecimalDigitSequence /
+                                      hexadecimalDigitSequence '.';
+                                      
+      binaryExponentPart = 'p' sign? digitSequence /
+                           'P' sign? digitSequence;
+                           
+      hexadecimalDigitSequence = hexadecimalDigit+;
+      
+      floatingSuffix = 'f' / 'l' / 'F' / 'L';
+      
+      enumerationConstant   = identifier;
+      
+      characterConstant     = "'" cCharSequence "'"  /
+                              "L'" cCharSequence "'" /
+                              "u'" cCharSequence "'" /
+                              "U'" cCharSequence "'";
+                              
+      cCharSequence = cChar+;
+      
+      cChar = !(newLineCharacter / '\'' / '\\') any / escapeSequence;
+      
+      escapeSequence        = simpleEscapeSequence      /
+                              octalEscapeSequence       /
+                              hexadecimalEscapeSequence /
+                              universalCharacterName;
+                              
+      simpleEscapeSequence = '\\' ('\'' / '"' / '?' / '\\' / 'a' / 'b' / 'f' / 'n' / 'r' / 't' / 'v');
+      
+      octalEscapeSequence       = '\\' octalDigit octalDigit? octalDigit?;
+      
+      hexadecimalEscapeSequence = "\\x" hexadecimalDigit+;
+      
+      #endregion
+      
+      #region A.1.6 String literals
+      
+      stringLiteral = encodingPrefix? '"' sCharSequence '"';
+      
+      encodingPrefix = "u8" /
+                       "u"  /
+                       "U"  /
+                       "L";
+      
+      sCharSequence = sChar*;
+      
+      sChar = !(newLineCharacter / '"' / '\\') any / escapeSequence / universalCharacterName;
+      
+      #endregion
+      
+      #region A.1.3 Identifiers
+      
+      digit            = ['0'..'9'];
+      nonDigit		   = ['a'..'z', 'A'..'Z'] / '_' / universalCharacterName;
+      identifierBody   = nonDigit (nonDigit / digit)*;
+      identifier       = !keyword identifierBody;
+      
+      #endregion
+      
+      #region A.1.4 Universal character names
+      
+      hexQuad                = hexadecimalDigit hexadecimalDigit hexadecimalDigit hexadecimalDigit;
+      universalCharacterName = "\\u" hexQuad / "\\U" hexQuad hexQuad;
+      
+      #endregion
+      
+      #region A.2.1 Expressions
+      
+      constantExpression = any;   //TODO: DO!
+      assignmentExpression = integerConstant; //TODO: DO!
+      
+      #endregion
+      
+      #region A.2.2 Declarations
+      
+      structOrUnion          = "struct" / "union";
+      structOrUnionSpecifier = (structOrUnion S identifier) / 
+                               (structOrUnion S identifier? s "{" s structDeclarationList s "}");
+                               
+      structDeclarationList  = structDeclaration+;
+      
+      structDeclaration      = specifierQualifierList structDeclaratorList? ";" /
+                               staticAssertDeclaration;
+                              
+      specifierQualifierList = typeSpecifier specifierQualifierList? /
+                               typeQualifier specifierQualifierList;
+                               
+      structDeclaratorList   = structDeclarator (s ',' s structDeclarator)*;
+      
+      structDeclarator       = declarator /
+                               declarator? s ':' s constantExpression;
+                               
+      typeSpecifier = "void"                 / 
+                      "char"                 / 
+                      "short"                / 
+                      "int"                  / 
+                      "long"                 /
+                      "float"                /
+                      "double"               /
+                      "signed"               /
+                      "unsigned"             /
+                      "_Bool"                /
+                      "_Complex"             /
+                      atomicTypeSpecifier    /
+                      structOrUnionSpecifier /
+                      enumSpecifier          /
+                      typedefName;
+                      
+      atomicTypeSpecifier = "_Atomic" s '(' s typeName s ')';
+      
+      enumSpecifier = "enum" S identifier? s '{' s enumeratorList s '}'       /
+                      "enum" S identifier? s '{' s enumeratorList s ',' s '}' /
+                      "enum" S identifier;
+      
+      enumeratorList = enumerator (s ',' s enumerator)*;
+      
+      enumerator     = enumerationConstant /
+                       enumerationConstant s '=' s constantExpression;
+                       
+      typeName       = specifierQualifierList abstractDeclarator?;
+      
+      abstractDeclarator = pointer /
+                           pointer? directAbstractDeclarator;
+                           
+      directAbstractDeclarator = '(' s abstractDeclarator s ')' 
+      /*direct-abstract-declaratoropt [ type-qualifier-listopt
+assignment-expressionopt ]
+direct-abstract-declaratoropt [ static type-qualifier-listopt
+assignment-expression ]
+direct-abstract-declaratoropt [ type-qualifier-list static
+assignment-expression ]
+direct-abstract-declaratoropt [ * ]
+direct-abstract-declaratoropt ( parameter-type-listopt )*/;
+                       
+      typedefName    = identifier;
+      
+      typeQualifier = "const"    / 
+                      "restrict" /
+                      "volatile" /
+                      "_Atomic";
+                      
+      declarator    = pointer? directDeclarator;
+      
+      directDeclaratorPart = identifier /
+                         '(' s declarator s ')';
+      
+      directDeclarator = directDeclaratorPart /
+                         directDeclaratorPart s '[' s typeQualifierList? assignmentExpression? s ']' /*/
+                         directDeclarator [ static type-qualifier-listopt assignment-expression ]
+direct-declarator [ type-qualifier-list static assignment-expression ]
+direct-declarator [ type-qualifier-listopt * ]
+direct-declarator ( parameter-type-list )
+direct-declarator ( identifier-listopt )*/;
+      
+      pointer       = '*' s typeQualifierList? /
+                      '*' s typeQualifierList? pointer;
+                      
+      typeQualifierList = typeQualifier+;
+      
+      staticAssertDeclaration = "_Static_assert" s '(' s constantExpression s ',' s stringLiteral s ')';
+      
+      #endregion
+      
+  })]
+  class DeclarationsParser
+  {
+  }
+}
