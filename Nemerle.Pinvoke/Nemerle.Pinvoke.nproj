@@ -39,14 +39,14 @@
     <MacroReference Include="Nemerle.Peg.Macros, Version=1.2.0.12, Culture=neutral, PublicKeyToken=null">
       <Name>Nemerle.Peg.Macros</Name>
       <AssemblyName>Nemerle.Peg.Macros.dll</AssemblyName>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Nemerle\net-4.0\Nemerle.Peg.Macros.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Nemerle\net-4.0\Nemerle.Peg.Macros.dll</HintPath>
       <Private>False</Private>
     </MacroReference>
     <Reference Include="mscorlib" />
     <Reference Include="Nemerle.Peg, Version=1.2.0.12, Culture=neutral, PublicKeyToken=null">
       <Name>Nemerle.Peg</Name>
       <AssemblyName>Nemerle.Peg.dll</AssemblyName>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Nemerle\net-4.0\Nemerle.Peg.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Nemerle\net-4.0\Nemerle.Peg.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
