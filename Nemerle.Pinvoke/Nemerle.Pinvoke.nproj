@@ -73,6 +73,15 @@
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AST\Declarator.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\StructOrUnion.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\StructOrUnionSpecifier.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="DeclarationsParser.n">
       <SubType>Code</SubType>
     </Compile>
@@ -80,6 +89,7 @@
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="AST" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />

@@ -8,10 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Nemerle.Pinvoke.AST;
+
 namespace Nemerle.Pinvoke
 {
     
-  [PegGrammar(Options = EmitDebugSources, start,
+  [PegGrammar(Options = EmitDebugSources, structOrUnionSpecifier,
   grammar
   {
       start : NToken      = ";"s;
@@ -176,7 +178,7 @@ namespace Nemerle.Pinvoke
       digit            = ['0'..'9'];
       nonDigit		   = ['a'..'z', 'A'..'Z'] / '_' / universalCharacterName;
       identifierBody   = nonDigit (nonDigit / digit)*;
-      identifier       = !keyword identifierBody;
+      identifier : string  = !keyword identifierBody;
       
       #endregion
       
@@ -244,13 +246,17 @@ postfix-expression --*/
       
       #region A.2.2 Declarations
       
-      structOrUnion          = "struct" / "union";
-      structOrUnionSpecifier = (structOrUnion S identifier) / 
-                               (structOrUnion S identifier? s "{" s structDeclarationList s "}");
-                               
+      structOrUnion : StructOrUnion   = "struct" / "union";
+
+      forwardDeclarationStructOrUnionSpecifier : StructOrUnionSpecifier = structOrUnion S identifier;
+      
+      declarationStructOrUnionSpecifier : StructOrUnionSpecifier = (structOrUnion S identifier? s '{' s structDeclarationList s '}');
+
+      structOrUnionSpecifier : StructOrUnionSpecifier = forwardDeclarationStructOrUnionSpecifier / declarationStructOrUnionSpecifier;
+                         
       structDeclarationList  = structDeclaration+;
       
-      structDeclaration      = specifierQualifierList structDeclaratorList? ";" /
+      structDeclaration  = specifierQualifierList structDeclaratorList? ";" /
                                staticAssertDeclaration;
                               
       specifierQualifierList = typeSpecifier specifierQualifierList? /
@@ -324,18 +330,43 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
                       "volatile" /
                       "_Atomic";
                       
-      declarator    = pointer? directDeclarator;
-      
+      declarator : Declarator   = pointer? s directDeclarator;
+
+       /*/
+        directDeclarator [ static type-qualifier-listopt assignment-expression ]
+        direct-declarator [ type-qualifier-list static assignment-expression ]
+        direct-declarator [ type-qualifier-listopt * ]
+        direct-declarator ( parameter-type-list )
+        direct-declarator ( identifier-listopt )*/;
+
+      directDeclarator = directDeclaratorPart s directDeclaratorTail*;
+
       directDeclaratorPart = identifier /
                          '(' s declarator s ')';
+
+      directDeclaratorTail = 
+        '[' s  typeQualifierList? s assignmentExpression? s ']' /
+        '[' s "static"  s typeQualifierList? s assignmentExpression s ']' /
+        '[' s typeQualifierList s "static" s assignmentExpression s ']' /
+        '[' s typeQualifierList? s '*' s ']' /
+        '(' s parameterTypeList s ')' /
+        '(' s identifierList? s ')';
+
+       
+
+
+      parameterTypeList = parameterList s (',' s parameterList)*;
+      parameterList = parameterDeclaration s (',' s parameterDeclaration)*;
+      parameterDeclaration =   declarationSpecifiers s declarator / declarationSpecifiers s abstractDeclarator?;
+      declarationSpecifiers = (declarationSpecifier s)+;
       
-      directDeclarator = directDeclaratorPart /
-                         directDeclaratorPart s '[' s typeQualifierList? assignmentExpression? s ']' /*/
-                         directDeclarator [ static type-qualifier-listopt assignment-expression ]
-direct-declarator [ type-qualifier-list static assignment-expression ]
-direct-declarator [ type-qualifier-listopt * ]
-direct-declarator ( parameter-type-list )
-direct-declarator ( identifier-listopt )*/;
+      declarationSpecifier = structOrUnionSpecifier;
+
+      identifierList = identifier s (',' s identifier)*;
+             
+
+        
+        
       
       pointer       = '*' s typeQualifierList? /
                       '*' s typeQualifierList? pointer;
@@ -347,7 +378,37 @@ direct-declarator ( identifier-listopt )*/;
       #endregion
       
   })]
-  class DeclarationsParser
+  public class DeclarationsParser
   {
+     identifier(token : Nemerle.Peg.NToken) : string
+     {
+        GetText(token)
+     }
+
+      structOrUnion(token : Nemerle.Peg.NToken) : Nemerle.Pinvoke.AST.StructOrUnion
+      {
+        match(GetText(token))
+        {
+            | "struct" => StructOrUnion.Struct()
+            | "union"  => StructOrUnion.Union()
+        }
+      }
+
+     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[string], _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : StructOrUnionSpecifier
+     {
+        StructOrUnionSpecifier(structOrUnion, name) 
+     }
+    
+     forwardDeclarationStructOrUnionSpecifier(structOrUnion : StructOrUnion, name : string) : StructOrUnionSpecifier
+     {
+        StructOrUnionSpecifier(structOrUnion, option.Some(name)) 
+     }
+
+     declarator(ptr : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : Nemerle.Pinvoke.AST.Declarator
+     {
+        Declarator(isPointer = !ptr.IsEmpty)
+     }
+
+
   }
 }
