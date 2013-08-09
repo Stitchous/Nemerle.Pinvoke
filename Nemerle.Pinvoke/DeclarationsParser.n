@@ -12,7 +12,6 @@ using Nemerle.Pinvoke.AST;
 
 namespace Nemerle.Pinvoke
 {
-    
   [PegGrammar(Options = EmitDebugSources, structOrUnionSpecifier,
   grammar
   {
@@ -189,7 +188,6 @@ namespace Nemerle.Pinvoke
       
       #endregion
       
-      identifier : string  = !keyword identifierBody;
       #region A.2.1 Expressions
       
       primaryExpression = identifier             /
@@ -382,8 +380,6 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
         '(' s parameterTypeList s ')' /
         '(' s identifierList? s ')';
 
-       
-
 
       parameterTypeList = parameterList s (',' s parameterList)*;
       parameterList = parameterDeclaration s (',' s parameterDeclaration)*;
@@ -393,10 +389,6 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
       declarationSpecifier = structOrUnionSpecifier;
 
       identifierList = identifier s (',' s identifier)*;
-             
-
-        
-        
       
       pointer       = '*' s typeQualifierList? /
                       '*' s typeQualifierList? pointer;
