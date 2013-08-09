@@ -12,7 +12,7 @@ using Nemerle.Pinvoke.AST;
 
 namespace Nemerle.Pinvoke
 {
-  [PegGrammar(Options = EmitDebugSources, structOrUnionSpecifier,
+  [PegGrammar(Options = EmitDebugSources, declaration,
   grammar
   {
       start : NToken      = ";"s;
@@ -273,9 +273,11 @@ namespace Nemerle.Pinvoke
       #endregion
       
       #region A.2.2 Declarations
+
+      normalDeclaration : Declaration = declarationSpecifiers initDeclaratorList? s ';' s;
       
-      declaration = declarationSpecifiers initDeclaratorList? s ';' s /
-                    staticAssertDeclaration;
+      declaration : Declaration =   normalDeclaration  /
+                                    staticAssertDeclaration;
                           
       declarationSpecifiers = storageClassSpecifier declarationSpecifiers? /
                               typeSpecifier declarationSpecifiers?         /
@@ -325,7 +327,7 @@ namespace Nemerle.Pinvoke
       
       
       structDeclaration  : StructDeclaration = normalStructDeclaration /
-                           staticAssertDeclaration;
+                                               staticAssertStructDeclaration;
                               
       specifierQualifierList = typeSpecifier specifierQualifierList? /
                                typeQualifier specifierQualifierList;
@@ -396,8 +398,8 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
       typedefName    = identifier;
       
       initializer    = assignmentExpression        / 
-                       '{' s initializerList s '}' /
-                       '{' s initializerList s ',' s '}';
+                        '{' s initializerList s '}'/
+                        '{' s initializerList s ',' s '}' ;
       
       initializerListElement = designation? initializer;
       initializerList        = initializerListElement (s ',' s initializerListElement)*;
@@ -423,7 +425,9 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
                       
       typeQualifierList = typeQualifier+;
       
-      staticAssertDeclaration : StructDeclaration = "_Static_assert" s '(' s constantExpression s ',' s stringLiteral s ')';
+      staticAssertDeclaration : Declaration = "_Static_assert" s '(' s constantExpression s ',' s stringLiteral s ')';
+
+      staticAssertStructDeclaration : StructDeclaration = "_Static_assert" s '(' s constantExpression s ',' s stringLiteral s ')';
       
       #endregion
       
@@ -480,6 +484,10 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
         }
       }
 
+     normalDeclaration(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : Declaration
+     {
+        Declaration()
+     }
 
      // (structOrUnion S identifier? s '{' s structDeclarationList s '}');
      declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[string], _leftBrace : Nemerle.Peg.NToken, structDeclarationList : List[Nemerle.Pinvoke.AST.StructDeclaration], _rightBrace : Nemerle.Peg.NToken) : StructOrUnionSpecifier
@@ -502,10 +510,14 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
         StructDeclaration()
      } 
      
-     staticAssertDeclaration(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : StructDeclaration
+     staticAssertDeclaration(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : Declaration
+     {
+        Declaration()
+     }
+
+     staticAssertStructDeclaration(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : StructDeclaration
      {
         StructDeclaration()
      }
-
   }
 }
