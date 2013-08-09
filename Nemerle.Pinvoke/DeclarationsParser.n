@@ -65,6 +65,22 @@ namespace Nemerle.Pinvoke
                  "_Static_assert" / "_Thread_local" ) !identifierBody;
                  
       #endregion
+      
+      #region A.1.3 Identifiers
+      
+      digit            = ['0'..'9'];
+      nonDigit		   = ['a'..'z', 'A'..'Z'] / '_' / universalCharacterName;
+      identifierBody   = nonDigit (nonDigit / digit)*;
+      identifier       = !keyword identifierBody;
+      
+      #endregion
+      
+      #region A.1.4 Universal character names
+      
+      hexQuad                = hexadecimalDigit hexadecimalDigit hexadecimalDigit hexadecimalDigit;
+      universalCharacterName = "\\u" hexQuad / "\\U" hexQuad hexQuad;
+      
+      #endregion
 
       #region A.1.5 Constants
       
@@ -171,22 +187,6 @@ namespace Nemerle.Pinvoke
       
       #endregion
       
-      #region A.1.3 Identifiers
-      
-      digit            = ['0'..'9'];
-      nonDigit		   = ['a'..'z', 'A'..'Z'] / '_' / universalCharacterName;
-      identifierBody   = nonDigit (nonDigit / digit)*;
-      identifier       = !keyword identifierBody;
-      
-      #endregion
-      
-      #region A.1.4 Universal character names
-      
-      hexQuad                = hexadecimalDigit hexadecimalDigit hexadecimalDigit hexadecimalDigit;
-      universalCharacterName = "\\u" hexQuad / "\\U" hexQuad hexQuad;
-      
-      #endregion
-      
       #region A.2.1 Expressions
       
       primaryExpression = identifier             /
@@ -201,15 +201,14 @@ namespace Nemerle.Pinvoke
       
       genericAssociation = typeName  s ':' s assignmentExpression /
                            "default" s ':' s assignmentExpression;
-                           
-      postfixExpression = primaryExpression /
-      /*postfix-expression [ expression ]
-postfix-expression ( argument-expression-listopt )
-postfix-expression . identifier
-postfix-expression -> identifier
-postfix-expression ++
-postfix-expression --*/
-                         '(' s typeName s ')' s '{' s initializerList s ','? s '}';
+      
+      postfixExpressionTail = '[' s expression s ']'  /
+                              argumentExpressionList? /
+                              '.' s identifier        /
+                              "->" s identifier       /
+                              "++"                    /
+                              "--"; 
+      postfixExpression = primaryExpression / ('(' s typeName s ')' s '{' s initializerList s ','? s '}') postfixExpressionTail*;
                          
       argumentExpressionList = assignmentExpression (s ',' s assignmentExpression)*;
       
@@ -225,21 +224,51 @@ postfix-expression --*/
       
       castExpression = unaryExpression /
                        '(' s typeName s ')' castExpression;
-                       
-      multiplicativeExpression = castExpression /*/
-                                 multiplicative-expression * cast-expression
-                                 multiplicative-expression / cast-expression
-                                 multiplicative-expression % cast-expression*/;
-                                 
-      assignmentExpression = integerConstant; //TODO: DO!
       
+      multiplicativeExpressionTail = '*' s castExpression /
+                                     '/' s castExpression /
+                                     '%' s castExpression;
+      multiplicativeExpression     = castExpression multiplicativeExpressionTail*;
+      
+      additiveExpressionTail       = '+' s multiplicativeExpression /
+                                     '-' s multiplicativeExpression;
+      additiveExpression           = multiplicativeExpression additiveExpressionTail*;
+      
+      shiftExpressionTail          = "<<" s additiveExpression /
+                                     ">>" s additiveExpression;
+      shiftExpression              = additiveExpression shiftExpressionTail*;
+      
+      relationalExpressionTail     = '<' s shiftExpression  /
+                                     '>' s shiftExpression  /
+                                     "<=" s shiftExpression /
+                                     ">=" s shiftExpression;
+      relationalExpression        = shiftExpression relationalExpressionTail*;
+      
+      equalityExpressionTail      = "==" s relationalExpression /
+                                    "!=" s relationalExpression;
+      equalityExpression          = relationalExpression equalityExpressionTail*;
+      
+      andExpression               = equalityExpression ("&" s equalityExpression)*;
+      
+      exclusiveOrExpression       = andExpression ('^' s andExpression)*;
+      
+      inclusiveOrExpression       = exclusiveOrExpression ('|' s exclusiveOrExpression)*;
+      
+      logicalAndExpression        = inclusiveOrExpression ("&&" s inclusiveOrExpression)*;
+
+      logicalOrExpression         = logicalAndExpression ("||" s logicalAndExpression)*;
+      
+      conditionalExpression       = logicalOrExpression ("?" s expression s ":" s conditionalExpression)*;
+      
+      assignmentExpression        = conditionalExpression /
+                                    unaryExpression assignmentOperator assignmentExpression;
+                                 
       assignmentOperator = "=" / "*=" / "/=" / "%=" / "+=" / "-=" / "<<=" / ">>=" / "&=" / "^=" / "|=";
       
       expression = assignmentExpression (s ',' s assignmentExpression)*;
       
-      constantExpression = any;   //TODO: DO!
-      
-      
+      constantExpression = conditionalExpression;
+            
       #endregion
       
       #region A.2.2 Declarations
@@ -309,15 +338,15 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
                        '{' s initializerList s '}' /
                        '{' s initializerList s ',' s '}';
       
-      initializerList = designation? initializer /*/
-                        initializerList s ',' s designation? initializer*/;
+      initializerListElement = designation? initializer;
+      initializerList        = initializerListElement (s ',' s initializerListElement)*;
                         
       designation = designatorList s '=' s;
       
       designatorList = designator+;
       
       designator = '[' s constantExpression s ']' /
-                    '.' identifier;
+                    '.' identifier S;
       
       typeQualifier = "const"    / 
                       "restrict" /
@@ -330,12 +359,7 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
                          '(' s declarator s ')';
       
       directDeclarator = directDeclaratorPart /
-                         directDeclaratorPart s '[' s typeQualifierList? assignmentExpression? s ']' /*/
-                         directDeclarator [ static type-qualifier-listopt assignment-expression ]
-direct-declarator [ type-qualifier-list static assignment-expression ]
-direct-declarator [ type-qualifier-listopt * ]
-direct-declarator ( parameter-type-list )
-direct-declarator ( identifier-listopt )*/;
+                         directDeclaratorPart s '[' s typeQualifierList? assignmentExpression? s ']';
       
       pointer       = '*' s typeQualifierList? /
                       '*' s typeQualifierList? pointer;
@@ -344,6 +368,42 @@ direct-declarator ( identifier-listopt )*/;
       
       staticAssertDeclaration = "_Static_assert" s '(' s constantExpression s ',' s stringLiteral s ')';
       
+      #endregion
+      
+      #region A.2.3 Statements
+      
+      statement = labeledStatement    /
+                  compoundStatement   /
+                  expressionStatement /
+                  selectionStatement  /
+                  iterationStatement  /
+                  jumpStatement;
+                  
+      labeledStatement = identifier s ":" s statement                  /
+                         "case" s constantExpression s ":" s statement /
+                         "default" s ":" s statement;
+                         
+      compoundStatement = '{' s blockItemList? s '}';
+      
+      blockItemList     = blockItem+;
+      blockItem         = declaration /
+                          statement;
+                          
+      expressionStatement = expression? s ';';
+      
+      selectionStatement  = "if" s '(' s expression s ')' s statement ("else" s statement)? /
+                            "switch" s '(' s expression s ')' s statement;
+                            
+      iterationStatement  = "while" s '(' s expression s ')' s statement                                      /
+                            "do" s statement s "while" s '(' s expression s ')' s ';'                         /
+                            "for" s '(' s expression? s ';' s expression? s ';' expression? s ')' s statement /
+                            "for" s '(' s declaration expression? s ';' s expression? s ')' s statement;
+                            
+      jumpStatement     = "goto" s identifier s ';' /
+                          "continue" s ';' s        /
+                          "break" s ';' s           /
+                          "return" s expression? s ';' s;
+
       #endregion
       
   })]
