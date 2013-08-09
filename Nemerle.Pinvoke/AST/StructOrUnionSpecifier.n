@@ -11,10 +11,9 @@ using System.Linq;
 namespace Nemerle.Pinvoke.AST
 {
   [Record]
-  public class StructOrUnionSpecifier : Located
+  public variant StructOrUnionSpecifier : Located
   {
-    public StructOrUnion : StructOrUnion;
-
-    public Name : option[string];
+    | Declaration { public StructOrUnion : StructOrUnion; public Name : option[string]; declarations : List[StructDeclaration] }
+    | ForwardDeclaration { public StructOrUnion : StructOrUnion; public Name : option[string]; } 
   }
 }

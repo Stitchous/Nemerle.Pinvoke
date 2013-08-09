@@ -278,14 +278,15 @@ namespace Nemerle.Pinvoke
 
       forwardDeclarationStructOrUnionSpecifier : StructOrUnionSpecifier = structOrUnion S identifier;
       
-      declarationStructOrUnionSpecifier : StructOrUnionSpecifier = (structOrUnion S identifier? s '{' s structDeclarationList s '}');
+      declarationStructOrUnionSpecifier : StructOrUnionSpecifier = (structOrUnion S identifier? s '{' s structDeclarationList? s '}');
 
       structOrUnionSpecifier : StructOrUnionSpecifier = forwardDeclarationStructOrUnionSpecifier / declarationStructOrUnionSpecifier;
                          
-      structDeclarationList  = structDeclaration+;
+      structDeclarationList : List[StructDeclaration] = structDeclaration+;
       
-      structDeclaration  = specifierQualifierList structDeclaratorList? ";" /
-                               staticAssertDeclaration;
+      normalStructDeclaration : StructDeclaration = specifierQualifierList structDeclaratorList? ";" ;
+      
+      structDeclaration : StructDeclaration      = normalStructDeclaration / staticAssertDeclaration;
                               
       specifierQualifierList = typeSpecifier specifierQualifierList? /
                                typeQualifier specifierQualifierList;
@@ -395,7 +396,7 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
                       
       typeQualifierList = typeQualifier+;
       
-      staticAssertDeclaration = "_Static_assert" s '(' s constantExpression s ',' s stringLiteral s ')';
+      staticAssertDeclaration : StructDeclaration = "_Static_assert" s '(' s constantExpression s ',' s stringLiteral s ')';
       
       #endregion
       
@@ -452,21 +453,32 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
         }
       }
 
-     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[string], _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : StructOrUnionSpecifier
+
+     // (structOrUnion S identifier? s '{' s structDeclarationList s '}');
+     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[string], _leftBrace : Nemerle.Peg.NToken, structDeclarationList : option[List[Nemerle.Pinvoke.AST.StructDeclaration]], _rightBrace : Nemerle.Peg.NToken) : StructOrUnionSpecifier
      {
-        StructOrUnionSpecifier(structOrUnion, name) 
+        StructOrUnionSpecifier.Declaration(structOrUnion, name, structDeclarationList.Value) 
      }
     
      forwardDeclarationStructOrUnionSpecifier(structOrUnion : StructOrUnion, name : string) : StructOrUnionSpecifier
      {
-        StructOrUnionSpecifier(structOrUnion, option.Some(name)) 
+        StructOrUnionSpecifier.ForwardDeclaration(structOrUnion, option.Some(name)) 
      }
 
      declarator(ptr : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : Nemerle.Pinvoke.AST.Declarator
      {
         Declarator(isPointer = !ptr.IsEmpty)
      }
-
+    
+     normalStructDeclaration(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : StructDeclaration
+     {
+        StructDeclaration()
+     } 
+     
+     staticAssertDeclaration(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : StructDeclaration
+     {
+        StructDeclaration()
+     }
 
   }
 }

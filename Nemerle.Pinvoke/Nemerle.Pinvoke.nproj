@@ -76,6 +76,9 @@
     <Compile Include="AST\Declarator.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AST\StructDeclaration.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="AST\StructOrUnion.n">
       <SubType>Code</SubType>
     </Compile>
