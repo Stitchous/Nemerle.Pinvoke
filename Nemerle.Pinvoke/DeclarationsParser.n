@@ -274,19 +274,58 @@ namespace Nemerle.Pinvoke
       
       #region A.2.2 Declarations
       
-      structOrUnion : StructOrUnion   = "struct" / "union";
-
-      forwardDeclarationStructOrUnionSpecifier : StructOrUnionSpecifier = structOrUnion S identifier;
+      declaration = declarationSpecifiers initDeclaratorList? s ';' s /
+                    staticAssertDeclaration;
+                          
+      declarationSpecifiers = storageClassSpecifier declarationSpecifiers? /
+                              typeSpecifier declarationSpecifiers?         /
+                              typeQualifier declarationSpecifiers?         /*/
+                              functionSpecifier declarationSpecifiers?     /
+                              alignmentSpecifier declarationSpecifiers?*/;
+                              
+      initDeclaratorList    = initDeclarator (s ',' initDeclarator)*;
       
-      declarationStructOrUnionSpecifier : StructOrUnionSpecifier = (structOrUnion S identifier? s '{' s structDeclarationList? s '}');
-
-      structOrUnionSpecifier : StructOrUnionSpecifier = forwardDeclarationStructOrUnionSpecifier / declarationStructOrUnionSpecifier;
-                         
+      initDeclarator        = declarator /
+                              declarator s '=' s initializer;
+                              
+      storageClassSpecifier = "typedef"       /
+                              "extern"        /
+                              "static"        /
+                              "_Thread_local" /
+                              "auto"          /
+                              "register";
+                              
+      typeSpecifier         = "void"                 / 
+                              "char"                 / 
+                              "short"                / 
+                              "int"                  / 
+                              "long"                 /
+                              "float"                /
+                              "double"               /
+                              "signed"               /
+                              "unsigned"             /
+                              "_Bool"                /
+                              "_Complex"             /
+                              atomicTypeSpecifier    /
+                              structOrUnionSpecifier /
+                              enumSpecifier          /
+                              typedefName;
+      
+      forwardDeclarationStructOrUnionSpecifier : StructOrUnionSpecifier = structOrUnion S identifier;
+      declarationStructOrUnionSpecifier        : StructOrUnionSpecifier = (structOrUnion S identifier? s '{' s structDeclarationList s '}');
+      structOrUnionSpecifier                   : StructOrUnionSpecifier = forwardDeclarationStructOrUnionSpecifier / 
+                                                                          declarationStructOrUnionSpecifier;
+      
+      structOrUnion : StructOrUnion   = "struct" / 
+                                        "union";
+      
       structDeclarationList : List[StructDeclaration] = structDeclaration+;
       
-      normalStructDeclaration : StructDeclaration = specifierQualifierList structDeclaratorList? ";" ;
+      normalStructDeclaration : StructDeclaration= specifierQualifierList structDeclaratorList? ";";
       
-      structDeclaration : StructDeclaration      = normalStructDeclaration / staticAssertDeclaration;
+      
+      structDeclaration  : StructDeclaration = normalStructDeclaration /
+                           staticAssertDeclaration;
                               
       specifierQualifierList = typeSpecifier specifierQualifierList? /
                                typeQualifier specifierQualifierList;
@@ -296,24 +335,6 @@ namespace Nemerle.Pinvoke
       structDeclarator       = declarator /
                                declarator? s ':' s constantExpression;
                                
-      typeSpecifier = "void"                 / 
-                      "char"                 / 
-                      "short"                / 
-                      "int"                  / 
-                      "long"                 /
-                      "float"                /
-                      "double"               /
-                      "signed"               /
-                      "unsigned"             /
-                      "_Bool"                /
-                      "_Complex"             /
-                      atomicTypeSpecifier    /
-                      structOrUnionSpecifier /
-                      enumSpecifier          /
-                      typedefName;
-                      
-      atomicTypeSpecifier = "_Atomic" s '(' s typeName s ')';
-      
       enumSpecifier = "enum" S identifier? s '{' s enumeratorList s '}'       /
                       "enum" S identifier? s '{' s enumeratorList s ',' s '}' /
                       "enum" S identifier;
@@ -322,6 +343,13 @@ namespace Nemerle.Pinvoke
       
       enumerator     = enumerationConstant /
                        enumerationConstant s '=' s constantExpression;
+                       
+      atomicTypeSpecifier = "_Atomic" s '(' s typeName s ')';
+      
+      typeQualifier = "const"    / 
+                      "restrict" /
+                      "volatile" /
+                      "_Atomic";
                        
       typeName       = specifierQualifierList abstractDeclarator?;
       
@@ -354,11 +382,6 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
       designator = '[' s constantExpression s ']' /
                     '.' identifier S;
       
-      typeQualifier = "const"    / 
-                      "restrict" /
-                      "volatile" /
-                      "_Atomic";
-                      
       declarator : Declarator   = pointer? s directDeclarator;
 
        /*/
@@ -385,7 +408,7 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
       parameterTypeList = parameterList s (',' s parameterList)*;
       parameterList = parameterDeclaration s (',' s parameterDeclaration)*;
       parameterDeclaration =   declarationSpecifiers s declarator / declarationSpecifiers s abstractDeclarator?;
-      declarationSpecifiers = (declarationSpecifier s)+;
+      //declarationSpecifiers = (declarationSpecifier s)+;
       
       declarationSpecifier = structOrUnionSpecifier;
 
@@ -416,7 +439,7 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
       compoundStatement = '{' s blockItemList? s '}';
       
       blockItemList     = blockItem+;
-      blockItem         = /* declaration / */
+      blockItem         = declaration /
                           statement;
                           
       expressionStatement = expression? s ';';
@@ -426,8 +449,8 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
                             
       iterationStatement  = "while" s '(' s expression s ')' s statement                                      /
                             "do" s statement s "while" s '(' s expression s ')' s ';'                         /
-                            "for" s '(' s expression? s ';' s expression? s ';' expression? s ')' s statement; /* /
-                            "for" s '(' s declaration expression? s ';' s expression? s ')' s statement;*/
+                            "for" s '(' s expression? s ';' s expression? s ';' expression? s ')' s statement /
+                            "for" s '(' s declaration expression? s ';' s expression? s ')' s statement;
                             
       jumpStatement     = "goto" s identifier s ';' /
                           "continue" s ';' s        /
@@ -455,9 +478,9 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
 
 
      // (structOrUnion S identifier? s '{' s structDeclarationList s '}');
-     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[string], _leftBrace : Nemerle.Peg.NToken, structDeclarationList : option[List[Nemerle.Pinvoke.AST.StructDeclaration]], _rightBrace : Nemerle.Peg.NToken) : StructOrUnionSpecifier
+     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[string], _leftBrace : Nemerle.Peg.NToken, structDeclarationList : List[Nemerle.Pinvoke.AST.StructDeclaration], _rightBrace : Nemerle.Peg.NToken) : StructOrUnionSpecifier
      {
-        StructOrUnionSpecifier.Declaration(structOrUnion, name, structDeclarationList.Value) 
+        StructOrUnionSpecifier.Declaration(structOrUnion, name, structDeclarationList) 
      }
     
      forwardDeclarationStructOrUnionSpecifier(structOrUnion : StructOrUnion, name : string) : StructOrUnionSpecifier
