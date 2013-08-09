@@ -279,9 +279,9 @@ namespace Nemerle.Pinvoke
                           
       declarationSpecifiers = storageClassSpecifier declarationSpecifiers? /
                               typeSpecifier declarationSpecifiers?         /
-                              typeQualifier declarationSpecifiers?         /*/
+                              typeQualifier declarationSpecifiers?         /
                               functionSpecifier declarationSpecifiers?     /
-                              alignmentSpecifier declarationSpecifiers?*/;
+                              alignmentSpecifier declarationSpecifiers?;
                               
       initDeclaratorList    = initDeclarator (s ',' initDeclarator)*;
       
@@ -350,6 +350,33 @@ namespace Nemerle.Pinvoke
                       "restrict" /
                       "volatile" /
                       "_Atomic";
+                      
+      functionSpecifier = "inline" / 
+                          "_Noreturn";
+                          
+      alignmentSpecifier = "_Alignas" (s '(' s typeName s ')' / 
+                                       s '(' s constantExpression s ')' s);
+      
+      declarator : Declarator   = pointer? s directDeclarator;
+      
+      directDeclaratorHead = identifier /
+                             '(' s declarator s ')';
+      directDeclaratorTail = 
+        '[' s  typeQualifierList? s assignmentExpression? s ']' /
+        '[' s "static"  s typeQualifierList? s assignmentExpression s ']' /
+        '[' s typeQualifierList s "static" s assignmentExpression s ']' /
+        '[' s typeQualifierList? s '*' s ']' /
+        '(' s parameterTypeList s ')' /
+        '(' s identifierList? s ')';
+        
+      directDeclarator = directDeclaratorHead s directDeclaratorTail*;
+      
+      /*/
+        directDeclarator [ static type-qualifier-listopt assignment-expression ]
+        direct-declarator [ type-qualifier-list static assignment-expression ]
+        direct-declarator [ type-qualifier-listopt * ]
+        direct-declarator ( parameter-type-list )
+        direct-declarator ( identifier-listopt )*/;
                        
       typeName       = specifierQualifierList abstractDeclarator?;
       
@@ -382,29 +409,6 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
       designator = '[' s constantExpression s ']' /
                     '.' identifier S;
       
-      declarator : Declarator   = pointer? s directDeclarator;
-
-       /*/
-        directDeclarator [ static type-qualifier-listopt assignment-expression ]
-        direct-declarator [ type-qualifier-list static assignment-expression ]
-        direct-declarator [ type-qualifier-listopt * ]
-        direct-declarator ( parameter-type-list )
-        direct-declarator ( identifier-listopt )*/;
-
-      directDeclarator = directDeclaratorPart s directDeclaratorTail*;
-
-      directDeclaratorPart = identifier /
-                         '(' s declarator s ')';
-
-      directDeclaratorTail = 
-        '[' s  typeQualifierList? s assignmentExpression? s ']' /
-        '[' s "static"  s typeQualifierList? s assignmentExpression s ']' /
-        '[' s typeQualifierList s "static" s assignmentExpression s ']' /
-        '[' s typeQualifierList? s '*' s ']' /
-        '(' s parameterTypeList s ')' /
-        '(' s identifierList? s ')';
-
-
       parameterTypeList = parameterList s (',' s parameterList)*;
       parameterList = parameterDeclaration s (',' s parameterDeclaration)*;
       parameterDeclaration =   declarationSpecifiers s declarator / declarationSpecifiers s abstractDeclarator?;
