@@ -72,7 +72,7 @@ namespace Nemerle.Pinvoke
       digit            = ['0'..'9'];
       nonDigit		   = ['a'..'z', 'A'..'Z'] / '_' / universalCharacterName;
       identifierBody   = nonDigit (nonDigit / digit)*;
-      identifier       = !keyword identifierBody;
+      identifier : string   = !keyword identifierBody;
       
       #endregion
       
@@ -415,7 +415,7 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
       compoundStatement = '{' s blockItemList? s '}';
       
       blockItemList     = blockItem+;
-      blockItem         = declaration /
+      blockItem         = /* declaration / */
                           statement;
                           
       expressionStatement = expression? s ';';
@@ -425,8 +425,8 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
                             
       iterationStatement  = "while" s '(' s expression s ')' s statement                                      /
                             "do" s statement s "while" s '(' s expression s ')' s ';'                         /
-                            "for" s '(' s expression? s ';' s expression? s ';' expression? s ')' s statement /
-                            "for" s '(' s declaration expression? s ';' s expression? s ')' s statement;
+                            "for" s '(' s expression? s ';' s expression? s ';' expression? s ')' s statement; /* /
+                            "for" s '(' s declaration expression? s ';' s expression? s ')' s statement;*/
                             
       jumpStatement     = "goto" s identifier s ';' /
                           "continue" s ';' s        /
