@@ -1,0 +1,21 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Nemerle.Pinvoke.AST.DeclarationSpecifiers
+{
+  public variant StorageClassSpecifier
+  {
+    | Typedef 
+    | Extern
+    | Static 
+    | ThreadLocal
+    | Auto
+    | Register
+  }
+}

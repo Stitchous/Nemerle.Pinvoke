@@ -1,0 +1,187 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Peg;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.AST;
+using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
+
+namespace Nemerle.Pinvoke
+{
+  public partial class DeclarationsParser
+  {
+     // declarationSpecifiers initDeclaratorList? s ';'s
+     normalDeclaration(_ : NToken, _ : NToken, _ : NToken) : Declaration
+     {
+        Declaration()
+     }
+
+     // "_Static_assert"s '('s constantExpression ','s stringLiteral ')'s
+     staticAssertDeclaration(_ : NToken, _ : NToken, _ : NToken, _ : NToken, _ : NToken, _ : NToken) : Declaration
+     {
+        Declaration()
+     }
+
+     storageClassSpecifier(token : NToken) : DeclarationSpecifier
+     {
+        def storageClassSpecifier = 
+        match(GetText(token))
+        {
+           | "typedef"        => StorageClassSpecifier.Typedef()
+           | "extern"         => StorageClassSpecifier.Extern()
+           | "static"         => StorageClassSpecifier.Static()
+           | "_Thread_local"  => StorageClassSpecifier.ThreadLocal()
+           | "auto"           => StorageClassSpecifier.Auto()
+           | "register"       => StorageClassSpecifier.Register()
+           | _                => throw InvalidOperationException($"Unknown storage class: $(GetText(token))");
+        }
+
+        DeclarationSpecifier.StorageClass(value = storageClassSpecifier)
+     }
+
+     builtInTypeSpecifier(token : NToken) : DeclarationSpecifier
+     {
+        def typeSpecifier = 
+        match(GetText(token))
+        {
+           | "void"           => TypeSpecifier.Void()
+           | "char"           => TypeSpecifier.Char()
+           | "short"          => TypeSpecifier.Short()
+           | "int"            => TypeSpecifier.Int()
+           | "long"           => TypeSpecifier.Long()
+           | "float"          => TypeSpecifier.Float()
+           | "double"         => TypeSpecifier.Double()
+           | "signed"         => TypeSpecifier.Signed()
+           | "unsigned"       => TypeSpecifier.Unsigned()
+           | "_Bool"          => TypeSpecifier.Bool()
+           | "_Complex"       => TypeSpecifier.Complex()
+           | _                => throw InvalidOperationException($"Unknown type specifier: $(GetText(token))");
+        }
+
+        DeclarationSpecifier.TypeSpecifier(value = typeSpecifier);
+     }
+
+     structOrUnionTypeSpecifier(structOrUnionSpecifier : StructOrUnionSpecifier) : DeclarationSpecifier
+     {
+        def typeSpecifier = TypeSpecifier.StructOrUnion(specifier = structOrUnionSpecifier);
+        DeclarationSpecifier.TypeSpecifier(value = typeSpecifier)
+     }
+
+     enumTypeSpecifier(enumSpecifier : EnumSpecifier) : DeclarationSpecifier
+     {
+        def typeSpecifier = TypeSpecifier.Enum(specifier = enumSpecifier);
+        DeclarationSpecifier.TypeSpecifier(value = typeSpecifier)
+     }
+
+     typedefTypeSpecifier(token : NToken) : DeclarationSpecifier
+     {
+        def typeSpecifier = TypeSpecifier.TypedefName(GetText(token));
+        DeclarationSpecifier.TypeSpecifier(value = typeSpecifier)
+     }
+
+     // "_Atomic"s '('s typeName ')'s;
+     atomicTypeSpecifier(_Atomic : NToken, _leftParenthesis : NToken, typeName : TypeName, _rightParenthesis : NToken) : DeclarationSpecifier
+     {
+        def typeSpecifier = TypeSpecifier.AtomicTypeSpecifier( typeName = typeName);
+        DeclarationSpecifier.TypeSpecifier(value = typeSpecifier)
+     }
+
+     // "enum"s identifier? '{'s enumeratorList ','s '}'s;
+     enumSpecifierWithComma(_enum : NToken, name : option[string], _leftBrace : NToken, _ : NToken, _comma : NToken, _rightBrace : NToken) : EnumSpecifier
+     {
+        EnumSpecifier(name = name)
+     }
+
+     // "enum"s identifier? '{'s enumeratorList s '}'s;
+     normalEnumSpecifier(_enum : NToken, name : option[string], _leftBrace : NToken, _ : NToken, _rightBrace : NToken) : EnumSpecifier
+     {
+        EnumSpecifier(name = name)
+     }
+
+     // "enum"s identifier;
+     forwardDeclarationEnumSpecififer(_enum : NToken, name : string) : EnumSpecifier
+     {
+        EnumSpecifier(name = option.Some(name))
+     }
+
+     // structOrUnion S identifier
+     forwardDeclarationStructOrUnionSpecifier(structOrUnion : StructOrUnion, name : string) : StructOrUnionSpecifier
+     {
+        StructOrUnionSpecifier.ForwardDeclaration(structOrUnion, option.Some(name)) 
+     }
+
+     // (structOrUnion S identifier? s '{'s structDeclarationList s '}');
+     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[string], _leftBrace : NToken, structDeclarationList : List[Nemerle.Pinvoke.AST.StructDeclaration], _rightBrace : NToken) : StructOrUnionSpecifier
+     {
+        StructOrUnionSpecifier.Declaration(structOrUnion, name, structDeclarationList) 
+     }
+
+     // ("struct" / "union")S
+     structOrUnion(token : NToken) : StructOrUnion
+     {
+       match(GetText(token))
+       {
+           | "struct" => StructOrUnion.Struct()
+           | "union"  => StructOrUnion.Union()
+           | _        => throw InvalidOperationException($"Unknown structOrUnion keyword: $(GetText(token))");
+       }
+     }
+
+     // specifierQualifierList structDeclaratorList? ";"s;
+     normalStructDeclaration(_ : NToken, _ : NToken, _ : NToken) : StructDeclaration
+     {
+        StructDeclaration()
+     } 
+
+     staticAssertStructDeclaration(_ : Declaration) : StructDeclaration
+     {
+        StructDeclaration()
+     }
+
+     typeQualifier(token : NToken) : TypeQualifier
+     {
+        match(GetText(token))
+        {
+           | "const"        => TypeQualifier.Const()
+           | "restrict"     => TypeQualifier.Restrict()
+           | "volatile"     => TypeQualifier.Volatile()
+           | "_Atomic"      => TypeQualifier.Atomic()
+           | _              => throw InvalidOperationException($"Unknown type qualifier: $(GetText(token))");
+        }
+     }
+
+     // "inline" / "_Noreturn"
+     functionSpecifier(token : NToken) : FunctionSpecifier
+     {
+        match(GetText(token))
+        {
+            | "inline"          => FunctionSpecifier.Inline()
+            | "_Noreturn"       => FunctionSpecifier.NoReturn()
+            | _                 => throw InvalidOperationException($"Unknown function specifier: $(GetText(token))");
+        }
+     }
+
+     // s '('s constantExpression s ')'
+     expressionAlignmentSpecifier(_ : NToken, _ : NToken, _ : NToken) : AlignmentSpecifier
+     {
+        AlignmentSpecifier.Expression()
+     }
+
+     // '('s typeName s ')'
+     alignAsAlignmentSpecifier(_ : NToken, _ : Nemerle.Pinvoke.AST.TypeName, _ : NToken) : AlignmentSpecifier
+     {
+        AlignmentSpecifier.AlignAsType()
+     }
+     
+     // "_Alignas" (s alignAsAlignmentSpecifier / expressionAlignmentSpecifier s)
+     alignmentSpecifier(_ : NToken, alignmentSpecifier : DeclarationSpecifiers.AlignmentSpecifier) : AlignmentSpecifier
+     {
+        alignmentSpecifier  
+     }
+  }
+}
