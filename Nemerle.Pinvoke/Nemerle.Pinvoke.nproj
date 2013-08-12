@@ -43,6 +43,16 @@
       <Private>False</Private>
     </MacroReference>
     <Reference Include="mscorlib" />
+    <Reference Include="Nemerle.ComputationExpressions, Version=1.2.0.12, Culture=neutral, PublicKeyToken=e080a9c724e2bfcd">
+      <Name>Nemerle.ComputationExpressions</Name>
+      <AssemblyName>Nemerle.ComputationExpressions.dll</AssemblyName>
+      <HintPath>C:\Program Files (x86)\Nemerle\net-4.0\Nemerle.ComputationExpressions.dll</HintPath>
+    </Reference>
+    <Reference Include="Nemerle.ComputationExpressions.Macros, Version=1.2.0.12, Culture=neutral, PublicKeyToken=e080a9c724e2bfcd">
+      <Name>Nemerle.ComputationExpressions.Macros</Name>
+      <AssemblyName>Nemerle.ComputationExpressions.Macros.dll</AssemblyName>
+      <HintPath>C:\Program Files (x86)\Nemerle\net-4.0\Nemerle.ComputationExpressions.Macros.dll</HintPath>
+    </Reference>
     <Reference Include="Nemerle.Peg, Version=1.2.0.12, Culture=neutral, PublicKeyToken=null">
       <Name>Nemerle.Peg</Name>
       <AssemblyName>Nemerle.Peg.dll</AssemblyName>
@@ -94,7 +104,16 @@
     <Compile Include="AST\DeclarationSpecifiers\TypeSpecifier.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Declarator.n">
+    <Compile Include="AST\Declarator\Declarator.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Declarator\DirectDeclarator.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Declarator\DirectDeclaratorHead.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Declarator\InitDeclarator.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AST\EnumSpecifier.n">
@@ -125,6 +144,7 @@
   <ItemGroup>
     <Folder Include="AST" />
     <Folder Include="AST\DeclarationSpecifiers" />
+    <Folder Include="AST\Declarator" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />

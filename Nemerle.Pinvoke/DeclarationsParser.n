@@ -10,6 +10,7 @@ using System.Linq;
 
 using Nemerle.Pinvoke.AST;
 using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
+using Nemerle.Pinvoke.AST.Declarator;
 
 namespace Nemerle.Pinvoke
 {
@@ -279,17 +280,20 @@ namespace Nemerle.Pinvoke
       
       declaration : Declaration =   normalDeclaration  /
                                     staticAssertDeclaration;
-                          
-      declarationSpecifiers = storageClassSpecifier declarationSpecifiers? /
-                              typeSpecifier declarationSpecifiers?         /
-                              typeQualifier declarationSpecifiers?         /
-                              functionSpecifier declarationSpecifiers?     /
-                              alignmentSpecifier declarationSpecifiers?;
-                              
-      initDeclaratorList    = initDeclarator (s ',' initDeclarator)*;
       
-      initDeclarator        = declarator /
-                              declarator s '='s initializer;
+      declarationSpecifiers : List[DeclarationSpecifier]  =   (storageClassSpecifier                /
+                                                               typeDeclarationSpecifier             /
+                                                               typeQualifeierDeclarationSpecifier   /
+                                                               functionDeclarationSpecifier         /
+                                                               alignmentDeclarationSpecifier)+;
+                              
+      initDeclaratorList : List[InitDeclarator]   = initDeclarator (s ',' initDeclarator)*;
+      
+      normalInitDeclarator : InitDeclarator = declarator;
+      initDeclaratorWithInitializer : InitDeclarator= declarator s '='s initializer;
+      
+      initDeclarator : InitDeclarator         = normalInitDeclarator /
+                                                initDeclaratorWithInitializer;
                               
       storageClassSpecifier : DeclarationSpecifier = 
                                                 "typedef"       /
@@ -314,16 +318,17 @@ namespace Nemerle.Pinvoke
       
       structOrUnionTypeSpecifier : DeclarationSpecifier = structOrUnionSpecifier;
 
-      enumTypeSpecifier : DeclarationSpecifier = enumSpecifier;
-      typedefTypeSpecifier : DeclarationSpecifier = typedefName;
-      atomicTypeSpecifier : DeclarationSpecifier = "_Atomic"s '('s typeName ')'s;
+      enumTypeSpecifier : TypeSpecifier = enumSpecifier;
+      typedefTypeSpecifier : TypeSpecifier = typedefName;
+      atomicTypeSpecifier : TypeSpecifier = "_Atomic"s '('s typeName ')'s;
 
 
-      typeSpecifier : DeclarationSpecifier =
+      typeSpecifier : TypeSpecifier  =
                               atomicTypeSpecifier       /
                               enumTypeSpecifier         /
                               typedefTypeSpecifier;
-
+      
+      typeDeclarationSpecifier : DeclarationSpecifier = typeSpecifier;
       
       forwardDeclarationStructOrUnionSpecifier : StructOrUnionSpecifier = structOrUnion S identifier;
       declarationStructOrUnionSpecifier        : StructOrUnionSpecifier = (structOrUnion S identifier? s '{'s structDeclarationList s '}');
@@ -367,20 +372,28 @@ namespace Nemerle.Pinvoke
                                         "restrict" /
                                         "volatile" /
                                         "_Atomic";
+
+      typeQualifeierDeclarationSpecifier : DeclarationSpecifier = typeQualifier;
                       
       functionSpecifier : FunctionSpecifier = "inline" / "_Noreturn";
+
+      functionDeclarationSpecifier : DeclarationSpecifier = functionSpecifier;
       
       expressionAlignmentSpecifier : AlignmentSpecifier = s '('s constantExpression s ')';
 
       alignAsAlignmentSpecifier : AlignmentSpecifier = '('s typeName s ')';
       
       alignmentSpecifier : AlignmentSpecifier =  "_Alignas" (s alignAsAlignmentSpecifier / expressionAlignmentSpecifier s);
-                                       
+                                  
+      alignmentDeclarationSpecifier : DeclarationSpecifier = alignmentSpecifier;
       
       declarator : Declarator   = pointer? s directDeclarator;
       
-      directDeclaratorHead = identifier /
-                             '('s declarator s ')';
+      simpleDirectDeclaratorHead : DirectDeclaratorHead = identifier;
+      recurrentDirectDeclaratorHead  : DirectDeclaratorHead = '('s declarator s ')';
+      
+      directDeclaratorHead : DirectDeclaratorHead = simpleDirectDeclaratorHead / recurrentDirectDeclaratorHead;
+
       directDeclaratorTail = 
         '['s  typeQualifierList? assignmentExpression? ']'s         /
         '['s "static"s typeQualifierList? assignmentExpression ']'s /
@@ -389,7 +402,7 @@ namespace Nemerle.Pinvoke
         '('s parameterTypeList ')'s                                 /
         '('s identifierList? ')'s;
         
-      directDeclarator = directDeclaratorHead s directDeclaratorTail*;
+      directDeclarator : DirectDeclarator = directDeclaratorHead s directDeclaratorTail*;
       
       pointer = '*'s typeQualifierList? /
                 '*'s typeQualifierList? pointer;
@@ -479,11 +492,6 @@ namespace Nemerle.Pinvoke
      identifier(token : Nemerle.Peg.NToken) : string
      {
         GetText(token)
-     }
- 
-     declarator(ptr : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : Nemerle.Pinvoke.AST.Declarator
-     {
-        Declarator(isPointer = !ptr.IsEmpty)
      }
     
      typeName(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : TypeName

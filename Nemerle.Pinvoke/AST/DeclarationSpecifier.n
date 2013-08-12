@@ -11,12 +11,13 @@ using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
 
 namespace Nemerle.Pinvoke.AST
 {
+    [Record]
     public variant DeclarationSpecifier
     {
-        | Alignment { Value : AlignmentSpecifier }
-        | Function { Value : FunctionSpecifier }
-        | StorageClass { Value : StorageClassSpecifier }
-        | TypeQualifier
-        | TypeSpecifier { Value : DeclarationSpecifiers.TypeSpecifier }
+        | Alignment         { Value : AlignmentSpecifier }
+        | Function          { Value : FunctionSpecifier }
+        | StorageClass      { Value : StorageClassSpecifier }
+        | TypeQualifier     { Value : DeclarationSpecifiers.TypeQualifier}
+        | TypeSpecifier     { Value : DeclarationSpecifiers.TypeSpecifier }
     }  
 }

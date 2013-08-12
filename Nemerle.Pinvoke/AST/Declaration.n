@@ -7,12 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Nemerle.Pinvoke.AST.Declarator;
+
 namespace Nemerle.Pinvoke.AST
 {
-  /// <summary>
-  /// Description of Declaration.
-  /// </summary>
-  public class Declaration
+  [Record]
+  public variant Declaration
   {
+    | Normal { DeclarationSpecifiers : List[DeclarationSpecifier]; InitDeclarationList : option[List[InitDeclarator]] }
+    | StaticAssert
   }
 }
