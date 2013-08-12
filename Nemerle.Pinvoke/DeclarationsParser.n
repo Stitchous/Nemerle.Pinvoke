@@ -72,7 +72,7 @@ namespace Nemerle.Pinvoke
       digit            = ['0'..'9'];
       nonDigit		   = ['a'..'z', 'A'..'Z'] / '_' / universalCharacterName;
       identifierBody   = nonDigit (nonDigit / digit)*;
-      identifier : string   = !keyword identifierBody;
+      identifier : string   = !keyword identifierBody s;
       
       #endregion
       
@@ -193,80 +193,80 @@ namespace Nemerle.Pinvoke
       primaryExpression = identifier             /
                           constant               /
                           stringLiteral          /
-                          '(' s expression s ')' /
+                          '('s expression s ')' /
                           genericSelection;
                           
-      genericSelection = "_Generic" s '(' s assignmentExpression s ',' s genericAssocList s ')';
+      genericSelection = "_Generic"s '('s assignmentExpression ','s genericAssocList ')'s;
       
-      genericAssocList = genericAssociation (s ',' s genericAssociation)*;
+      genericAssocList = genericAssociation (','s genericAssociation)*;
       
-      genericAssociation = typeName  s ':' s assignmentExpression /
-                           "default" s ':' s assignmentExpression;
+      genericAssociation = typeName ':'s assignmentExpression /
+                           "default"s ':'s assignmentExpression;
       
-      postfixExpressionTail = '[' s expression s ']'  /
+      postfixExpressionTail = '['s expression ']'s  /
                               argumentExpressionList? /
-                              '.' s identifier        /
-                              "->" s identifier       /
+                              '.'s identifier        /
+                              "->"s identifier       /
                               "++"                    /
                               "--"; 
-      postfixExpression = primaryExpression / ('(' s typeName s ')' s '{' s initializerList s ','? s '}') postfixExpressionTail*;
+      postfixExpression = primaryExpression / ('('s typeName ')'s '{'s initializerList (','s)? '}'s) postfixExpressionTail*;
                          
-      argumentExpressionList = assignmentExpression (s ',' s assignmentExpression)*;
+      argumentExpressionList = assignmentExpression (s ','s assignmentExpression)*;
       
       unaryExpression = postfixExpression               /
-                        "++" s unaryExpression          /
-                        "--" s unaryExpression          /
+                        "++"s unaryExpression          /
+                        "--"s unaryExpression          /
                         unaryOperator castExpression    /
-                        "sizeof" s unaryExpression      /
-                        "sizeof" s '(' s typeName s ')' /
-                        "_Alignof" s '(' s typeName s ')';
+                        "sizeof"s unaryExpression      /
+                        "sizeof"s '('s typeName ')'s /
+                        "_Alignof"s '('s typeName ')'s;
                         
       unaryOperator = '&' / '*' / '+' / '-' / '~' / '!';
       
       castExpression = unaryExpression /
-                       '(' s typeName s ')' castExpression;
+                       '('s typeName ')'s castExpression;
       
-      multiplicativeExpressionTail = '*' s castExpression /
-                                     '/' s castExpression /
-                                     '%' s castExpression;
+      multiplicativeExpressionTail = '*'s castExpression /
+                                     '/'s castExpression /
+                                     '%'s castExpression;
       multiplicativeExpression     = castExpression multiplicativeExpressionTail*;
       
-      additiveExpressionTail       = '+' s multiplicativeExpression /
-                                     '-' s multiplicativeExpression;
+      additiveExpressionTail       = '+'s multiplicativeExpression /
+                                     '-'s multiplicativeExpression;
       additiveExpression           = multiplicativeExpression additiveExpressionTail*;
       
-      shiftExpressionTail          = "<<" s additiveExpression /
-                                     ">>" s additiveExpression;
+      shiftExpressionTail          = "<<"s additiveExpression /
+                                     ">>"s additiveExpression;
       shiftExpression              = additiveExpression shiftExpressionTail*;
       
-      relationalExpressionTail     = '<' s shiftExpression  /
-                                     '>' s shiftExpression  /
-                                     "<=" s shiftExpression /
-                                     ">=" s shiftExpression;
+      relationalExpressionTail     = '<'s shiftExpression  /
+                                     '>'s shiftExpression  /
+                                     "<="s shiftExpression /
+                                     ">="s shiftExpression;
       relationalExpression        = shiftExpression relationalExpressionTail*;
       
-      equalityExpressionTail      = "==" s relationalExpression /
-                                    "!=" s relationalExpression;
+      equalityExpressionTail      = "=="s relationalExpression /
+                                    "!="s relationalExpression;
       equalityExpression          = relationalExpression equalityExpressionTail*;
       
-      andExpression               = equalityExpression ("&" s equalityExpression)*;
+      andExpression               = equalityExpression ("&"s equalityExpression)*;
       
-      exclusiveOrExpression       = andExpression ('^' s andExpression)*;
+      exclusiveOrExpression       = andExpression ('^'s andExpression)*;
       
-      inclusiveOrExpression       = exclusiveOrExpression ('|' s exclusiveOrExpression)*;
+      inclusiveOrExpression       = exclusiveOrExpression ('|'s exclusiveOrExpression)*;
       
-      logicalAndExpression        = inclusiveOrExpression ("&&" s inclusiveOrExpression)*;
+      logicalAndExpression        = inclusiveOrExpression ("&&"s inclusiveOrExpression)*;
 
-      logicalOrExpression         = logicalAndExpression ("||" s logicalAndExpression)*;
+      logicalOrExpression         = logicalAndExpression ("||"s logicalAndExpression)*;
       
-      conditionalExpression       = logicalOrExpression ("?" s expression s ":" s conditionalExpression)*;
+      conditionalExpression       = logicalOrExpression ("?"s expression ":"s conditionalExpression)*;
       
       assignmentExpression        = conditionalExpression /
                                     unaryExpression assignmentOperator assignmentExpression;
                                  
       assignmentOperator = "=" / "*=" / "/=" / "%=" / "+=" / "-=" / "<<=" / ">>=" / "&=" / "^=" / "|=";
       
-      expression = assignmentExpression (s ',' s assignmentExpression)*;
+      expression = assignmentExpression (','s assignmentExpression)*;
       
       constantExpression = conditionalExpression;
             
@@ -274,7 +274,7 @@ namespace Nemerle.Pinvoke
       
       #region A.2.2 Declarations
 
-      normalDeclaration : Declaration = declarationSpecifiers initDeclaratorList? s ';' s;
+      normalDeclaration : Declaration = declarationSpecifiers initDeclaratorList? s ';'s;
       
       declaration : Declaration =   normalDeclaration  /
                                     staticAssertDeclaration;
@@ -288,7 +288,7 @@ namespace Nemerle.Pinvoke
       initDeclaratorList    = initDeclarator (s ',' initDeclarator)*;
       
       initDeclarator        = declarator /
-                              declarator s '=' s initializer;
+                              declarator s '='s initializer;
                               
       storageClassSpecifier = "typedef"       /
                               "extern"        /
@@ -314,16 +314,15 @@ namespace Nemerle.Pinvoke
                               typedefName;
       
       forwardDeclarationStructOrUnionSpecifier : StructOrUnionSpecifier = structOrUnion S identifier;
-      declarationStructOrUnionSpecifier        : StructOrUnionSpecifier = (structOrUnion S identifier? s '{' s structDeclarationList s '}');
+      declarationStructOrUnionSpecifier        : StructOrUnionSpecifier = (structOrUnion S identifier? s '{'s structDeclarationList s '}');
       structOrUnionSpecifier                   : StructOrUnionSpecifier = forwardDeclarationStructOrUnionSpecifier / 
                                                                           declarationStructOrUnionSpecifier;
       
-      structOrUnion : StructOrUnion   = "struct" / 
-                                        "union";
+      structOrUnion : StructOrUnion   = ("struct" / "union")S;
       
       structDeclarationList : List[StructDeclaration] = structDeclaration+;
       
-      normalStructDeclaration : StructDeclaration= specifierQualifierList structDeclaratorList? ";";
+      normalStructDeclaration : StructDeclaration= specifierQualifierList structDeclaratorList? ";"s;
       
       
       structDeclaration  : StructDeclaration = normalStructDeclaration /
@@ -332,21 +331,21 @@ namespace Nemerle.Pinvoke
       specifierQualifierList = typeSpecifier specifierQualifierList? /
                                typeQualifier specifierQualifierList;
                                
-      structDeclaratorList   = structDeclarator (s ',' s structDeclarator)*;
+      structDeclaratorList   = structDeclarator (s ','s structDeclarator)*;
       
       structDeclarator       = declarator /
-                               declarator? s ':' s constantExpression;
+                               declarator? s ':'s constantExpression;
                                
-      enumSpecifier = "enum" S identifier? s '{' s enumeratorList s '}'       /
-                      "enum" S identifier? s '{' s enumeratorList s ',' s '}' /
-                      "enum" S identifier;
+      enumSpecifier = "enum"s identifier? '{'s enumeratorList '}'s      /
+                      "enum"s identifier? '{'s enumeratorList ','s '}'s /
+                      "enum"s identifier;
       
-      enumeratorList = enumerator (s ',' s enumerator)*;
+      enumeratorList = enumerator (','s enumerator)*;
       
       enumerator     = enumerationConstant /
-                       enumerationConstant s '=' s constantExpression;
+                       enumerationConstant '='s constantExpression;
                        
-      atomicTypeSpecifier = "_Atomic" s '(' s typeName s ')';
+      atomicTypeSpecifier = "_Atomic"s '('s typeName ')'s;
       
       typeQualifier = "const"    / 
                       "restrict" /
@@ -356,78 +355,66 @@ namespace Nemerle.Pinvoke
       functionSpecifier = "inline" / 
                           "_Noreturn";
                           
-      alignmentSpecifier = "_Alignas" (s '(' s typeName s ')' / 
-                                       s '(' s constantExpression s ')' s);
+      alignmentSpecifier = "_Alignas" (s '('s typeName s ')' / 
+                                       s '('s constantExpression s ')'s);
       
       declarator : Declarator   = pointer? s directDeclarator;
       
       directDeclaratorHead = identifier /
-                             '(' s declarator s ')';
+                             '('s declarator s ')';
       directDeclaratorTail = 
-        '[' s  typeQualifierList? s assignmentExpression? s ']' /
-        '[' s "static"  s typeQualifierList? s assignmentExpression s ']' /
-        '[' s typeQualifierList s "static" s assignmentExpression s ']' /
-        '[' s typeQualifierList? s '*' s ']' /
-        '(' s parameterTypeList s ')' /
-        '(' s identifierList? s ')';
+        '['s  typeQualifierList? assignmentExpression? ']'s         /
+        '['s "static"s typeQualifierList? assignmentExpression ']'s /
+        '['s typeQualifierList "static"s assignmentExpression ']'s  /
+        '['s typeQualifierList? '*'s ']'s                           /
+        '('s parameterTypeList ')'s                                 /
+        '('s identifierList? ')'s;
         
       directDeclarator = directDeclaratorHead s directDeclaratorTail*;
       
-      /*/
-        directDeclarator [ static type-qualifier-listopt assignment-expression ]
-        direct-declarator [ type-qualifier-list static assignment-expression ]
-        direct-declarator [ type-qualifier-listopt * ]
-        direct-declarator ( parameter-type-list )
-        direct-declarator ( identifier-listopt )*/;
-                       
-      typeName       = specifierQualifierList abstractDeclarator?;
+      pointer = '*'s typeQualifierList? /
+                '*'s typeQualifierList? pointer;
+                
+      typeQualifierList = typeQualifier+;
       
+      parameterTypeList    = parameterList (','s "..."s)?;
+      parameterList        = parameterDeclaration (','s parameterDeclaration)*;
+      parameterDeclaration = declarationSpecifiers (declarator / abstractDeclarator?);
+      
+      identifierList = identifier (','s identifier)*;
+      
+      typeName       = specifierQualifierList abstractDeclarator?;
+ 
       abstractDeclarator = pointer /
                            pointer? directAbstractDeclarator;
-                           
-      directAbstractDeclarator = '(' s abstractDeclarator s ')' 
-      /*direct-abstract-declaratoropt [ type-qualifier-listopt
-assignment-expressionopt ]
-direct-abstract-declaratoropt [ static type-qualifier-listopt
-assignment-expression ]
-direct-abstract-declaratoropt [ type-qualifier-list static
-assignment-expression ]
-direct-abstract-declaratoropt [ * ]
-direct-abstract-declaratoropt ( parameter-type-listopt )*/;
+
+      
+      directAbstractDeclaratorHead = '('s abstractDeclarator ')'s;
+      directAbstractDeclaratorTail =  '['s typeQualifierList? assignmentExpression? ']'s          /
+                                      '['s "static"s typeQualifierList? assignmentExpression ']'s /
+                                      '['s typeQualifierList "static"s assignmentExpression ']'s  /
+                                      '['s '*'s ']'s                                              /
+                                      '('s parameterTypeList? ')'s;
+      directAbstractDeclarator      = (directAbstractDeclaratorHead / directAbstractDeclaratorTail) directAbstractDeclaratorTail*;  
                        
       typedefName    = identifier;
       
-      initializer    = assignmentExpression        / 
-                        '{' s initializerList s '}'/
-                        '{' s initializerList s ',' s '}' ;
+      initializer    = assignmentExpression      / 
+                       '{'s initializerList '}'s /
+                       '{'s initializerList ','s '}'s;
       
       initializerListElement = designation? initializer;
-      initializerList        = initializerListElement (s ',' s initializerListElement)*;
+      initializerList        = initializerListElement (','s initializerListElement)*;
                         
-      designation = designatorList s '=' s;
+      designation = designatorList '='s;
       
       designatorList = designator+;
       
-      designator = '[' s constantExpression s ']' /
-                    '.' identifier S;
-      
-      parameterTypeList = parameterList s (',' s parameterList)*;
-      parameterList = parameterDeclaration s (',' s parameterDeclaration)*;
-      parameterDeclaration =   declarationSpecifiers s declarator / declarationSpecifiers s abstractDeclarator?;
-      //declarationSpecifiers = (declarationSpecifier s)+;
-      
-      declarationSpecifier = structOrUnionSpecifier;
-
-      identifierList = identifier s (',' s identifier)*;
-      
-      pointer       = '*' s typeQualifierList? /
-                      '*' s typeQualifierList? pointer;
-                      
-      typeQualifierList = typeQualifier+;
-      
-      staticAssertDeclaration : Declaration = "_Static_assert" s '(' s constantExpression s ',' s stringLiteral s ')';
-
-      staticAssertStructDeclaration : StructDeclaration = "_Static_assert" s '(' s constantExpression s ',' s stringLiteral s ')';
+      designator = '['s constantExpression ']'s /
+                    '.'s identifier;
+                    
+      staticAssertStructDeclaration : StructDeclaration = staticAssertDeclaration;
+      staticAssertDeclaration       : Declaration       = "_Static_assert"s '('s constantExpression ','s stringLiteral ')'s;
       
       #endregion
       
@@ -440,30 +427,30 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
                   iterationStatement  /
                   jumpStatement;
                   
-      labeledStatement = identifier s ":" s statement                  /
-                         "case" s constantExpression s ":" s statement /
-                         "default" s ":" s statement;
+      labeledStatement = identifier ":"s statement                 /
+                         "case"s constantExpression ":"s statement /
+                         "default"s ":"s statement;
                          
-      compoundStatement = '{' s blockItemList? s '}';
+      compoundStatement = '{'s blockItemList? s '}';
       
       blockItemList     = blockItem+;
       blockItem         = declaration /
                           statement;
                           
-      expressionStatement = expression? s ';';
+      expressionStatement = expression? ';'s;
       
-      selectionStatement  = "if" s '(' s expression s ')' s statement ("else" s statement)? /
-                            "switch" s '(' s expression s ')' s statement;
+      selectionStatement  = "if"s '('s expression ')'s statement ("else"s statement)? /
+                            "switch"s '('s expression ')'s statement;
                             
-      iterationStatement  = "while" s '(' s expression s ')' s statement                                      /
-                            "do" s statement s "while" s '(' s expression s ')' s ';'                         /
-                            "for" s '(' s expression? s ';' s expression? s ';' expression? s ')' s statement /
-                            "for" s '(' s declaration expression? s ';' s expression? s ')' s statement;
+      iterationStatement  = "while"s '('s expression ')'s statement                                  /
+                            "do"s statement "while"s '('s expression ')'s ';'s                       /
+                            "for"s '('s expression? ';'s expression? ';'s expression? ')'s statement /
+                            "for"s '('s declaration expression? ';'s expression? ')'s statement;
                             
-      jumpStatement     = "goto" s identifier s ';' /
-                          "continue" s ';' s        /
-                          "break" s ';' s           /
-                          "return" s expression? s ';' s;
+      jumpStatement     = "goto"S identifier ';'s /
+                          "continue"s ';'s        /
+                          "break"s ';'s           /
+                          "return"s expression? ';'s;
 
       #endregion
       
@@ -489,7 +476,7 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
         Declaration()
      }
 
-     // (structOrUnion S identifier? s '{' s structDeclarationList s '}');
+     // (structOrUnion S identifier? s '{'s structDeclarationList s '}');
      declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[string], _leftBrace : Nemerle.Peg.NToken, structDeclarationList : List[Nemerle.Pinvoke.AST.StructDeclaration], _rightBrace : Nemerle.Peg.NToken) : StructOrUnionSpecifier
      {
         StructOrUnionSpecifier.Declaration(structOrUnion, name, structDeclarationList) 
@@ -515,7 +502,7 @@ direct-abstract-declaratoropt ( parameter-type-listopt )*/;
         Declaration()
      }
 
-     staticAssertStructDeclaration(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : StructDeclaration
+     staticAssertStructDeclaration(_ : Declaration) : StructDeclaration
      {
         StructDeclaration()
      }
