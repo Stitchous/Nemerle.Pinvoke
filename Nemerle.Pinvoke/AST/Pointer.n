@@ -1,0 +1,20 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Peg;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Nemerle.Pinvoke.AST
+{
+  [Record]
+  public class Pointer : Located
+  {
+    TypeQualifierList : option[List[DeclarationSpecifiers.TypeQualifier]];
+
+    InnerPointer : option[Pointer];
+  }
+}

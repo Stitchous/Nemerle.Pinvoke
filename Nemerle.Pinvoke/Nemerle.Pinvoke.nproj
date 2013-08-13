@@ -104,6 +104,9 @@
     <Compile Include="AST\DeclarationSpecifiers\TypeSpecifier.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AST\Declarator\AbstractDeclarator.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="AST\Declarator\Declarator.n">
       <SubType>Code</SubType>
     </Compile>
@@ -111,6 +114,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AST\EnumSpecifier.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\ParameterDeclaration.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Pointer.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AST\StructDeclaration.n">
@@ -126,6 +135,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DeclarationsParser.Declarations.n">
+      <SubType>Code</SubType>
+      <DependentUpon>DeclarationsParser.n</DependentUpon>
+    </Compile>
+    <Compile Include="DeclarationsParser.Expressions.n">
       <SubType>Code</SubType>
       <DependentUpon>DeclarationsParser.n</DependentUpon>
     </Compile>

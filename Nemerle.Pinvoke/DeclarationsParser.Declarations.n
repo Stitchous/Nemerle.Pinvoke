@@ -32,17 +32,7 @@ namespace Nemerle.Pinvoke
      // initDeclarator (s ',' initDeclarator)*;
      initDeclaratorList(firstInitDeclarator : InitDeclarator, tailList : List[(NToken * InitDeclarator)]) : List[InitDeclarator]
      {
-        def lst =
-            comp list
-            {
-                yield firstInitDeclarator;
-                foreach(item in tailList)
-                {
-                    yield item[1]
-                }
-            };
-
-        lst.ToList()
+        CommaSeparatedToList(firstInitDeclarator, tailList)
      }
 
      normalInitDeclarator(declarator : Declarator) : InitDeclarator
@@ -243,7 +233,7 @@ namespace Nemerle.Pinvoke
      };
 
      // pointer? s directDeclarator
-     declarator(ptr : NToken, directDeclarator : DirectDeclarator) : Declarator
+     declarator(ptr : option[Pointer], directDeclarator : DirectDeclarator) : Declarator
      {
         def declared = 
             match(directDeclarator.Head)
@@ -252,7 +242,7 @@ namespace Nemerle.Pinvoke
                 | Recurrent as recurrent => Declarator.DeclaredObject.InnerDeclarator(recurrent.innerDeclarator)
            }
         
-        Declarator(!ptr.IsEmpty, declared)
+        Declarator(ptr.IsSome, declared)
      }
 
      simpleDirectDeclaratorHead(name : string) : DirectDeclaratorHead
@@ -270,5 +260,39 @@ namespace Nemerle.Pinvoke
         DirectDeclarator(head)
      }
 
+     normalPointer(_asterik : NToken, qualifierList : option[List[TypeQualifier]]) : Pointer
+     {
+        Pointer(qualifierList, option.None());
+     }
+
+     recurrentPointer(_asterik : NToken, qualifierList : option[List[TypeQualifier]], innerPointer : Pointer) : Pointer
+     {
+        Pointer(qualifierList, option.Some(innerPointer))
+     }
+
+     parameterList(parameterDeclaration : ParameterDeclaration, parameterDeclarationList : List[(NToken * ParameterDeclaration)]) : List[ParameterDeclaration]
+     {
+        CommaSeparatedToList(parameterDeclaration, parameterDeclarationList)
+     }
+
+     normalParameterDeclaration(declarationSpecifiers : List[DeclarationSpecifier], declarator : Declarator.Declarator) : ParameterDeclaration
+     {
+        ParameterDeclaration(declarationSpecifiers, declarator)
+     }
+
+     abstractParameterDeclaration(declarationSpecifiers : List[DeclarationSpecifier], abstractDeclarator : option[Declarator.AbstractDeclarator]) : ParameterDeclaration
+     {
+        ParameterDeclaration(declarationSpecifiers, abstractDeclarator)
+     }
+
+     nakedPointerAbstractDeclarator(_ : Pointer) : Declarator.AbstractDeclarator
+     {
+        AbstractDeclarator()
+     }
+
+     normalAbstractDeclarator(_ : option[Pointer], _ : NToken) : Declarator.AbstractDeclarator
+     {
+        AbstractDeclarator()
+     }
   }
 }

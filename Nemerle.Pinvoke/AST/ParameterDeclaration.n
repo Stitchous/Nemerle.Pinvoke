@@ -1,0 +1,39 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Peg;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Nemerle.Pinvoke.AST
+{
+  public class ParameterDeclaration : Located
+  {
+    public this(delcarationSpecifiers : List[DeclarationSpecifier], declarator : Declarator.Declarator)
+    {
+        DelcarationSpecifiers = delcarationSpecifiers;
+        ParameterDeclarator = ParameterDeclaratorType.Declarator(declarator);
+    }
+
+    public this(delcarationSpecifiers : List[DeclarationSpecifier], declarator : option[Declarator.AbstractDeclarator])
+    {
+        DelcarationSpecifiers = delcarationSpecifiers;
+        ParameterDeclarator = ParameterDeclaratorType.AbstractDeclarator(declarator);
+    }
+
+    public DelcarationSpecifiers : List[DeclarationSpecifier];
+
+    [Record]
+    public variant ParameterDeclaratorType
+    {
+        | Declarator { Value : Nemerle.Pinvoke.AST.Declarator.Declarator }
+        | AbstractDeclarator { Value : option[Nemerle.Pinvoke.AST.Declarator.AbstractDeclarator]}
+    }
+
+    public ParameterDeclarator : ParameterDeclaratorType;
+
+  }
+}
