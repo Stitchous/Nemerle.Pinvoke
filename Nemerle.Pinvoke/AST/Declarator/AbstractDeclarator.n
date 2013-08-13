@@ -1,5 +1,6 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
+using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -9,10 +10,7 @@ using System.Linq;
 
 namespace Nemerle.Pinvoke.AST.Declarator
 {
-  [Record]
-  public variant DirectDeclaratorHead
+  public class AbstractDeclarator : Located
   {
-    | Simple { Name : string} 
-    | Recurrent { innerDeclarator : Declarator }
   }
 }

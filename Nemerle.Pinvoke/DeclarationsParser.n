@@ -1,5 +1,6 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
+using Nemerle.ComputationExpressions;
 using Nemerle.Text;
 using Nemerle.Utility;
 using Nemerle.Peg;
@@ -403,21 +404,28 @@ namespace Nemerle.Pinvoke
         
       directDeclarator : DirectDeclarator = directDeclaratorHead s directDeclaratorTail*;
       
-      pointer = '*'s typeQualifierList? /
-                '*'s typeQualifierList? pointer;
+      normalPointer         : Pointer = '*'s typeQualifierList?;
+      recurrentPointer      : Pointer = '*'s typeQualifierList? pointer;
+
+      pointer : Pointer = normalPointer / recurrentPointer;
                 
-      typeQualifierList = typeQualifier+;
+      typeQualifierList : List[TypeQualifier] = typeQualifier+;
       
       parameterTypeList    = parameterList (','s "..."s)?;
-      parameterList        = parameterDeclaration (','s parameterDeclaration)*;
-      parameterDeclaration = declarationSpecifiers (declarator / abstractDeclarator?);
+      parameterList                     : List[ParameterDeclaration] =  parameterDeclaration (','s parameterDeclaration)*;
+      
+      normalParameterDeclaration        : ParameterDeclaration = declarationSpecifiers declarator;
+      abstractParameterDeclaration      : ParameterDeclaration = declarationSpecifiers abstractDeclarator?;
+      parameterDeclaration              : ParameterDeclaration = normalParameterDeclaration / abstractParameterDeclaration;
       
       identifierList = identifier (','s identifier)*;
       
       typeName  : TypeName     = specifierQualifierList abstractDeclarator?;
  
-      abstractDeclarator = pointer /
-                           pointer? directAbstractDeclarator;
+      nakedPointerAbstractDeclarator : AbstractDeclarator = pointer;
+      normalAbstractDeclarator : AbstractDeclarator = pointer? directAbstractDeclarator;
+      
+      abstractDeclarator : AbstractDeclarator = nakedPointerAbstractDeclarator / normalAbstractDeclarator;
 
       
       directAbstractDeclaratorHead = '('s abstractDeclarator ')'s;
@@ -504,9 +512,17 @@ namespace Nemerle.Pinvoke
         GetText(token)
      }
     
-     typeName(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : TypeName
+     typeName(_ : Nemerle.Peg.NToken, _ : option[AbstractDeclarator]) : TypeName
      {
         TypeName("")
+     }
+
+     private CommaSeparatedToList[T](head : T, tail : List[(NToken * T)]) : List[T]
+     {
+        (comp list {
+            yield head;
+            yieldcomp tail.Select(tuple => tuple[1]);
+        }).ToList();
      }
   }
 }

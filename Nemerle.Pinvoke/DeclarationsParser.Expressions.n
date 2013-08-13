@@ -1,6 +1,5 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
-using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -8,12 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nemerle.Pinvoke.AST.Declarator
+namespace Nemerle.Pinvoke
 {
-  [Record]
-  public class DirectDeclarator : Located
+  public partial class DeclarationsParser
   {
-    public Head : DirectDeclaratorHead;
-    // Tail ::
   }
 }
