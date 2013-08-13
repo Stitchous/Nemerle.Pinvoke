@@ -44,7 +44,6 @@ namespace Nemerle.Pinvoke
 
         lst.ToList()
      }
-     
 
      normalInitDeclarator(declarator : Declarator) : InitDeclarator
      {
@@ -55,7 +54,6 @@ namespace Nemerle.Pinvoke
      {
         InitDeclarator(declarator)
      }
-
 
      storageClassSpecifier(token : NToken) : DeclarationSpecifier
      {
@@ -230,6 +228,19 @@ namespace Nemerle.Pinvoke
      {
         DeclarationSpecifier.Alignment(value = alignmentSpecifier)
      }
+
+     [Record]
+     private variant DirectDeclaratorHead : Located      
+     {
+        | Simple { Name : string} 
+        | Recurrent { innerDeclarator : Declarator }
+     };
+
+     [Record]
+     private class DirectDeclarator : Located
+     {
+        public Head : DirectDeclaratorHead;
+     };
 
      // pointer? s directDeclarator
      declarator(ptr : NToken, directDeclarator : DirectDeclarator) : Declarator

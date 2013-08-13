@@ -107,12 +107,6 @@
     <Compile Include="AST\Declarator\Declarator.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Declarator\DirectDeclarator.n">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="AST\Declarator\DirectDeclaratorHead.n">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="AST\Declarator\InitDeclarator.n">
       <SubType>Code</SubType>
     </Compile>
