@@ -1,5 +1,6 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
+using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -7,14 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.AST.Declarator;
-
 namespace Nemerle.Pinvoke.AST
 {
   [Record]
-  public variant Declaration
+  public class EnumSpecifier : Located
   {
-    | Normal { DeclarationSpecifiers : List[DeclarationSpecifier]; InitDeclarationList : option[List[InitDeclarator]] }
-    | StaticAssert
+    Name : option[string];
   }
 }

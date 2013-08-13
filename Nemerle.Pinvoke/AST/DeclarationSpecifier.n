@@ -1,0 +1,23 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
+
+namespace Nemerle.Pinvoke.AST
+{
+    [Record]
+    public variant DeclarationSpecifier
+    {
+        | Alignment         { Value : AlignmentSpecifier }
+        | Function          { Value : FunctionSpecifier }
+        | StorageClass      { Value : StorageClassSpecifier }
+        | TypeQualifier     { Value : DeclarationSpecifiers.TypeQualifier}
+        | TypeSpecifier     { Value : DeclarationSpecifiers.TypeSpecifier }
+    }  
+}

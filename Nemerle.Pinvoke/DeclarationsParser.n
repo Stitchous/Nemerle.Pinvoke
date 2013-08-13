@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Nemerle.Pinvoke.AST;
+using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
+using Nemerle.Pinvoke.AST.Declarator;
 
 namespace Nemerle.Pinvoke
 {
@@ -278,40 +280,55 @@ namespace Nemerle.Pinvoke
       
       declaration : Declaration =   normalDeclaration  /
                                     staticAssertDeclaration;
-                          
-      declarationSpecifiers = storageClassSpecifier declarationSpecifiers? /
-                              typeSpecifier declarationSpecifiers?         /
-                              typeQualifier declarationSpecifiers?         /
-                              functionSpecifier declarationSpecifiers?     /
-                              alignmentSpecifier declarationSpecifiers?;
-                              
-      initDeclaratorList    = initDeclarator (','s initDeclarator)*;
       
-      initDeclarator        = declarator /
-                              declarator '='s initializer;
+      declarationSpecifiers : List[DeclarationSpecifier]  =   (storageClassSpecifier                /
+                                                               typeDeclarationSpecifier             /
+                                                               typeQualifeierDeclarationSpecifier   /
+                                                               functionDeclarationSpecifier         /
+                                                               alignmentDeclarationSpecifier)+;
                               
-      storageClassSpecifier = "typedef"       /
-                              "extern"        /
-                              "static"        /
-                              "_Thread_local" /
-                              "auto"          /
-                              "register";
+      initDeclaratorList : List[InitDeclarator]   = initDeclarator (s ',' initDeclarator)*;
+      
+      normalInitDeclarator : InitDeclarator = declarator;
+      initDeclaratorWithInitializer : InitDeclarator= declarator s '='s initializer;
+      
+      initDeclarator : InitDeclarator         = normalInitDeclarator /
+                                                initDeclaratorWithInitializer;
                               
-      typeSpecifier         = "void"                 / 
-                              "char"                 / 
-                              "short"                / 
-                              "int"                  / 
-                              "long"                 /
-                              "float"                /
-                              "double"               /
-                              "signed"               /
-                              "unsigned"             /
-                              "_Bool"                /
-                              "_Complex"             /
-                              atomicTypeSpecifier    /
-                              structOrUnionSpecifier /
-                              enumSpecifier          /
-                              typedefName;
+      storageClassSpecifier : DeclarationSpecifier = 
+                                                "typedef"       /
+                                                "extern"        /
+                                                "static"        /
+                                                "_Thread_local" /
+                                                "auto"          /
+                                                "register";
+      
+      builtInTypeSpecifier : DeclarationSpecifier  = 
+                                                "void"           / 
+                                                "char"           / 
+                                                "short"          / 
+                                                "int"            / 
+                                                "long"           /
+                                                "float"          /
+                                                "double"         /
+                                                "signed"         /
+                                                "unsigned"       /
+                                                "_Bool"          /
+                                                "_Complex";
+      
+      structOrUnionTypeSpecifier : DeclarationSpecifier = structOrUnionSpecifier;
+
+      enumTypeSpecifier : TypeSpecifier = enumSpecifier;
+      typedefTypeSpecifier : TypeSpecifier = typedefName;
+      atomicTypeSpecifier : TypeSpecifier = "_Atomic"s '('s typeName ')'s;
+
+
+      typeSpecifier : TypeSpecifier  =
+                              atomicTypeSpecifier       /
+                              enumTypeSpecifier         /
+                              typedefTypeSpecifier;
+      
+      typeDeclarationSpecifier : DeclarationSpecifier = typeSpecifier;
       
       forwardDeclarationStructOrUnionSpecifier : StructOrUnionSpecifier = structOrUnion S identifier;
       declarationStructOrUnionSpecifier        : StructOrUnionSpecifier = (structOrUnion S identifier? '{'s structDeclarationList '}'s);
@@ -322,9 +339,8 @@ namespace Nemerle.Pinvoke
       
       structDeclarationList : List[StructDeclaration] = structDeclaration+;
       
-      normalStructDeclaration : StructDeclaration= specifierQualifierList structDeclaratorList? ';'s;
-      
-      
+      normalStructDeclaration : StructDeclaration = specifierQualifierList structDeclaratorList? ";"s;
+            
       structDeclaration  : StructDeclaration = normalStructDeclaration /
                                                staticAssertStructDeclaration;
                               
@@ -335,33 +351,49 @@ namespace Nemerle.Pinvoke
       
       structDeclarator       = declarator /
                                declarator? ':'s constantExpression;
+
+      normalEnumSpecifier : EnumSpecifier = "enum"s identifier? '{'s enumeratorList '}'s;
+      enumSpecifierWithComma : EnumSpecifier = "enum"s identifier? '{'s enumeratorList ','s '}'s;
+      forwardDeclarationEnumSpecififer : EnumSpecifier = "enum"s identifier;
                                
-      enumSpecifier = "enum"s identifier? '{'s enumeratorList '}'s      /
-                      "enum"s identifier? '{'s enumeratorList ','s '}'s /
-                      "enum"s identifier;
+      enumSpecifier : EnumSpecifier 
+                                   =   normalEnumSpecifier /
+                                       enumSpecifierWithComma /
+                                       forwardDeclarationEnumSpecififer;
       
       enumeratorList = enumerator (','s enumerator)*;
       
       enumerator     = enumerationConstant /
                        enumerationConstant '='s constantExpression;
                        
-      atomicTypeSpecifier = "_Atomic"s '('s typeName ')'s;
-      
-      typeQualifier = "const"    / 
-                      "restrict" /
-                      "volatile" /
-                      "_Atomic";
+     
+      typeQualifier : TypeQualifier 
+                                      = "const"    / 
+                                        "restrict" /
+                                        "volatile" /
+                                        "_Atomic";
+
+      typeQualifeierDeclarationSpecifier : DeclarationSpecifier = typeQualifier;
                       
-      functionSpecifier = "inline" / 
-                          "_Noreturn";
-                          
-      alignmentSpecifier = "_Alignas" ('('s typeName ')'s / 
-                                       '('s constantExpression ')'s);
+      functionSpecifier : FunctionSpecifier = "inline" / "_Noreturn";
+
+      functionDeclarationSpecifier : DeclarationSpecifier = functionSpecifier;
+      
+      expressionAlignmentSpecifier : AlignmentSpecifier = s '('s constantExpression s ')';
+
+      alignAsAlignmentSpecifier : AlignmentSpecifier = '('s typeName s ')';
+      
+      alignmentSpecifier : AlignmentSpecifier =  "_Alignas" (s alignAsAlignmentSpecifier / expressionAlignmentSpecifier s);
+                                  
+      alignmentDeclarationSpecifier : DeclarationSpecifier = alignmentSpecifier;
       
       declarator : Declarator   = pointer? s directDeclarator;
       
-      directDeclaratorHead = identifier /
-                             '('s declarator ')'s;
+      simpleDirectDeclaratorHead : DirectDeclaratorHead = identifier;
+      recurrentDirectDeclaratorHead  : DirectDeclaratorHead = '('s declarator s ')';
+      
+      directDeclaratorHead : DirectDeclaratorHead = simpleDirectDeclaratorHead / recurrentDirectDeclaratorHead;
+
       directDeclaratorTail = 
         '['s  typeQualifierList? assignmentExpression? ']'s         /
         '['s "static"s typeQualifierList? assignmentExpression ']'s /
@@ -370,7 +402,7 @@ namespace Nemerle.Pinvoke
         '('s parameterTypeList ')'s                                 /
         '('s identifierList? ')'s;
         
-      directDeclarator = directDeclaratorHead directDeclaratorTail*;
+      directDeclarator : DirectDeclarator = directDeclaratorHead s directDeclaratorTail*;
       
       pointer = '*'s typeQualifierList? /
                 '*'s typeQualifierList? pointer;
@@ -383,7 +415,7 @@ namespace Nemerle.Pinvoke
       
       identifierList = identifier (','s identifier)*;
       
-      typeName       = specifierQualifierList abstractDeclarator?;
+      typeName  : TypeName     = specifierQualifierList abstractDeclarator?;
  
       abstractDeclarator = pointer /
                            pointer? directAbstractDeclarator;
@@ -455,56 +487,16 @@ namespace Nemerle.Pinvoke
       #endregion
       
   })]
-  public class DeclarationsParser
+  public partial class DeclarationsParser
   {
      identifier(token : Nemerle.Peg.NToken) : string
      {
         GetText(token)
      }
-
-      structOrUnion(token : Nemerle.Peg.NToken) : Nemerle.Pinvoke.AST.StructOrUnion
-      {
-        match(GetText(token))
-        {
-            | "struct" => StructOrUnion.Struct()
-            | "union"  => StructOrUnion.Union()
-        }
-      }
-
-     normalDeclaration(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : Declaration
-     {
-        Declaration()
-     }
-
-     // (structOrUnion S identifier? s '{'s structDeclarationList s '}');
-     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[string], _leftBrace : Nemerle.Peg.NToken, structDeclarationList : List[Nemerle.Pinvoke.AST.StructDeclaration], _rightBrace : Nemerle.Peg.NToken) : StructOrUnionSpecifier
-     {
-        StructOrUnionSpecifier.Declaration(structOrUnion, name, structDeclarationList) 
-     }
     
-     forwardDeclarationStructOrUnionSpecifier(structOrUnion : StructOrUnion, name : string) : StructOrUnionSpecifier
+     typeName(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : TypeName
      {
-        StructOrUnionSpecifier.ForwardDeclaration(structOrUnion, option.Some(name)) 
-     }
-
-     declarator(ptr : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : Nemerle.Pinvoke.AST.Declarator
-     {
-        Declarator(isPointer = !ptr.IsEmpty)
-     }
-    
-     normalStructDeclaration(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : StructDeclaration
-     {
-        StructDeclaration()
-     } 
-     
-     staticAssertDeclaration(_ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken, _ : Nemerle.Peg.NToken) : Declaration
-     {
-        Declaration()
-     }
-
-     staticAssertStructDeclaration(_ : Declaration) : StructDeclaration
-     {
-        StructDeclaration()
+        TypeName("")
      }
   }
 }

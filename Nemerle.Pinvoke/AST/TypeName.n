@@ -1,6 +1,5 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
-using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -11,10 +10,8 @@ using System.Linq;
 namespace Nemerle.Pinvoke.AST
 {
   [Record]
-  public class Declarator : Located
+  public class TypeName
   {
-    IsPointer : bool;
-
-
+    public Name : string { get; set };
   }
 }

@@ -1,0 +1,30 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Nemerle.Pinvoke.AST.DeclarationSpecifiers
+{
+  public variant TypeSpecifier
+  {
+    | Void
+    | Char
+    | Short
+    | Int
+    | Long
+    | Float
+    | Double
+    | Signed
+    | Unsigned
+    | Bool
+    | Complex
+    | AtomicTypeSpecifier { TypeName : TypeName }
+    | StructOrUnion { Specifier : StructOrUnionSpecifier }
+    | Enum { Specifier : EnumSpecifier }
+    | TypedefName { Name : string }
+  }
+}
