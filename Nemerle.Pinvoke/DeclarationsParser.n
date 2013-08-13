@@ -274,7 +274,7 @@ namespace Nemerle.Pinvoke
       
       #region A.2.2 Declarations
 
-      normalDeclaration : Declaration = declarationSpecifiers initDeclaratorList? s ';'s;
+      normalDeclaration : Declaration = declarationSpecifiers initDeclaratorList? ';'s;
       
       declaration : Declaration =   normalDeclaration  /
                                     staticAssertDeclaration;
@@ -285,10 +285,10 @@ namespace Nemerle.Pinvoke
                               functionSpecifier declarationSpecifiers?     /
                               alignmentSpecifier declarationSpecifiers?;
                               
-      initDeclaratorList    = initDeclarator (s ',' initDeclarator)*;
+      initDeclaratorList    = initDeclarator (','s initDeclarator)*;
       
       initDeclarator        = declarator /
-                              declarator s '='s initializer;
+                              declarator '='s initializer;
                               
       storageClassSpecifier = "typedef"       /
                               "extern"        /
@@ -314,7 +314,7 @@ namespace Nemerle.Pinvoke
                               typedefName;
       
       forwardDeclarationStructOrUnionSpecifier : StructOrUnionSpecifier = structOrUnion S identifier;
-      declarationStructOrUnionSpecifier        : StructOrUnionSpecifier = (structOrUnion S identifier? s '{'s structDeclarationList s '}');
+      declarationStructOrUnionSpecifier        : StructOrUnionSpecifier = (structOrUnion S identifier? '{'s structDeclarationList '}'s);
       structOrUnionSpecifier                   : StructOrUnionSpecifier = forwardDeclarationStructOrUnionSpecifier / 
                                                                           declarationStructOrUnionSpecifier;
       
@@ -322,7 +322,7 @@ namespace Nemerle.Pinvoke
       
       structDeclarationList : List[StructDeclaration] = structDeclaration+;
       
-      normalStructDeclaration : StructDeclaration= specifierQualifierList structDeclaratorList? ";"s;
+      normalStructDeclaration : StructDeclaration= specifierQualifierList structDeclaratorList? ';'s;
       
       
       structDeclaration  : StructDeclaration = normalStructDeclaration /
@@ -331,10 +331,10 @@ namespace Nemerle.Pinvoke
       specifierQualifierList = typeSpecifier specifierQualifierList? /
                                typeQualifier specifierQualifierList;
                                
-      structDeclaratorList   = structDeclarator (s ','s structDeclarator)*;
+      structDeclaratorList   = structDeclarator (','s structDeclarator)*;
       
       structDeclarator       = declarator /
-                               declarator? s ':'s constantExpression;
+                               declarator? ':'s constantExpression;
                                
       enumSpecifier = "enum"s identifier? '{'s enumeratorList '}'s      /
                       "enum"s identifier? '{'s enumeratorList ','s '}'s /
@@ -355,13 +355,13 @@ namespace Nemerle.Pinvoke
       functionSpecifier = "inline" / 
                           "_Noreturn";
                           
-      alignmentSpecifier = "_Alignas" (s '('s typeName s ')' / 
-                                       s '('s constantExpression s ')'s);
+      alignmentSpecifier = "_Alignas" ('('s typeName ')'s / 
+                                       '('s constantExpression ')'s);
       
       declarator : Declarator   = pointer? s directDeclarator;
       
       directDeclaratorHead = identifier /
-                             '('s declarator s ')';
+                             '('s declarator ')'s;
       directDeclaratorTail = 
         '['s  typeQualifierList? assignmentExpression? ']'s         /
         '['s "static"s typeQualifierList? assignmentExpression ']'s /
@@ -370,7 +370,7 @@ namespace Nemerle.Pinvoke
         '('s parameterTypeList ')'s                                 /
         '('s identifierList? ')'s;
         
-      directDeclarator = directDeclaratorHead s directDeclaratorTail*;
+      directDeclarator = directDeclaratorHead directDeclaratorTail*;
       
       pointer = '*'s typeQualifierList? /
                 '*'s typeQualifierList? pointer;
@@ -427,11 +427,11 @@ namespace Nemerle.Pinvoke
                   iterationStatement  /
                   jumpStatement;
                   
-      labeledStatement = identifier ":"s statement                 /
-                         "case"s constantExpression ":"s statement /
-                         "default"s ":"s statement;
+      labeledStatement = identifier ':'s statement                 /
+                         "case"s constantExpression ':'s statement /
+                         "default"s ':'s statement;
                          
-      compoundStatement = '{'s blockItemList? s '}';
+      compoundStatement = '{'s blockItemList? '}'s;
       
       blockItemList     = blockItem+;
       blockItem         = declaration /
