@@ -17,7 +17,6 @@ namespace Nemerle.Pinvoke
   [PegGrammar(Options = EmitDebugSources, declaration,
   grammar
   {
-      start : NToken      = ";"s;
       any                 = ['\u0000'..'\uFFFF'];
       
       #region Line terminators
@@ -192,10 +191,10 @@ namespace Nemerle.Pinvoke
       
       #region A.2.1 Expressions
       
-      primaryExpression = identifier             /
-                          constant               /
-                          stringLiteral          /
-                          '('s expression s ')' /
+      primaryExpression = identifier           /
+                          constant             /
+                          stringLiteral        /
+                          '('s expression ')'s /
                           genericSelection;
                           
       genericSelection = "_Generic"s '('s assignmentExpression ','s genericAssocList ')'s;
@@ -213,7 +212,7 @@ namespace Nemerle.Pinvoke
                               "--"; 
       postfixExpression = primaryExpression / ('('s typeName ')'s '{'s initializerList (','s)? '}'s) postfixExpressionTail*;
                          
-      argumentExpressionList = assignmentExpression (s ','s assignmentExpression)*;
+      argumentExpressionList = assignmentExpression (','s assignmentExpression)*;
       
       unaryExpression = postfixExpression               /
                         "++"s unaryExpression          /
@@ -251,7 +250,7 @@ namespace Nemerle.Pinvoke
                                     "!="s relationalExpression;
       equalityExpression          = relationalExpression equalityExpressionTail*;
       
-      andExpression               = equalityExpression ("&"s equalityExpression)*;
+      andExpression               = equalityExpression ('&'s equalityExpression)*;
       
       exclusiveOrExpression       = andExpression ('^'s andExpression)*;
       
@@ -287,10 +286,10 @@ namespace Nemerle.Pinvoke
                                                                functionDeclarationSpecifier         /
                                                                alignmentDeclarationSpecifier)+;
                               
-      initDeclaratorList : List[InitDeclarator]   = initDeclarator (s ',' initDeclarator)*;
+      initDeclaratorList : List[InitDeclarator]   = initDeclarator (','s initDeclarator)*;
       
       normalInitDeclarator : InitDeclarator = declarator;
-      initDeclaratorWithInitializer : InitDeclarator= declarator s '='s initializer;
+      initDeclaratorWithInitializer : InitDeclarator= declarator '='s initializer;
       
       initDeclarator : InitDeclarator         = normalInitDeclarator /
                                                 initDeclaratorWithInitializer;
@@ -330,8 +329,8 @@ namespace Nemerle.Pinvoke
       
       typeDeclarationSpecifier : DeclarationSpecifier = typeSpecifier;
       
-      forwardDeclarationStructOrUnionSpecifier : StructOrUnionSpecifier = structOrUnion S identifier;
-      declarationStructOrUnionSpecifier        : StructOrUnionSpecifier = (structOrUnion S identifier? '{'s structDeclarationList '}'s);
+      forwardDeclarationStructOrUnionSpecifier : StructOrUnionSpecifier = structOrUnion identifier;
+      declarationStructOrUnionSpecifier        : StructOrUnionSpecifier = (structOrUnion identifier? '{'s structDeclarationList '}'s);
       structOrUnionSpecifier                   : StructOrUnionSpecifier = forwardDeclarationStructOrUnionSpecifier / 
                                                                           declarationStructOrUnionSpecifier;
       
@@ -339,7 +338,7 @@ namespace Nemerle.Pinvoke
       
       structDeclarationList : List[StructDeclaration] = structDeclaration+;
       
-      normalStructDeclaration : StructDeclaration = specifierQualifierList structDeclaratorList? ";"s;
+      normalStructDeclaration : StructDeclaration = specifierQualifierList structDeclaratorList? ';'s;
             
       structDeclaration  : StructDeclaration = normalStructDeclaration /
                                                staticAssertStructDeclaration;
@@ -352,9 +351,9 @@ namespace Nemerle.Pinvoke
       structDeclarator       = declarator /
                                declarator? ':'s constantExpression;
 
-      normalEnumSpecifier : EnumSpecifier = "enum"s identifier? '{'s enumeratorList '}'s;
-      enumSpecifierWithComma : EnumSpecifier = "enum"s identifier? '{'s enumeratorList ','s '}'s;
-      forwardDeclarationEnumSpecififer : EnumSpecifier = "enum"s identifier;
+      normalEnumSpecifier : EnumSpecifier = "enum"S identifier? '{'s enumeratorList '}'s;
+      enumSpecifierWithComma : EnumSpecifier = "enum"S identifier? '{'s enumeratorList ','s '}'s;
+      forwardDeclarationEnumSpecififer : EnumSpecifier = "enum"S identifier;
                                
       enumSpecifier : EnumSpecifier 
                                    =   normalEnumSpecifier /
@@ -379,18 +378,18 @@ namespace Nemerle.Pinvoke
 
       functionDeclarationSpecifier : DeclarationSpecifier = functionSpecifier;
       
-      expressionAlignmentSpecifier : AlignmentSpecifier = s '('s constantExpression s ')';
+      expressionAlignmentSpecifier : AlignmentSpecifier = '('s constantExpression ')'s;
 
-      alignAsAlignmentSpecifier : AlignmentSpecifier = '('s typeName s ')';
+      alignAsAlignmentSpecifier : AlignmentSpecifier = '('s typeName ')'s;
       
-      alignmentSpecifier : AlignmentSpecifier =  "_Alignas" (s alignAsAlignmentSpecifier / expressionAlignmentSpecifier s);
+      alignmentSpecifier : AlignmentSpecifier =  "_Alignas"s (alignAsAlignmentSpecifier / expressionAlignmentSpecifier);
                                   
       alignmentDeclarationSpecifier : DeclarationSpecifier = alignmentSpecifier;
       
-      declarator : Declarator   = pointer? s directDeclarator;
+      declarator : Declarator   = pointer? directDeclarator;
       
       simpleDirectDeclaratorHead : DirectDeclaratorHead = identifier;
-      recurrentDirectDeclaratorHead  : DirectDeclaratorHead = '('s declarator s ')';
+      recurrentDirectDeclaratorHead  : DirectDeclaratorHead = '('s declarator ')'s;
       
       directDeclaratorHead : DirectDeclaratorHead = simpleDirectDeclaratorHead / recurrentDirectDeclaratorHead;
 
@@ -486,6 +485,17 @@ namespace Nemerle.Pinvoke
 
       #endregion
       
+      #region A.2.4 External definitions
+      
+      translationUnit     = externalDeclaration+;
+                        
+      externalDeclaration = functionDefinition / declaration;
+      
+      functionDefinition  = declarationSpecifiers declarator declarationList? compoundStatement;
+      
+      declarationList     = declaration+;
+      
+      #endregion
   })]
   public partial class DeclarationsParser
   {
