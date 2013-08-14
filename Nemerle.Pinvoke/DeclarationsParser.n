@@ -401,15 +401,22 @@ namespace Nemerle.Pinvoke
       
       directDeclaratorHead : DirectDeclaratorHead = simpleDirectDeclaratorHead / recurrentDirectDeclaratorHead;
 
-      directDeclaratorTail = 
-        '['s  typeQualifierList? assignmentExpression? ']'s         /
-        '['s "static"s typeQualifierList? assignmentExpression ']'s /
-        '['s typeQualifierList "static"s assignmentExpression ']'s  /
-        '['s typeQualifierList? '*'s ']'s                           /
-        '('s parameterTypeList ')'s                                 /
-        '('s identifierList? ')'s;
+      assignmentExpressionDirectDeclaratorTailElement : DirectDeclaratorTailElement         = '['s  typeQualifierList? assignmentExpression? ']'s;
+      static1AssignmentExpressionDirectDeclaratorTailElement : DirectDeclaratorTailElement  = '['s "static"s typeQualifierList? assignmentExpression ']'s;
+      static2AssignmentExpressionDirectDeclaratorTailElement : DirectDeclaratorTailElement  = '['s typeQualifierList "static"s assignmentExpression ']'s;
+      asterikDirectDeclaratorTailElement : DirectDeclaratorTailElement                      = '['s typeQualifierList? '*'s ']'s;
+      FunctionWithParametersDirectDeclaratorTailElement : DirectDeclaratorTailElement       = '('s parameterTypeList ')'s;
+      FunctionWithIdentifiersDirectDeclaratorTailElement : DirectDeclaratorTailElement      = '('s identifierList? ')'s; 
+
+      directDeclaratorTailElement : DirectDeclaratorTailElement = 
+        assignmentExpressionDirectDeclaratorTailElement         /
+        static1AssignmentExpressionDirectDeclaratorTailElement  /
+        static2AssignmentExpressionDirectDeclaratorTailElement  /
+        asterikDirectDeclaratorTailElement                      /   
+        FunctionWithParametersDirectDeclaratorTailElement       /
+        FunctionWithIdentifiersDirectDeclaratorTailElement;
         
-      directDeclarator : DirectDeclarator = directDeclaratorHead s directDeclaratorTail*;
+      directDeclarator : DirectDeclarator = directDeclaratorHead directDeclaratorTailElement*;
       
       normalPointer         : Pointer = '*'s typeQualifierList?;
       recurrentPointer      : Pointer = '*'s typeQualifierList? pointer;
@@ -418,14 +425,14 @@ namespace Nemerle.Pinvoke
                 
       typeQualifierList : list[TypeQualifier] = typeQualifier+;
       
-      parameterTypeList    = parameterList (','s "..."s)?;
+      parameterTypeList                 : list[ParameterDeclaration] * bool =  parameterList (','s "..."s)?;
       parameterList                     : list[ParameterDeclaration] =  parameterDeclaration (','s parameterDeclaration)*;
       
       normalParameterDeclaration        : ParameterDeclaration = declarationSpecifiers declarator;
       abstractParameterDeclaration      : ParameterDeclaration = declarationSpecifiers abstractDeclarator?;
       parameterDeclaration              : ParameterDeclaration = normalParameterDeclaration / abstractParameterDeclaration;
       
-      identifierList = identifier (','s identifier)*;
+      identifierList : list[string] = identifier (','s identifier)*;
       
       typeName  : TypeName     = specifierQualifierList abstractDeclarator?;
  
@@ -518,7 +525,7 @@ namespace Nemerle.Pinvoke
      {
         GetText(token)
      }
-    
+
      typeName(_ : list[DeclarationSpecifier], _ : option[AbstractDeclarator]) : TypeName
      {
         TypeName("")

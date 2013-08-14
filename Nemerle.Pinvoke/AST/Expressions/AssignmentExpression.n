@@ -10,7 +10,10 @@ using System.Linq;
 
 namespace Nemerle.Pinvoke.AST.Expressions
 {
-  public class ConstantExpression : Located
+  /// <summary>
+  /// Description of AssignmentExpression.
+  /// </summary>
+  public class AssignmentExpression : Located
   {
   }
 }

@@ -8,15 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
-
 namespace Nemerle.Pinvoke.AST.Declarator
 {
-  [Record]
-  public class Declarator : Located
-  {
-    Pointer : option[Pointer];
-    
-    DirectDeclarator : DirectDeclarator;
-  }
+     [Record]
+     public class DirectDeclarator : Located
+     {
+        public Head : DirectDeclaratorHead;
+
+        public Tail : list[DirectDeclaratorTailElement];
+     }
 }

@@ -110,6 +110,15 @@
     <Compile Include="AST\Declarator\Declarator.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AST\Declarator\DirectDeclarator.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Declarator\DirectDeclaratorHead.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Declarator\DirectDeclaratorTailElement.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="AST\Declarator\InitDeclarator.n">
       <SubType>Code</SubType>
     </Compile>
@@ -120,6 +129,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AST\EnumSpecifier.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Expressions\AssignmentExpression.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AST\Expressions\ConstantExpression.n">

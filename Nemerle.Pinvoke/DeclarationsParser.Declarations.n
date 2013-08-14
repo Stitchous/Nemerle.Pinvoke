@@ -271,35 +271,22 @@ namespace Nemerle.Pinvoke
         DeclarationSpecifier.Alignment(value = alignmentSpecifier)
      }
 
-     [Record]
-     private variant DirectDeclaratorHead : Located      
-     {
-        | Simple { Name : string} 
-        | Recurrent { innerDeclarator : Declarator }
-     };
 
-     [Record]
-     private class DirectDeclarator : Located
-     {
-        public Head : DirectDeclaratorHead;
-     };
 
      // pointer? s directDeclarator
      declarator(ptr : option[Pointer], directDeclarator : DirectDeclarator) : Declarator
      {
-        def declared = 
-            match(directDeclarator.Head)
-            {
-                | Simple as simple =>  Declarator.DeclaredObject.Name(simple.Name)
-                | Recurrent as recurrent => Declarator.DeclaredObject.InnerDeclarator(recurrent.innerDeclarator)
-           }
-        
-        Declarator(ptr.IsSome, declared)
+        Declarator(ptr, directDeclarator)
      }
 
      typeQualifierList(lst : List[TypeQualifier]) : list[TypeQualifier]
      {
         NList.ToList(lst)
+     }
+
+     parameterTypeList(parameterDeclarationList : list[ParameterDeclaration], ellipsis : option[(NToken * NToken)]) : (list[ParameterDeclaration] * bool)
+     {
+        (parameterDeclarationList, ellipsis.HasValue)
      }
 
      simpleDirectDeclaratorHead(name : string) : DirectDeclaratorHead
@@ -312,10 +299,41 @@ namespace Nemerle.Pinvoke
         DirectDeclaratorHead.Recurrent(declarator)
      }
 
-     directDeclarator(head : DirectDeclaratorHead, _ : NToken) : DirectDeclarator
+     assignmentExpressionDirectDeclaratorTailElement(_ : NToken, typeQualifiers : option[list[TypeQualifier]], _ : NToken, _ : NToken) : DirectDeclaratorTailElement
      {
-        DirectDeclarator(head)
+        DirectDeclaratorTailElement.AssignmentExpression(typeQualifiers.WithDefault([]), AssignmentExpression())
      }
+
+     static1AssignmentExpressionDirectDeclaratorTailElement(_ : NToken, _ : NToken, typeQualifiers : option[list[TypeQualifier]], _ : NToken, _ : NToken) : DirectDeclaratorTailElement
+     {
+        DirectDeclaratorTailElement.StaticAssignmentExpression1(typeQualifiers.WithDefault([]), AssignmentExpression())
+     }
+
+     static2AssignmentExpressionDirectDeclaratorTailElement(_ : NToken, typeQualifiers : list[TypeQualifier], _ : NToken, _ : NToken, _ : NToken) : DirectDeclaratorTailElement
+     {
+             DirectDeclaratorTailElement.StaticAssignmentExpression2(typeQualifiers, AssignmentExpression())
+     }
+
+     asterikDirectDeclaratorTailElement(_ : NToken, typeQualifiers : option[list[TypeQualifier]], _ : NToken, _ : NToken) : DirectDeclaratorTailElement
+     {
+        DirectDeclaratorTailElement.Asterik(typeQualifiers.WithDefault([]))
+     }
+
+     FunctionWithParametersDirectDeclaratorTailElement(_ : NToken, parameters : (list[ParameterDeclaration] * bool), _ : NToken) : DirectDeclaratorTailElement
+     {
+        DirectDeclaratorTailElement.FunctionWithParameters()
+     }
+
+     FunctionWithIdentifiersDirectDeclaratorTailElement(_ : NToken, _ : option[list[string]], _ : NToken) : DirectDeclaratorTailElement
+     {
+        DirectDeclaratorTailElement.FunctionWithIdentifiers()
+     }
+
+     directDeclarator(head : Declarator.DirectDeclaratorHead, tail : List[DirectDeclaratorTailElement]) : Declarator.DirectDeclarator
+     {
+        DirectDeclarator(head, NList.ToList(tail))
+     }
+     
 
      normalPointer(_asterik : NToken, qualifierList : option[list[TypeQualifier]]) : Pointer
      {
@@ -340,6 +358,11 @@ namespace Nemerle.Pinvoke
      abstractParameterDeclaration(declarationSpecifiers : list[DeclarationSpecifier], abstractDeclarator : option[Declarator.AbstractDeclarator]) : ParameterDeclaration
      {
         ParameterDeclaration(declarationSpecifiers, abstractDeclarator)
+     }
+
+     identifierList(head : string, tail : System.Collections.Generic.List[(Nemerle.Peg.NToken * string)]) : list[string]
+     {
+        head.Cons(tail)
      }
 
      nakedPointerAbstractDeclarator(_ : Pointer) : Declarator.AbstractDeclarator
