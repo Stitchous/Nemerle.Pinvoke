@@ -18,7 +18,7 @@ namespace Nemerle.Pinvoke
   public partial class DeclarationsParser
   {
      // declarationSpecifiers initDeclaratorList? s ';'s
-     normalDeclaration(declarationSpecifiers : List[DeclarationSpecifier], initDeclarationList : option[List[InitDeclarator]], _ : NToken) : Declaration
+     normalDeclaration(declarationSpecifiers : list[DeclarationSpecifier], initDeclarationList : option[list[InitDeclarator]], _ : NToken) : Declaration
      {
         Declaration.Normal(declarationSpecifiers, initDeclarationList)
      }
@@ -29,10 +29,15 @@ namespace Nemerle.Pinvoke
         Declaration.StaticAssert()
      }
 
-     // initDeclarator (s ',' initDeclarator)*;
-     initDeclaratorList(firstInitDeclarator : InitDeclarator, tailList : List[(NToken * InitDeclarator)]) : List[InitDeclarator]
+     declarationSpecifiers(lst : List[DeclarationSpecifier]) : list[DeclarationSpecifier]
      {
-        CommaSeparatedToList(firstInitDeclarator, tailList)
+        NList.ToList(lst)
+     }
+
+     // initDeclarator (s ',' initDeclarator)*;
+     initDeclaratorList(firstInitDeclarator : InitDeclarator, tailList : List[(NToken * InitDeclarator)]) : list[InitDeclarator]
+     {
+        firstInitDeclarator.Cons(tailList)
      }
 
      normalInitDeclarator(declarator : Declarator) : InitDeclarator
@@ -136,7 +141,7 @@ namespace Nemerle.Pinvoke
      }
 
      // (structOrUnion S identifier? s '{'s structDeclarationList s '}');
-     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[string], _leftBrace : NToken, structDeclarationList : List[Nemerle.Pinvoke.AST.StructDeclaration], _rightBrace : NToken) : StructOrUnionSpecifier
+     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[string], _leftBrace : NToken, structDeclarationList : list[Nemerle.Pinvoke.AST.StructDeclaration], _rightBrace : NToken) : StructOrUnionSpecifier
      {
         StructOrUnionSpecifier.Declaration(structOrUnion, name, structDeclarationList) 
      }
@@ -150,6 +155,11 @@ namespace Nemerle.Pinvoke
            | "union"  => StructOrUnion.Union()
            | _        => throw InvalidOperationException($"Unknown structOrUnion keyword: $(GetText(token))");
        }
+     }
+
+     structDeclarationList(lst : List[StructDeclaration]) : list[StructDeclaration]
+     {
+        NList.ToList(lst)
      }
 
      // specifierQualifierList structDeclaratorList? ";"s;
@@ -245,6 +255,11 @@ namespace Nemerle.Pinvoke
         Declarator(ptr.IsSome, declared)
      }
 
+     typeQualifierList(lst : List[TypeQualifier]) : list[TypeQualifier]
+     {
+        NList.ToList(lst)
+     }
+
      simpleDirectDeclaratorHead(name : string) : DirectDeclaratorHead
      {
         DirectDeclaratorHead.Simple(name)
@@ -260,27 +275,27 @@ namespace Nemerle.Pinvoke
         DirectDeclarator(head)
      }
 
-     normalPointer(_asterik : NToken, qualifierList : option[List[TypeQualifier]]) : Pointer
+     normalPointer(_asterik : NToken, qualifierList : option[list[TypeQualifier]]) : Pointer
      {
         Pointer(qualifierList, option.None());
      }
 
-     recurrentPointer(_asterik : NToken, qualifierList : option[List[TypeQualifier]], innerPointer : Pointer) : Pointer
+     recurrentPointer(_asterik : NToken, qualifierList : option[list[TypeQualifier]], innerPointer : Pointer) : Pointer
      {
         Pointer(qualifierList, option.Some(innerPointer))
      }
 
-     parameterList(parameterDeclaration : ParameterDeclaration, parameterDeclarationList : List[(NToken * ParameterDeclaration)]) : List[ParameterDeclaration]
+     parameterList(parameterDeclaration : ParameterDeclaration, parameterDeclarationList : List[(NToken * ParameterDeclaration)]) : list[ParameterDeclaration]
      {
-        CommaSeparatedToList(parameterDeclaration, parameterDeclarationList)
+        parameterDeclaration.Cons(parameterDeclarationList);
      }
 
-     normalParameterDeclaration(declarationSpecifiers : List[DeclarationSpecifier], declarator : Declarator.Declarator) : ParameterDeclaration
+     normalParameterDeclaration(declarationSpecifiers : list[DeclarationSpecifier], declarator : Declarator.Declarator) : ParameterDeclaration
      {
         ParameterDeclaration(declarationSpecifiers, declarator)
      }
 
-     abstractParameterDeclaration(declarationSpecifiers : List[DeclarationSpecifier], abstractDeclarator : option[Declarator.AbstractDeclarator]) : ParameterDeclaration
+     abstractParameterDeclaration(declarationSpecifiers : list[DeclarationSpecifier], abstractDeclarator : option[Declarator.AbstractDeclarator]) : ParameterDeclaration
      {
         ParameterDeclaration(declarationSpecifiers, abstractDeclarator)
      }

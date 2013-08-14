@@ -14,7 +14,7 @@ namespace Nemerle.Pinvoke.AST
   [Record]
   public variant Declaration
   {
-    | Normal { DeclarationSpecifiers : List[DeclarationSpecifier]; InitDeclarationList : option[List[InitDeclarator]] }
+    | Normal { DeclarationSpecifiers : list[DeclarationSpecifier]; InitDeclarationList : option[list[InitDeclarator]] }
     | StaticAssert
   }
 }

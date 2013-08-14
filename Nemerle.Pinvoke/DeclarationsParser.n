@@ -282,13 +282,13 @@ namespace Nemerle.Pinvoke
       declaration : Declaration =   normalDeclaration  /
                                     staticAssertDeclaration;
       
-      declarationSpecifiers : List[DeclarationSpecifier]  =   (storageClassSpecifier                /
+      declarationSpecifiers : list[DeclarationSpecifier]  =   (storageClassSpecifier                /
                                                                typeDeclarationSpecifier             /
                                                                typeQualifeierDeclarationSpecifier   /
                                                                functionDeclarationSpecifier         /
                                                                alignmentDeclarationSpecifier)+;
                               
-      initDeclaratorList : List[InitDeclarator]   = initDeclarator (s ',' initDeclarator)*;
+      initDeclaratorList : list[InitDeclarator]   = initDeclarator (s ',' initDeclarator)*;
       
       normalInitDeclarator : InitDeclarator = declarator;
       initDeclaratorWithInitializer : InitDeclarator= declarator s '='s initializer;
@@ -338,7 +338,7 @@ namespace Nemerle.Pinvoke
       
       structOrUnion : StructOrUnion   = ("struct" / "union")S;
       
-      structDeclarationList : List[StructDeclaration] = structDeclaration+;
+      structDeclarationList : list[StructDeclaration] = structDeclaration+;
       
       normalStructDeclaration : StructDeclaration = specifierQualifierList structDeclaratorList? ";"s;
             
@@ -410,10 +410,10 @@ namespace Nemerle.Pinvoke
 
       pointer : Pointer = normalPointer / recurrentPointer;
                 
-      typeQualifierList : List[TypeQualifier] = typeQualifier+;
+      typeQualifierList : list[TypeQualifier] = typeQualifier+;
       
       parameterTypeList    = parameterList (','s "..."s)?;
-      parameterList                     : List[ParameterDeclaration] =  parameterDeclaration (','s parameterDeclaration)*;
+      parameterList                     : list[ParameterDeclaration] =  parameterDeclaration (','s parameterDeclaration)*;
       
       normalParameterDeclaration        : ParameterDeclaration = declarationSpecifiers declarator;
       abstractParameterDeclaration      : ParameterDeclaration = declarationSpecifiers abstractDeclarator?;
@@ -505,14 +505,6 @@ namespace Nemerle.Pinvoke
      typeName(_ : Nemerle.Peg.NToken, _ : option[AbstractDeclarator]) : TypeName
      {
         TypeName("")
-     }
-
-     private CommaSeparatedToList[T](head : T, tail : List[(NToken * T)]) : List[T]
-     {
-        (comp list {
-            yield head;
-            yieldcomp tail.Select(tuple => tuple[1]);
-        }).ToList();
      }
   }
 }

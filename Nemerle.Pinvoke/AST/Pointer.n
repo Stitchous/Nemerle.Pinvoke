@@ -13,7 +13,7 @@ namespace Nemerle.Pinvoke.AST
   [Record]
   public class Pointer : Located
   {
-    TypeQualifierList : option[List[DeclarationSpecifiers.TypeQualifier]];
+    TypeQualifierList : option[list[DeclarationSpecifiers.TypeQualifier]];
 
     InnerPointer : option[Pointer];
   }

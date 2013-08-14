@@ -13,7 +13,7 @@ namespace Nemerle.Pinvoke.AST
   [Record]
   public variant StructOrUnionSpecifier : Located
   {
-    | Declaration {  StructOrUnion : StructOrUnion; Name : option[string]; declarations : List[StructDeclaration] }
+    | Declaration {  StructOrUnion : StructOrUnion; Name : option[string]; declarations : list[StructDeclaration] }
     | ForwardDeclaration { StructOrUnion : StructOrUnion; Name : option[string]; } 
   }
 }
