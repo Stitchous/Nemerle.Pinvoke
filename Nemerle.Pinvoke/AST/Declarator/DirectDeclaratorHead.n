@@ -8,12 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Nemerle.Pinvoke.AST.Identifiers;
+
 namespace Nemerle.Pinvoke.AST.Declarator
 {
      [Record]
      public variant DirectDeclaratorHead : Located      
      {
-        | Simple { Name : string} 
+        | Simple { Name : Identifier} 
         | Recurrent { innerDeclarator : Declarator }
      }
 }

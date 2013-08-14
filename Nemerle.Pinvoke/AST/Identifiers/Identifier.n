@@ -1,0 +1,18 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Peg;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Nemerle.Pinvoke.AST.Identifiers
+{
+  [Record]
+  public class Identifier : Located
+  {
+    [Accessor] id : string;
+  }
+}

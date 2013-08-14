@@ -8,12 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Nemerle.Pinvoke.AST.Identifiers;
+
 namespace Nemerle.Pinvoke.AST
 {
   [Record]
   public variant StructOrUnionSpecifier : Located
   {
-    | Declaration {  StructOrUnion : StructOrUnion; Name : option[string]; declarations : list[StructDeclaration] }
-    | ForwardDeclaration { StructOrUnion : StructOrUnion; Name : option[string]; } 
+    | Declaration {  StructOrUnion : StructOrUnion; Name : option[Identifier]; declarations : list[StructDeclaration] }
+    | ForwardDeclaration { StructOrUnion : StructOrUnion; Name : option[Identifier]; } 
   }
 }

@@ -13,6 +13,7 @@ using Nemerle.Pinvoke.AST;
 using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
 using Nemerle.Pinvoke.AST.Declarator;
 using Nemerle.Pinvoke.AST.Expressions;
+using Nemerle.Pinvoke.AST.Identifiers;
 
 namespace Nemerle.Pinvoke
 {
@@ -75,7 +76,7 @@ namespace Nemerle.Pinvoke
       digit            = ['0'..'9'];
       nonDigit		   = ['a'..'z', 'A'..'Z'] / '_' / universalCharacterName;
       identifierBody   = nonDigit (nonDigit / digit)*;
-      identifier : string   = !keyword identifierBody s;
+      identifier : Identifier = !keyword identifierBody s;
       
       #endregion
       
@@ -152,7 +153,7 @@ namespace Nemerle.Pinvoke
       
       floatingSuffix = 'f' / 'l' / 'F' / 'L';
       
-      enumerationConstant  : string = identifier;
+      enumerationConstant : Identifier = identifier;
       
       characterConstant     = "'" cCharSequence "'"  /
                               "L'" cCharSequence "'" /
@@ -432,7 +433,7 @@ namespace Nemerle.Pinvoke
       abstractParameterDeclaration      : ParameterDeclaration = declarationSpecifiers abstractDeclarator?;
       parameterDeclaration              : ParameterDeclaration = normalParameterDeclaration / abstractParameterDeclaration;
       
-      identifierList : list[string] = identifier (','s identifier)*;
+      identifierList : list[Identifier] = identifier (','s identifier)*;
       
       typeName  : TypeName     = specifierQualifierList abstractDeclarator?;
  
@@ -521,11 +522,6 @@ namespace Nemerle.Pinvoke
   })]
   public partial class DeclarationsParser
   {
-     identifier(token : Nemerle.Peg.NToken) : string
-     {
-        GetText(token)
-     }
-
      typeName(_ : list[DeclarationSpecifier], _ : option[AbstractDeclarator]) : TypeName
      {
         TypeName("")

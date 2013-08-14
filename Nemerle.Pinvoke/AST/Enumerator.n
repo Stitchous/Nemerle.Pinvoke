@@ -8,13 +8,14 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Nemerle.Pinvoke.AST.Expressions;
+using Nemerle.Pinvoke.AST.Identifiers;
 
 namespace Nemerle.Pinvoke.AST
 {
   [Record]
   public class Enumerator
   {
-    Name : string;
+    Name : Identifier;
 
     Initializer : option[ConstantExpression];
   }

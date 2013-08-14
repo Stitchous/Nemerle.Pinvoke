@@ -8,12 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Nemerle.Pinvoke.AST.Identifiers;
+
 namespace Nemerle.Pinvoke.AST
 {
   [Record]
   public class EnumSpecifier : Located
   {
-    Name : option[string];
+    Name : option[Identifier];
 
     Enumerators : option[list[Enumerator]];
   }

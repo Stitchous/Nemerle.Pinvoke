@@ -13,6 +13,7 @@ using Nemerle.Pinvoke.AST;
 using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
 using Nemerle.Pinvoke.AST.Declarator;
 using Nemerle.Pinvoke.AST.Expressions;
+using Nemerle.Pinvoke.AST.Identifiers;
 
 namespace Nemerle.Pinvoke
 {
@@ -118,21 +119,21 @@ namespace Nemerle.Pinvoke
      }
 
      // "enum"s identifier? '{'s enumeratorList ','s '}'s;
-     enumSpecifierWithComma(_enum : NToken, name : option[string], _leftBrace : NToken, enumerators : list[Enumerator], _comma : NToken, _rightBrace : NToken) : EnumSpecifier
+     enumSpecifierWithComma(_enum : NToken, name : option[Identifier], _leftBrace : NToken, enumerators : list[Enumerator], _comma : NToken, _rightBrace : NToken) : EnumSpecifier
      {
         EnumSpecifier(name, option.Some(enumerators))
      }
 
      // "enum"s identifier? '{'s enumeratorList s '}'s;
-     normalEnumSpecifier(_enum : NToken, name : option[string], _leftBrace : NToken, enumerators : list[Enumerator], _rightBrace : NToken) : EnumSpecifier
+     normalEnumSpecifier(_enum : NToken, name : option[Identifier], _leftBrace : NToken, enumerators : list[Enumerator], _rightBrace : NToken) : EnumSpecifier
      {
         EnumSpecifier(name, option.Some(enumerators))
      }
 
      // "enum"s identifier;
-     forwardDeclarationEnumSpecififer(_enum : NToken, name : string) : EnumSpecifier
+     forwardDeclarationEnumSpecififer(_enum : NToken, name : Identifier) : EnumSpecifier
      {
-        EnumSpecifier(option.Some(name), option.None())
+        EnumSpecifier(Some(name), None())
      }
 
      enumeratorList(head : Enumerator, tail : List[(NToken * Enumerator)]) : list[Enumerator]
@@ -140,24 +141,24 @@ namespace Nemerle.Pinvoke
         head.Cons(tail)
      }
 
-     normalEnumerator(name  : string) : Nemerle.Pinvoke.AST.Enumerator
+     normalEnumerator(name  : Identifier) : Enumerator
      {
-        Enumerator(name, option.None())
+        Enumerator(name, None())
      }
 
-     enumeratorWithExplicitValue(name : string, _ :NToken, initializer : ConstantExpression) : Enumerator
+     enumeratorWithExplicitValue(name : Identifier, _ : NToken, initializer : ConstantExpression) : Enumerator
      {
-        Enumerator(name, option.Some(initializer))
+        Enumerator(name, Some(initializer))
      }
 
      // structOrUnion S identifier
-     forwardDeclarationStructOrUnionSpecifier(structOrUnion : StructOrUnion, name : string) : StructOrUnionSpecifier
+     forwardDeclarationStructOrUnionSpecifier(structOrUnion : StructOrUnion, name : Identifier) : StructOrUnionSpecifier
      {
-        StructOrUnionSpecifier.ForwardDeclaration(structOrUnion, option.Some(name)) 
+        StructOrUnionSpecifier.ForwardDeclaration(structOrUnion, Some(name)) 
      }
 
      // (structOrUnion S identifier? s '{'s structDeclarationList s '}');
-     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[string], _leftBrace : NToken, structDeclarationList : list[Nemerle.Pinvoke.AST.StructDeclaration], _rightBrace : NToken) : StructOrUnionSpecifier
+     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[Identifier], _leftBrace : NToken, structDeclarationList : list[Nemerle.Pinvoke.AST.StructDeclaration], _rightBrace : NToken) : StructOrUnionSpecifier
      {
         StructOrUnionSpecifier.Declaration(structOrUnion, name, structDeclarationList) 
      }
@@ -214,7 +215,6 @@ namespace Nemerle.Pinvoke
         StructDeclaration([], [])
      }
 
-     
      typeQualifier(token : NToken) : TypeQualifier
      {
         match(GetText(token))
@@ -289,7 +289,7 @@ namespace Nemerle.Pinvoke
         (parameterDeclarationList, ellipsis.HasValue)
      }
 
-     simpleDirectDeclaratorHead(name : string) : DirectDeclaratorHead
+     simpleDirectDeclaratorHead(name : Identifier) : DirectDeclaratorHead
      {
         DirectDeclaratorHead.Simple(name)
      }
@@ -324,7 +324,7 @@ namespace Nemerle.Pinvoke
         DirectDeclaratorTailElement.FunctionWithParameters()
      }
 
-     FunctionWithIdentifiersDirectDeclaratorTailElement(_ : NToken, _ : option[list[string]], _ : NToken) : DirectDeclaratorTailElement
+     FunctionWithIdentifiersDirectDeclaratorTailElement(_ : NToken, _ : option[list[Identifier]], _ : NToken) : DirectDeclaratorTailElement
      {
         DirectDeclaratorTailElement.FunctionWithIdentifiers()
      }
@@ -360,7 +360,7 @@ namespace Nemerle.Pinvoke
         ParameterDeclaration(declarationSpecifiers, abstractDeclarator)
      }
 
-     identifierList(head : string, tail : System.Collections.Generic.List[(Nemerle.Peg.NToken * string)]) : list[string]
+     identifierList(head : Identifier, tail : List[(NToken * Identifier)]) : list[Identifier]
      {
         head.Cons(tail)
      }
