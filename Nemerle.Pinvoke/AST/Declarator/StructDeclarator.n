@@ -10,13 +10,12 @@ using System.Linq;
 
 using Nemerle.Pinvoke.AST.Expressions;
 
-namespace Nemerle.Pinvoke
+namespace Nemerle.Pinvoke.AST.Declarator
 {
-  public partial class DeclarationsParser
+  [Record]
+  public variant StructDeclarator : Located
   {
-    constantExpression(_ : Nemerle.Peg.NToken) : ConstantExpression
-    {
-        ConstantExpression()
-    }
+    | NormalDeclarator { value : Declarator }
+    | BitFieldDeclarator { value : option[Declarator]; bits : ConstantExpression }
   }
 }

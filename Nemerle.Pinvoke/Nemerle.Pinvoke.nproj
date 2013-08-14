@@ -113,7 +113,16 @@
     <Compile Include="AST\Declarator\InitDeclarator.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AST\Declarator\StructDeclarator.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Enumerator.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="AST\EnumSpecifier.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Expressions\ConstantExpression.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AST\ParameterDeclaration.n">
@@ -137,6 +146,10 @@
     <Compile Include="ConsExtension.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DeclarationsParser.Constants.n">
+      <SubType>Code</SubType>
+      <DependentUpon>DeclarationsParser.n</DependentUpon>
+    </Compile>
     <Compile Include="DeclarationsParser.Declarations.n">
       <SubType>Code</SubType>
       <DependentUpon>DeclarationsParser.n</DependentUpon>
@@ -155,6 +168,7 @@
     <Folder Include="AST" />
     <Folder Include="AST\DeclarationSpecifiers" />
     <Folder Include="AST\Declarator" />
+    <Folder Include="AST\Expressions" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />

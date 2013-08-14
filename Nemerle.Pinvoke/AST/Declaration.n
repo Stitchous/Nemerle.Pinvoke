@@ -17,4 +17,5 @@ namespace Nemerle.Pinvoke.AST
     | Normal { DeclarationSpecifiers : list[DeclarationSpecifier]; InitDeclarationList : option[list[InitDeclarator]] }
     | StaticAssert
   }
+
 }

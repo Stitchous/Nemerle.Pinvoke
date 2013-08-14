@@ -12,6 +12,7 @@ using System.Linq;
 using Nemerle.Pinvoke.AST;
 using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
 using Nemerle.Pinvoke.AST.Declarator;
+using Nemerle.Pinvoke.AST.Expressions;
 
 namespace Nemerle.Pinvoke
 {
@@ -151,7 +152,7 @@ namespace Nemerle.Pinvoke
       
       floatingSuffix = 'f' / 'l' / 'F' / 'L';
       
-      enumerationConstant   = identifier;
+      enumerationConstant  : string = identifier;
       
       characterConstant     = "'" cCharSequence "'"  /
                               "L'" cCharSequence "'" /
@@ -270,7 +271,7 @@ namespace Nemerle.Pinvoke
       
       expression = assignmentExpression (','s assignmentExpression)*;
       
-      constantExpression = conditionalExpression;
+      constantExpression : ConstantExpression = conditionalExpression;
             
       #endregion
       
@@ -343,14 +344,20 @@ namespace Nemerle.Pinvoke
             
       structDeclaration  : StructDeclaration = normalStructDeclaration /
                                                staticAssertStructDeclaration;
-                              
-      specifierQualifierList = typeSpecifier specifierQualifierList? /
-                               typeQualifier specifierQualifierList;
+
+      typeSpecifierSpecifierQualifierList : list[DeclarationSpecifier] = typeSpecifier specifierQualifierList?;
+      typeQualifierSpecifierQualifierList : list[DeclarationSpecifier] = typeQualifier specifierQualifierList;
+
+      specifierQualifierList : list[DeclarationSpecifier] = typeSpecifierSpecifierQualifierList / typeQualifierSpecifierQualifierList;
+
+
                                
-      structDeclaratorList   = structDeclarator (','s structDeclarator)*;
+      structDeclaratorList   : list[StructDeclarator] = structDeclarator (','s structDeclarator)*;
       
-      structDeclarator       = declarator /
-                               declarator? ':'s constantExpression;
+      normalStructDeclarator : StructDeclarator = declarator;
+      bitFieldStructDeclarator : StructDeclarator = declarator? ':'s constantExpression;
+
+      structDeclarator       = normalStructDeclarator / bitFieldStructDeclarator;
 
       normalEnumSpecifier : EnumSpecifier = "enum"S identifier? '{'s enumeratorList '}'s;
       enumSpecifierWithComma : EnumSpecifier = "enum"S identifier? '{'s enumeratorList ','s '}'s;
@@ -361,11 +368,11 @@ namespace Nemerle.Pinvoke
                                        enumSpecifierWithComma /
                                        forwardDeclarationEnumSpecififer;
       
-      enumeratorList = enumerator (','s enumerator)*;
+      enumeratorList : list[Enumerator] = enumerator (','s enumerator)*;
       
-      enumerator     = enumerationConstant /
-                       enumerationConstant '='s constantExpression;
-                       
+      normalEnumerator              : Enumerator = enumerationConstant;
+      enumeratorWithExplicitValue   : Enumerator = enumerationConstant '='s constantExpression;
+      enumerator                    : Enumerator = normalEnumerator / enumeratorWithExplicitValue;
      
       typeQualifier : TypeQualifier 
                                       = "const"    / 
@@ -380,7 +387,7 @@ namespace Nemerle.Pinvoke
       functionDeclarationSpecifier : DeclarationSpecifier = functionSpecifier;
       
       expressionAlignmentSpecifier : AlignmentSpecifier = '('s constantExpression ')'s;
-
+      
       alignAsAlignmentSpecifier : AlignmentSpecifier = '('s typeName ')'s;
       
       alignmentSpecifier : AlignmentSpecifier =  "_Alignas"s (alignAsAlignmentSpecifier / expressionAlignmentSpecifier);
@@ -512,7 +519,7 @@ namespace Nemerle.Pinvoke
         GetText(token)
      }
     
-     typeName(_ : Nemerle.Peg.NToken, _ : option[AbstractDeclarator]) : TypeName
+     typeName(_ : list[DeclarationSpecifier], _ : option[AbstractDeclarator]) : TypeName
      {
         TypeName("")
      }

@@ -1,6 +1,5 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
-using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -8,15 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.AST.Expressions;
-
 namespace Nemerle.Pinvoke
 {
   public partial class DeclarationsParser
   {
-    constantExpression(_ : Nemerle.Peg.NToken) : ConstantExpression
-    {
-        ConstantExpression()
-    }
   }
 }

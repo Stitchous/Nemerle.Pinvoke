@@ -12,6 +12,7 @@ using System.Linq;
 using Nemerle.Pinvoke.AST;
 using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
 using Nemerle.Pinvoke.AST.Declarator;
+using Nemerle.Pinvoke.AST.Expressions;
 
 namespace Nemerle.Pinvoke
 {
@@ -24,7 +25,7 @@ namespace Nemerle.Pinvoke
      }
 
      // "_Static_assert"s '('s constantExpression ','s stringLiteral ')'s
-     staticAssertDeclaration(_ : NToken, _ : NToken, _ : NToken, _ : NToken, _ : NToken, _ : NToken) : Declaration
+     staticAssertDeclaration(_ : NToken, _ : NToken, _ : ConstantExpression, _ : NToken, _ : NToken, _ : NToken) : Declaration
      {
         Declaration.StaticAssert()
      }
@@ -117,21 +118,36 @@ namespace Nemerle.Pinvoke
      }
 
      // "enum"s identifier? '{'s enumeratorList ','s '}'s;
-     enumSpecifierWithComma(_enum : NToken, name : option[string], _leftBrace : NToken, _ : NToken, _comma : NToken, _rightBrace : NToken) : EnumSpecifier
+     enumSpecifierWithComma(_enum : NToken, name : option[string], _leftBrace : NToken, enumerators : list[Enumerator], _comma : NToken, _rightBrace : NToken) : EnumSpecifier
      {
-        EnumSpecifier(name = name)
+        EnumSpecifier(name, option.Some(enumerators))
      }
 
      // "enum"s identifier? '{'s enumeratorList s '}'s;
-     normalEnumSpecifier(_enum : NToken, name : option[string], _leftBrace : NToken, _ : NToken, _rightBrace : NToken) : EnumSpecifier
+     normalEnumSpecifier(_enum : NToken, name : option[string], _leftBrace : NToken, enumerators : list[Enumerator], _rightBrace : NToken) : EnumSpecifier
      {
-        EnumSpecifier(name = name)
+        EnumSpecifier(name, option.Some(enumerators))
      }
 
      // "enum"s identifier;
      forwardDeclarationEnumSpecififer(_enum : NToken, name : string) : EnumSpecifier
      {
-        EnumSpecifier(name = option.Some(name))
+        EnumSpecifier(option.Some(name), option.None())
+     }
+
+     enumeratorList(head : Enumerator, tail : List[(NToken * Enumerator)]) : list[Enumerator]
+     {
+        head.Cons(tail)
+     }
+
+     normalEnumerator(name  : string) : Nemerle.Pinvoke.AST.Enumerator
+     {
+        Enumerator(name, option.None())
+     }
+
+     enumeratorWithExplicitValue(name : string, _ :NToken, initializer : ConstantExpression) : Enumerator
+     {
+        Enumerator(name, option.Some(initializer))
      }
 
      // structOrUnion S identifier
@@ -163,16 +179,42 @@ namespace Nemerle.Pinvoke
      }
 
      // specifierQualifierList structDeclaratorList? ";"s;
-     normalStructDeclaration(_ : NToken, _ : NToken, _ : NToken) : StructDeclaration
+     normalStructDeclaration(declarationSpecifierList : list[DeclarationSpecifier], structDeclaratorList : option[list[StructDeclarator]], _ : NToken) : StructDeclaration
      {
-        StructDeclaration()
+        StructDeclaration(declarationSpecifierList, structDeclaratorList.WithDefault([]))
      } 
+     
+     typeSpecifierSpecifierQualifierList(head : TypeSpecifier, tail : option[list[DeclarationSpecifier]]) : list[DeclarationSpecifier]
+     {
+        DeclarationSpecifier.TypeSpecifier(head) :: tail.WithDefault([])
+     }
+
+     typeQualifierSpecifierQualifierList(head : TypeQualifier, tail : list[DeclarationSpecifier]) : list[DeclarationSpecifier]
+     {
+        DeclarationSpecifier.TypeQualifier(head) :: tail
+     }
+
+     structDeclaratorList(_ : NToken, _ : List[(Nemerle.Peg.NToken * Nemerle.Peg.NToken)]) : list[StructDeclarator]
+     {
+        []
+     }
+
+     normalStructDeclarator(declarator : Declarator) : StructDeclarator
+     {
+        StructDeclarator.NormalDeclarator(declarator)
+     }
+
+     bitFieldStructDeclarator(declarator : option[Declarator.Declarator], _ : NToken, constantExpression : ConstantExpression) : StructDeclarator
+     {
+        StructDeclarator.BitFieldDeclarator(declarator, constantExpression);
+     }
 
      staticAssertStructDeclaration(_ : Declaration) : StructDeclaration
      {
-        StructDeclaration()
+        StructDeclaration([], [])
      }
 
+     
      typeQualifier(token : NToken) : TypeQualifier
      {
         match(GetText(token))
@@ -207,7 +249,7 @@ namespace Nemerle.Pinvoke
      }
 
      // s '('s constantExpression s ')'
-     expressionAlignmentSpecifier(_ : NToken, _ : NToken, _ : NToken) : AlignmentSpecifier
+     expressionAlignmentSpecifier(_ : NToken, _ : ConstantExpression, _ : NToken) : AlignmentSpecifier
      {
         AlignmentSpecifier.Expression()
      }

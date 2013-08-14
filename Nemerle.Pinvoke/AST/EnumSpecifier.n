@@ -14,5 +14,7 @@ namespace Nemerle.Pinvoke.AST
   public class EnumSpecifier : Located
   {
     Name : option[string];
+
+    Enumerators : option[list[Enumerator]];
   }
 }
