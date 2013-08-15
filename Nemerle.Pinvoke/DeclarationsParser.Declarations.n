@@ -9,11 +9,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.AST;
-using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
-using Nemerle.Pinvoke.AST.Declarator;
-using Nemerle.Pinvoke.AST.Expressions;
-using Nemerle.Pinvoke.AST.Identifiers;
+using Nemerle.Pinvoke.Ast.Declarations;
+using Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers;
+using Nemerle.Pinvoke.Ast.Declarations.Declarator;
+using Nemerle.Pinvoke.Ast.Expressions;
+using Nemerle.Pinvoke.Ast.Identifiers;
 
 namespace Nemerle.Pinvoke
 {
@@ -158,7 +158,7 @@ namespace Nemerle.Pinvoke
      }
 
      // (structOrUnion S identifier? s '{'s structDeclarationList s '}');
-     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[Identifier], _leftBrace : NToken, structDeclarationList : list[Nemerle.Pinvoke.AST.StructDeclaration], _rightBrace : NToken) : StructOrUnionSpecifier
+     declarationStructOrUnionSpecifier(structOrUnion  : StructOrUnion, name : option[Identifier], _leftBrace : NToken, structDeclarationList : list[StructDeclaration], _rightBrace : NToken) : StructOrUnionSpecifier
      {
         StructOrUnionSpecifier.Declaration(structOrUnion, name, structDeclarationList) 
      }
@@ -255,7 +255,7 @@ namespace Nemerle.Pinvoke
      }
 
      // '('s typeName s ')'
-     alignAsAlignmentSpecifier(_ : NToken, _ : Nemerle.Pinvoke.AST.TypeName, _ : NToken) : AlignmentSpecifier
+     alignAsAlignmentSpecifier(_ : NToken, _ : TypeName, _ : NToken) : AlignmentSpecifier
      {
         AlignmentSpecifier.AlignAsType()
      }
@@ -370,7 +370,7 @@ namespace Nemerle.Pinvoke
         AbstractDeclarator(Some(pointer), None())
      }
 
-     normalAbstractDeclarator(pointer : option[Nemerle.Pinvoke.AST.Pointer], directAbstractDeclarator : DirectAbstractDeclarator) : AbstractDeclarator
+     normalAbstractDeclarator(pointer : option[Pointer], directAbstractDeclarator : DirectAbstractDeclarator) : AbstractDeclarator
      {
         AbstractDeclarator(pointer, Some(directAbstractDeclarator));
      }

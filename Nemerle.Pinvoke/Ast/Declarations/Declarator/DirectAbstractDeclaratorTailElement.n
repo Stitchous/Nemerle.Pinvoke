@@ -7,21 +7,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
+using Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers;
+using Nemerle.Pinvoke.Ast.Expressions;
 
-namespace Nemerle.Pinvoke.AST.Declarator
+namespace Nemerle.Pinvoke.Ast.Declarations.Declarator
 {
-  
-  public variant DirectDeclaratorTailElement
+  public variant DirectAbstractDeclaratorTailElement
   {
     | AssignmentExpression { TypeQualifiers : list[TypeQualifier]; expression : Expressions.AssignmentExpression }
-    ///  [ static type-qualiﬁer-listopt assignment-expression ]
     | StaticAssignmentExpression1 { TypeQualifiers : list[TypeQualifier]; expression : Expressions.AssignmentExpression } 
-    /// [ type-qualiﬁer-list static assignment-expression ]
     | StaticAssignmentExpression2 { TypeQualifiers : list[TypeQualifier]; expression : Expressions.AssignmentExpression } 
-    | Asterik { TypeQualifiers : list[TypeQualifier] }
+    | Asterik {  }
     | FunctionWithParameters {}
-    | FunctionWithIdentifiers {} 
   }
-
 }

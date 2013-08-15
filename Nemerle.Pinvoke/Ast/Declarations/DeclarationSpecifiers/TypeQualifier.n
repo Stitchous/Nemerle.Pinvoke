@@ -7,13 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nemerle.Pinvoke.AST.Declarator
+namespace Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers
 {
-  [Record]
-  public class InitDeclarator
+  public variant TypeQualifier
   {
-    Declarator : Declarator;
-
-    // Initializer
+    | Const
+    | Restrict
+    | Volatile
+    | Atomic 
   }
 }

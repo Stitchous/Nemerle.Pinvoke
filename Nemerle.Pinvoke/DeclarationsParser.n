@@ -9,11 +9,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.AST;
-using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
-using Nemerle.Pinvoke.AST.Declarator;
-using Nemerle.Pinvoke.AST.Expressions;
-using Nemerle.Pinvoke.AST.Identifiers;
+using Nemerle.Pinvoke.Ast.Declarations;
+using Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers;
+using Nemerle.Pinvoke.Ast.Declarations.Declarator;
+using Nemerle.Pinvoke.Ast.Expressions;
+using Nemerle.Pinvoke.Ast.Identifiers;
 
 namespace Nemerle.Pinvoke
 {

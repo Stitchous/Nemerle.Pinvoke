@@ -1,6 +1,5 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
-using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -8,9 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nemerle.Pinvoke.Ast.Expressions
+namespace Nemerle.Pinvoke.Ast.Declarations.Declarator
 {
-  public class ConstantExpression : Located
+  [Record]
+  public class InitDeclarator
   {
+    Declarator : Declarator;
+
+    // Initializer
   }
 }

@@ -83,85 +83,85 @@
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AST\Declaration.n">
+    <Compile Include="Ast\Declarations\Declaration.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\DeclarationSpecifier.n">
+    <Compile Include="Ast\Declarations\DeclarationSpecifier.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\DeclarationSpecifiers\AlignmentSpecifier.n">
+    <Compile Include="Ast\Declarations\DeclarationSpecifiers\AlignmentSpecifier.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\DeclarationSpecifiers\FunctionSpecifier.n">
+    <Compile Include="Ast\Declarations\DeclarationSpecifiers\FunctionSpecifier.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\DeclarationSpecifiers\StorageClassSpecifier.n">
+    <Compile Include="Ast\Declarations\DeclarationSpecifiers\StorageClassSpecifier.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\DeclarationSpecifiers\TypeQualifier.n">
+    <Compile Include="Ast\Declarations\DeclarationSpecifiers\TypeQualifier.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\DeclarationSpecifiers\TypeSpecifier.n">
+    <Compile Include="Ast\Declarations\DeclarationSpecifiers\TypeSpecifier.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Declarator\AbstractDeclarator.n">
+    <Compile Include="Ast\Declarations\Declarator\AbstractDeclarator.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Declarator\Declarator.n">
+    <Compile Include="Ast\Declarations\Declarator\Declarator.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Declarator\DirectAbstractDeclarator.n">
+    <Compile Include="Ast\Declarations\Declarator\DirectAbstractDeclarator.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Declarator\DirectAbstractDeclaratorTailElement.n">
+    <Compile Include="Ast\Declarations\Declarator\DirectAbstractDeclaratorTailElement.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Declarator\DirectDeclarator.n">
+    <Compile Include="Ast\Declarations\Declarator\DirectDeclarator.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Declarator\DirectDeclaratorHead.n">
+    <Compile Include="Ast\Declarations\Declarator\DirectDeclaratorHead.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Declarator\DirectDeclaratorTailElement.n">
+    <Compile Include="Ast\Declarations\Declarator\DirectDeclaratorTailElement.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Declarator\InitDeclarator.n">
+    <Compile Include="Ast\Declarations\Declarator\InitDeclarator.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Declarator\StructDeclarator.n">
+    <Compile Include="Ast\Declarations\Declarator\StructDeclarator.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Enumerator.n">
+    <Compile Include="Ast\Declarations\Enumerator.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\EnumSpecifier.n">
+    <Compile Include="Ast\Declarations\EnumSpecifier.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Expressions\AssignmentExpression.n">
+    <Compile Include="Ast\Declarations\ParameterDeclaration.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Expressions\ConstantExpression.n">
+    <Compile Include="Ast\Declarations\Pointer.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Identifiers\Identifier.n">
+    <Compile Include="Ast\Declarations\StructDeclaration.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\ParameterDeclaration.n">
+    <Compile Include="Ast\Declarations\StructOrUnion.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\Pointer.n">
+    <Compile Include="Ast\Declarations\StructOrUnionSpecifier.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\StructDeclaration.n">
+    <Compile Include="Ast\Declarations\TypeName.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\StructOrUnion.n">
+    <Compile Include="Ast\Expressions\AssignmentExpression.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\StructOrUnionSpecifier.n">
+    <Compile Include="Ast\Expressions\ConstantExpression.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AST\TypeName.n">
+    <Compile Include="Ast\Identifiers\Identifier.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ConsExtension.n">
@@ -190,11 +190,12 @@
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="AST" />
-    <Folder Include="AST\DeclarationSpecifiers" />
-    <Folder Include="AST\Declarator" />
-    <Folder Include="AST\Expressions" />
-    <Folder Include="AST\Identifiers" />
+    <Folder Include="Ast" />
+    <Folder Include="Ast\Declarations\DeclarationSpecifiers" />
+    <Folder Include="Ast\Declarations\Declarator\" />
+    <Folder Include="Ast\Expressions" />
+    <Folder Include="Ast\Identifiers" />
+    <Folder Include="Ast\Declarations" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
