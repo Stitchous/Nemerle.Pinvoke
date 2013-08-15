@@ -1,0 +1,181 @@
+﻿using System;
+using System.IO;
+using System.Text.RegularExpressions;
+using SCG = System.Collections.Generic;
+
+using Nemerle.Assertions;
+using Nemerle.Macros;
+using Nemerle.Compiler;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using PT = Nemerle.Compiler.Parsetree;
+
+namespace Nemerle.Pinvoke.Tests.Macros
+{
+  macro GetTestCases(fileMask : string)
+  {
+    if(Manager().IsIntelliSenseMode)
+    {
+      <[ [] ]>
+    }
+    else
+    {
+      def fileMask = Path.Combine(Path.GetDirectoryName(Manager().Options.ProjectPath), fileMask);
+      TestsImpl.MakeTests(Manager(), fileMask)
+    }
+  }
+
+  module TestsImpl
+  {
+    public MakeTests(manager : ManagerClass, fileMask : string) : PT.PExpr
+    {
+      def maskFileName = Path.GetFileName(fileMask);
+      def maskFileDir = Path.GetDirectoryName(fileMask);
+      
+      def fileNames =
+        if(!Directory.Exists(maskFileDir))
+        {
+            Message.Error($"directory '$maskFileDir' not found");
+            []
+        }
+        else if(fileMask.IndexOfAny(array['*', '?']) >= 0)
+          Directory.GetFiles(maskFileDir, maskFileName, SearchOption.TopDirectoryOnly)
+        else
+          Directory.GetFiles(maskFileDir, maskFileName);
+
+      def className =  Macros.NewSymbol("TestCases");
+
+      def tb = manager.CoreEnv.Define(<[ decl: internal module $(className : name) { } ]>);
+      mutable testCases = [];
+      foreach(fileName in fileNames)
+      {
+        def parserInput =
+          using(file = IO.FileStream(fileName, IO.FileMode.Open, IO.FileAccess.Read))
+          using(reader  = IO.StreamReader(file, Text.Encoding.ASCII, true))
+            reader.ReadToEnd();
+
+        def testCase = MakeTest(fileName, parserInput);
+
+        def validatorName = Macros.NewSymbol("__AST_VALIDATOR__" + fileName);
+
+        tb.Define(<[ decl:
+          private $(validatorName : name)(unit : Nemerle.Pinvoke.Ast.Declarations.Declaration) : bool
+          {
+            $(testCase.ValidateAst)
+          }
+        ]>);
+
+        testCases ::= <[
+          Nemerle.Pinvoke.Tests.TestCase(
+            $(testCase.FileName : string),
+            Nemerle.Peg.SourceSnapshot($(testCase.Source : string)),
+            [..$(testCase.ErrorInfo.Map(e => <[ Nemerle.Pinvoke.Tests.ErrorInfo($(e.Line : int), $(e.Message : string)) ]>))],
+            $(validatorName : name))
+        ]>
+      }
+      otherwise
+        Message.Warning($"no files matching `$fileMask' found");
+
+      tb.Define(<[ decl:
+        public GetTestCases() : list[Nemerle.Pinvoke.Tests.TestCase]
+        {
+          [..$(testCases.Rev())]
+        }
+      ]>);
+
+      tb.Compile();
+
+      <[ $(className : name).GetTestCases() ]>
+    }
+
+    [Record]
+    private class TestCaseCreateInfo
+    {
+      [Accessor] fileName : string;
+      [Accessor] source : string;
+      [Accessor] errorInfo : list[ErrorInfo];
+      [Accessor] validateAst : PT.PExpr;
+    }
+
+    [Record]
+    private class ErrorInfo
+    {
+      [Accessor] line : int;
+      [Accessor] message : string;
+    }
+
+    private nodePatternPattern  : Regex = Regex(@"/\*\s*BEGIN-OUTPUT\s*(?<nodePattern>(\s|.)*?)\s*END-OUTPUT\s*\*/",
+                                                  RegexOptions.Compiled
+                                                  %| RegexOptions.Multiline
+                                                  %| RegexOptions.IgnoreCase);
+
+    private errorLinePattern    : Regex = Regex(@"//\s*E\s*:\s*(?<errorPattern>.*?)$",
+                                                  RegexOptions.Compiled
+                                                  %| RegexOptions.Multiline
+                                                  %| RegexOptions.IgnoreCase);
+
+    private MakeTest(fileName : string, parserInput : string) : TestCaseCreateInfo
+    {
+      mutable nodePattern = null;
+      mutable errorInfo = [];
+
+      def fileIndex = Location.GetFileIndex(fileName);
+      def lineMap = Nemerle.Peg.SourceSnapshot(parserInput);
+      def getLocationFromPos(pos)
+      {
+        def lineCol = Nemerle.Peg.Location(lineMap, pos, pos + 1).StartLineColumn;
+        Location(fileIndex, lineCol[0], lineCol[1])
+      }
+
+      def csharpParserNamespace = ManagerClass.Instance.CoreEnv.EnterIntoNamespace([ "CSharpParser" ]);
+
+      foreach(m is Match in nodePatternPattern.Matches(parserInput))
+      {
+        def g = m.Groups["nodePattern"];
+        if(null == nodePattern)
+          unless(string.IsNullOrEmpty(g.Value))
+            nodePattern = MainParser.ParseExpr(csharpParserNamespace, g.Value, getLocationFromPos(g.Index));
+        else
+          Message.Error(getLocationFromPos(m.Index), "duplicated BEGIN-OUTPUT directive");
+      }
+      otherwise
+        Message.Warning(Location(fileIndex, 1, 1), "no BEGIN-OUTPUT directive found in file");
+
+      foreach(m is Match in errorLinePattern.Matches(parserInput))
+      {
+        def g = m.Groups["errorPattern"];
+        errorInfo ::= ErrorInfo(getLocationFromPos(m.Index).Line, g.Value.Trim());
+      }
+
+      def prepareNodePattern(e)
+      {
+        Util.locate(e.Location,
+          match(e)
+          {
+            | <[ Id($(id : string)) ]> => <[ Nemerle.Pinvoke.AST.Identifiers.Identifier where ( Id = $(id : string) ) ]>
+
+            | <[ $e as $x ]>    => <[ $(prepareNodePattern(e)) as $x ]>
+            | <[ $e when $x ]>  => <[ $(prepareNodePattern(e)) when $x ]>
+            | <[ $x where $e ]> => <[ $x where $(prepareNodePattern(e)) ]>
+            | <[ $x(..$e) ]>    => <[ $x(..$(e.Map(prepareNodePattern))) ]>
+            | <[ (..$e) ]>      => <[ (..$(e.Map(prepareNodePattern))) ]>
+            | <[ [..$e] ]>      => <[ [..$(e.Map(prepareNodePattern))] ]>
+            | <[ {..$e} ]>      => <[ {..$(e.Map(prepareNodePattern))} ]>
+            | <[ $x = $e ]>     => <[ $x = $(prepareNodePattern(e)) ]>
+            | _ => e
+          })
+      }
+
+      TestCaseCreateInfo(
+        Path.GetFileName(fileName),
+        parserInput,
+        errorInfo.Rev(),
+        if(null == nodePattern)
+          <[ _ = unit; true ]>
+        else
+          <[ Nemerle.Peg.AstUtils.ValidateAst(unit, $(prepareNodePattern(nodePattern))) ]>)
+    }
+  }
+}

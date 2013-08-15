@@ -1,0 +1,30 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Peg;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.Ast.Declarations;
+
+namespace Nemerle.Pinvoke.Tests
+{
+  [Record]
+  public class TestCase
+  {
+    [Accessor]
+    private fileName : string;
+
+    [Accessor]
+    private source : SourceSnapshot;
+
+    [Accessor]
+    private errorInfo : list[ErrorInfo];
+
+    [Accessor]
+    private validateAst : Declaration -> bool;
+  }
+}
