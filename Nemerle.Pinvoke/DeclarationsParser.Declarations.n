@@ -69,9 +69,8 @@ namespace Nemerle.Pinvoke
         DeclarationSpecifier.StorageClass(value = storageClassSpecifier)
      }
 
-     builtInTypeSpecifier(token : NToken) : DeclarationSpecifier
+     builtInTypeSpecifier(token : NToken) : TypeSpecifier
      {
-        def typeSpecifier = 
         match(GetText(token))
         {
            | "void"           => TypeSpecifier.Void()
@@ -87,14 +86,11 @@ namespace Nemerle.Pinvoke
            | "_Complex"       => TypeSpecifier.Complex()
            | _                => throw InvalidOperationException($"Unknown type specifier: $(GetText(token))");
         }
-
-        DeclarationSpecifier.TypeSpecifier(value = typeSpecifier);
      }
 
-     structOrUnionTypeSpecifier(structOrUnionSpecifier : StructOrUnionSpecifier) : DeclarationSpecifier
+     structOrUnionTypeSpecifier(structOrUnionSpecifier : StructOrUnionSpecifier) : TypeSpecifier
      {
-        def typeSpecifier = TypeSpecifier.StructOrUnion(specifier = structOrUnionSpecifier);
-        DeclarationSpecifier.TypeSpecifier(value = typeSpecifier)
+        TypeSpecifier.StructOrUnion(specifier = structOrUnionSpecifier);
      }
 
      enumTypeSpecifier(enumSpecifier : EnumSpecifier) : TypeSpecifier
@@ -173,6 +169,33 @@ namespace Nemerle.Pinvoke
            | _        => throw InvalidOperationException($"Unknown structOrUnion keyword: $(GetText(token))");
        }
      }
+     
+     declarationSpecifierQualifier(qualifier : TypeQualifier) : DeclarationSpecifier
+     {
+        DeclarationSpecifier.TypeQualifier(qualifier)
+     }
+
+     declarationSpecifierBuiltInTypeSpecifier(specifier : TypeSpecifier) : DeclarationSpecifier
+     {
+        DeclarationSpecifier.TypeSpecifier(specifier)
+     }
+
+     declarationSpecifierBuiltInTypeSpecifierList(declarationSpecifiers : List[DeclarationSpecifier]) : list[DeclarationSpecifier]
+     {
+        NList.ToList(declarationSpecifiers)
+     }
+
+     declarationSpecifierTypeSpecifierList(s : TypeSpecifier) : list[DeclarationSpecifier]
+     {
+        [DeclarationSpecifier.TypeSpecifier(s)]
+     }
+
+     specifierQualifierList(headQualifiers : List[TypeQualifier], specifiers : list[DeclarationSpecifier], tailQualifiers : List[TypeQualifier]) : list[DeclarationSpecifier]
+     {
+        NList.ToList(headQualifiers).Map(x => DeclarationSpecifier.TypeQualifier(x)) 
+            + specifiers 
+            + NList.ToList(tailQualifiers).Map(x => DeclarationSpecifier.TypeQualifier(x))
+     }
 
      structDeclarationList(lst : List[StructDeclaration]) : list[StructDeclaration]
      {
@@ -195,9 +218,9 @@ namespace Nemerle.Pinvoke
         DeclarationSpecifier.TypeQualifier(head) :: tail
      }
 
-     structDeclaratorList(_ : NToken, _ : List[(Nemerle.Peg.NToken * Nemerle.Peg.NToken)]) : list[StructDeclarator]
+     structDeclaratorList(head : StructDeclarator, tail : List[(Nemerle.Peg.NToken * StructDeclarator)]) : list[StructDeclarator]
      {
-        []
+        head.Cons(tail)
      }
 
      normalStructDeclarator(declarator : Declarator) : StructDeclarator
