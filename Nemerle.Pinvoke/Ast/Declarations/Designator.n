@@ -1,0 +1,16 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using Nemerle.Pinvoke.Ast.Expressions;
+using Nemerle.Pinvoke.Ast.Identifiers;
+
+namespace Nemerle.Pinvoke.Ast.Declarations
+{
+  public variant Designator
+  {
+    | ConstantExpression { Value : Expressions.ConstantExpression }
+    | Identifier { Value : Identifiers.Identifier }
+  }
+}

@@ -44,12 +44,12 @@ namespace Nemerle.Pinvoke
 
      normalInitDeclarator(declarator : Declarator) : InitDeclarator
      {
-        InitDeclarator(declarator)
+        InitDeclarator(declarator, None())
      }
 
-     initDeclaratorWithInitializer(declarator : Declarator, _ : NToken, _ : NToken) : InitDeclarator
+     initDeclaratorWithInitializer(declarator : Declarator, _equalSign : NToken, initializer : Initializer) : InitDeclarator
      {
-        InitDeclarator(declarator)
+        InitDeclarator(declarator, Some(initializer))
      }
 
      storageClassSpecifier(token : NToken) : DeclarationSpecifier
@@ -271,8 +271,6 @@ namespace Nemerle.Pinvoke
         DeclarationSpecifier.Alignment(value = alignmentSpecifier)
      }
 
-
-
      // pointer? s directDeclarator
      declarator(ptr : option[Pointer], directDeclarator : DirectDeclarator) : Declarator
      {
@@ -409,5 +407,46 @@ namespace Nemerle.Pinvoke
      {
         DirectAbstractDeclarator(None(), NList.ToList(tail))
      }
+
+     assignmentExpressionInitializer(_ : NToken) : Initializer
+     {
+        Initializer.AssignmentExpression(AssignmentExpression())
+     }
+
+     InitializerListInitializer(_ : NToken, initializerList : list[InitializerListElement], _ : NToken) : Initializer
+     {
+        Initializer.InitializerList(initializerList)
+     }
+
+     ColonTermiatedInitializerListInitializer(_ : NToken, initializerList : list[InitializerListElement], _ : NToken, _ : NToken) : Initializer
+     {
+        Initializer.InitializerList(initializerList)
+     }
+
+     initializerListElement(designation : option[list[Designator]], initializer : Initializer) : InitializerListElement
+     {
+        InitializerListElement(designation.WithDefault([]), initializer)
+     }
+
+     initializerList(head : InitializerListElement, tail : List[(NToken * InitializerListElement)]) : list[InitializerListElement]
+     {
+        head.Cons(tail)
+     }
+
+     designation(designatorList : List[Designator], _ : NToken) : list[Designator]
+     {
+        NList.ToList(designatorList)
+     }
+
+     constantExpressionDesignator(_leftBracket : NToken, expression : ConstantExpression, _rightBracket : NToken) : Designator
+     {
+        Designator.ConstantExpression(expression)
+     }
+
+     identifierDesignator(_comma : Nemerle.Peg.NToken, identifier : Identifier) : Designator
+     {
+        Designator.Identifier(identifier)
+     }
+     
   }
 }

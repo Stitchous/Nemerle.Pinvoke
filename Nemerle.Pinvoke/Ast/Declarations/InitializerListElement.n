@@ -7,13 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nemerle.Pinvoke.Ast.Declarations.Declarator
+namespace Nemerle.Pinvoke.Ast.Declarations
 {
   [Record]
-  public class InitDeclarator
+  public class InitializerListElement
   {
-    [Accessor] declarator : Declarator;
+    [Accessor] designation : list[Designator];
 
-    [Accessor] initializer : option[Initializer];
+    [Accessor] initializer : Initializer;
   }
 }

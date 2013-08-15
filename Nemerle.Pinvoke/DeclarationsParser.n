@@ -457,19 +457,25 @@ namespace Nemerle.Pinvoke
                        
       typedefName    = identifier;
       
-      initializer    = assignmentExpression      / 
-                       '{'s initializerList '}'s /
-                       '{'s initializerList ','s '}'s;
+      assignmentExpressionInitializer   : Initializer = assignmentExpression;
+      InitializerListInitializer        : Initializer = '{'s initializerList '}'s;
+      ColonTermiatedInitializerListInitializer : Initializer = '{'s initializerList ','s '}'s;
+
+      initializer : Initializer  = assignmentExpressionInitializer / 
+                                   InitializerListInitializer      /
+                                   ColonTermiatedInitializerListInitializer;
       
-      initializerListElement = designation? initializer;
-      initializerList        = initializerListElement (','s initializerListElement)*;
+      initializerListElement        : InitializerListElement        = designation? initializer;
+      initializerList               : list[InitializerListElement]  = initializerListElement (','s initializerListElement)*;
                         
-      designation = designatorList '='s;
+      designation                   : list[Designator] = designatorList '='s;
       
-      designatorList = designator+;
+      designatorList                : List[Designator] = designator+;
       
-      designator = '['s constantExpression ']'s /
-                    '.'s identifier;
+      constantExpressionDesignator  : Designator = '['s constantExpression ']'s;
+      identifierDesignator          : Designator = '.'s identifier;
+
+      designator                    : Designator = constantExpressionDesignator / identifierDesignator;
                     
       staticAssertStructDeclaration : StructDeclaration = staticAssertDeclaration;
       staticAssertDeclaration       : Declaration       = "_Static_assert"s '('s constantExpression ','s stringLiteral ')'s;
