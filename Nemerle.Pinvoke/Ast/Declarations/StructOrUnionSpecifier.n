@@ -8,9 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.AST.Identifiers;
+using Nemerle.Pinvoke.Ast.Identifiers;
 
-namespace Nemerle.Pinvoke.AST
+namespace Nemerle.Pinvoke.Ast.Declarations
 {
   [Record]
   public variant StructOrUnionSpecifier : Located

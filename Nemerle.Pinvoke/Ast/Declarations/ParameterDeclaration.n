@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nemerle.Pinvoke.AST
+namespace Nemerle.Pinvoke.Ast.Declarations
 {
   public class ParameterDeclaration : Located
   {
@@ -29,8 +29,8 @@ namespace Nemerle.Pinvoke.AST
     [Record]
     public variant ParameterDeclaratorType
     {
-        | Declarator { Value : Nemerle.Pinvoke.AST.Declarator.Declarator }
-        | AbstractDeclarator { Value : option[Nemerle.Pinvoke.AST.Declarator.AbstractDeclarator]}
+        | Declarator { Value : Nemerle.Pinvoke.Ast.Declarations.Declarator.Declarator }
+        | AbstractDeclarator { Value : option[Nemerle.Pinvoke.Ast.Declarations.Declarator.AbstractDeclarator]}
     }
 
     public ParameterDeclarator : ParameterDeclaratorType;

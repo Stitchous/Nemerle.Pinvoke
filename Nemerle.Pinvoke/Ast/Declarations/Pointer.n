@@ -8,12 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nemerle.Pinvoke.AST
+using Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers;
+
+namespace Nemerle.Pinvoke.Ast.Declarations
 {
   [Record]
   public class Pointer : Located
   {
-    TypeQualifierList : option[list[DeclarationSpecifiers.TypeQualifier]];
+    TypeQualifierList : option[list[TypeQualifier]];
 
     InnerPointer : option[Pointer];
   }

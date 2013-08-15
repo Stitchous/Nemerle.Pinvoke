@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nemerle.Pinvoke.AST.Identifiers
+namespace Nemerle.Pinvoke.Ast.Identifiers
 {
   [Record]
   public class Identifier : Located

@@ -7,11 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nemerle.Pinvoke.AST
+namespace Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers
 {
-  [Record]
-  public class TypeName
+  public variant TypeQualifier
   {
-    public Name : string { get; set };
+    | Const
+    | Restrict
+    | Volatile
+    | Atomic 
   }
 }

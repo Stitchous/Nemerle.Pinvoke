@@ -7,13 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nemerle.Pinvoke.AST.DeclarationSpecifiers
+namespace Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers
 {
-  public variant TypeQualifier
+  public variant FunctionSpecifier
   {
-    | Const
-    | Restrict
-    | Volatile
-    | Atomic 
+    | Inline
+    | NoReturn
   }
 }

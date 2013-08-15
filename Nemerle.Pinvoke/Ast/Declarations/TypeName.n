@@ -7,11 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nemerle.Pinvoke.AST.DeclarationSpecifiers
+namespace Nemerle.Pinvoke.Ast.Declarations
 {
-  public variant AlignmentSpecifier
+  [Record]
+  public class TypeName
   {
-    | AlignAsType
-    | Expression 
+    public Name : string { get; set };
   }
 }

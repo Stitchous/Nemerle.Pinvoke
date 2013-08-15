@@ -9,11 +9,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.AST;
-using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
-using Nemerle.Pinvoke.AST.Declarator;
-using Nemerle.Pinvoke.AST.Expressions;
-using Nemerle.Pinvoke.AST.Identifiers;
+using Nemerle.Pinvoke.Ast.Declarations;
+using Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers;
+using Nemerle.Pinvoke.Ast.Declarations.Declarator;
+using Nemerle.Pinvoke.Ast.Expressions;
+using Nemerle.Pinvoke.Ast.Identifiers;
 
 namespace Nemerle.Pinvoke
 {
@@ -381,19 +381,14 @@ namespace Nemerle.Pinvoke
                                         "volatile" /
                                         "_Atomic";
 
-      typeQualifeierDeclarationSpecifier : DeclarationSpecifier = typeQualifier;
-                      
-      functionSpecifier : FunctionSpecifier = "inline" / "_Noreturn";
+      typeQualifeierDeclarationSpecifier    : DeclarationSpecifier  = typeQualifier;
+      functionSpecifier                     : FunctionSpecifier     = "inline" / "_Noreturn";
+      functionDeclarationSpecifier          : DeclarationSpecifier  = functionSpecifier;
 
-      functionDeclarationSpecifier : DeclarationSpecifier = functionSpecifier;
-      
-      expressionAlignmentSpecifier : AlignmentSpecifier = '('s constantExpression ')'s;
-      
-      alignAsAlignmentSpecifier : AlignmentSpecifier = '('s typeName ')'s;
-      
-      alignmentSpecifier : AlignmentSpecifier =  "_Alignas"s (alignAsAlignmentSpecifier / expressionAlignmentSpecifier);
-                                  
-      alignmentDeclarationSpecifier : DeclarationSpecifier = alignmentSpecifier;
+      expressionAlignmentSpecifier          : AlignmentSpecifier = '('s constantExpression ')'s;
+      alignAsAlignmentSpecifier             : AlignmentSpecifier = '('s typeName ')'s;
+      alignmentSpecifier                    : AlignmentSpecifier =  "_Alignas"s (alignAsAlignmentSpecifier / expressionAlignmentSpecifier);
+      alignmentDeclarationSpecifier         : DeclarationSpecifier = alignmentSpecifier;
       
       declarator : Declarator   = pointer? directDeclarator;
       
@@ -437,19 +432,28 @@ namespace Nemerle.Pinvoke
       
       typeName  : TypeName     = specifierQualifierList abstractDeclarator?;
  
-      nakedPointerAbstractDeclarator : AbstractDeclarator = pointer;
+      singularPointerAbstractDeclarator : AbstractDeclarator = pointer;
       normalAbstractDeclarator : AbstractDeclarator = pointer? directAbstractDeclarator;
       
-      abstractDeclarator : AbstractDeclarator = nakedPointerAbstractDeclarator / normalAbstractDeclarator;
+      abstractDeclarator : AbstractDeclarator = singularPointerAbstractDeclarator / normalAbstractDeclarator;
 
       
-      directAbstractDeclaratorHead = '('s abstractDeclarator ')'s;
-      directAbstractDeclaratorTail =  '['s typeQualifierList? assignmentExpression? ']'s          /
-                                      '['s "static"s typeQualifierList? assignmentExpression ']'s /
-                                      '['s typeQualifierList "static"s assignmentExpression ']'s  /
-                                      '['s '*'s ']'s                                              /
-                                      '('s parameterTypeList? ')'s;
-      directAbstractDeclarator      = (directAbstractDeclaratorHead / directAbstractDeclaratorTail) directAbstractDeclaratorTail*;  
+      directAbstractDeclaratorTailElement : DirectAbstractDeclaratorTailElement = 
+        assignmentExpressionDirectAbstractDeclaratorTailElement         /
+        static1AssignmentExpressionDirectAbstractDeclaratorTailElement  /
+        static2AssignmentExpressionDirectAbstractDeclaratorTailElement  /
+        asterikDirectAbstractDeclaratorTailElement                      /
+        FunctionWithParametersDirectAbstractDeclaratorTailElement;
+      
+      assignmentExpressionDirectAbstractDeclaratorTailElement        : DirectAbstractDeclaratorTailElement = '['s typeQualifierList? assignmentExpression? ']'s;
+      static1AssignmentExpressionDirectAbstractDeclaratorTailElement : DirectAbstractDeclaratorTailElement = '['s "static"s typeQualifierList? assignmentExpression ']'s;
+      static2AssignmentExpressionDirectAbstractDeclaratorTailElement : DirectAbstractDeclaratorTailElement = '['s typeQualifierList "static"s assignmentExpression ']'s;
+      asterikDirectAbstractDeclaratorTailElement                     : DirectAbstractDeclaratorTailElement = '['s '*'s ']'s;
+      FunctionWithParametersDirectAbstractDeclaratorTailElement      : DirectAbstractDeclaratorTailElement = '('s parameterTypeList? ')'s;
+
+      normalDirectAbstractDeclarator    : DirectAbstractDeclarator = '('s abstractDeclarator ')' directAbstractDeclaratorTailElement*;
+      singularDirectAbstractDeclarator  : DirectAbstractDeclarator = directAbstractDeclaratorTailElement+;
+      directAbstractDeclarator          : DirectAbstractDeclarator = normalDirectAbstractDeclarator/singularDirectAbstractDeclarator;  
                        
       typedefName    = identifier;
       

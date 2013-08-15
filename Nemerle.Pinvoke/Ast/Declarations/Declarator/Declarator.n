@@ -8,9 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
+using Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers;
 
-namespace Nemerle.Pinvoke.AST.Declarator
+namespace Nemerle.Pinvoke.Ast.Declarations.Declarator
 {
   [Record]
   public class Declarator : Located

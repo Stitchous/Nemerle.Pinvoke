@@ -8,9 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.AST.Declarator;
+using Nemerle.Pinvoke.Ast.Declarations.Declarator;
 
-namespace Nemerle.Pinvoke.AST
+namespace Nemerle.Pinvoke.Ast.Declarations
 {
   [Record]
   public class StructDeclaration : Located
