@@ -11,10 +11,10 @@ using System.Linq;
 namespace Nemerle.Pinvoke.AST.Declarator
 {
   [Record]
-  public class AbstractDeclarator : Located
+  public class DirectAbstractDeclarator : Located
   {
-    [Accessor] pointer : option[Pointer];
+    [Accessor] innerAbstractDeclarator : option[AbstractDeclarator];
 
-    [Accessor] directAbstractDeclarator : option[DirectAbstractDeclarator];
+    [Accessor] tail : list[DirectAbstractDeclaratorTailElement];
   }
 }

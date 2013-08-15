@@ -365,14 +365,49 @@ namespace Nemerle.Pinvoke
         head.Cons(tail)
      }
 
-     nakedPointerAbstractDeclarator(_ : Pointer) : Declarator.AbstractDeclarator
+     singularPointerAbstractDeclarator(pointer : Pointer) : Declarator.AbstractDeclarator
      {
-        AbstractDeclarator()
+        AbstractDeclarator(Some(pointer), None())
      }
 
-     normalAbstractDeclarator(_ : option[Pointer], _ : NToken) : Declarator.AbstractDeclarator
+     normalAbstractDeclarator(pointer : option[Nemerle.Pinvoke.AST.Pointer], directAbstractDeclarator : DirectAbstractDeclarator) : AbstractDeclarator
      {
-        AbstractDeclarator()
+        AbstractDeclarator(pointer, Some(directAbstractDeclarator));
+     }
+
+     assignmentExpressionDirectAbstractDeclaratorTailElement(_ : NToken, typeQualifierList : option[list[DeclarationSpecifiers.TypeQualifier]], _ : NToken, _ : NToken) : Declarator.DirectAbstractDeclaratorTailElement
+     {
+        DirectAbstractDeclaratorTailElement.AssignmentExpression(typeQualifierList.WithDefault([]), AssignmentExpression())
+     }
+     
+     static1AssignmentExpressionDirectAbstractDeclaratorTailElement(_ : NToken, _ : NToken, typeQualifierList : option[list[DeclarationSpecifiers.TypeQualifier]], _ : NToken, _ : NToken) : Declarator.DirectAbstractDeclaratorTailElement
+     {
+        DirectAbstractDeclaratorTailElement.StaticAssignmentExpression1(typeQualifierList.WithDefault([]), AssignmentExpression())
+     }
+
+     static2AssignmentExpressionDirectAbstractDeclaratorTailElement(_ : NToken, typeQualifierList : list[DeclarationSpecifiers.TypeQualifier], _ : NToken, _ : NToken, _ : NToken) : DirectAbstractDeclaratorTailElement
+     {
+        DirectAbstractDeclaratorTailElement.StaticAssignmentExpression2(typeQualifierList, AssignmentExpression())
+     }
+
+     asterikDirectAbstractDeclaratorTailElement(_ : NToken, _ : NToken, _ : NToken) : DirectAbstractDeclaratorTailElement
+     {
+        DirectAbstractDeclaratorTailElement.Asterik()
+     }
+
+     FunctionWithParametersDirectAbstractDeclaratorTailElement(_ : NToken, _ : option[(list[ParameterDeclaration] * bool)], _ : NToken) : DirectAbstractDeclaratorTailElement
+     {
+        DirectAbstractDeclaratorTailElement.FunctionWithParameters()
+     }
+     
+     normalDirectAbstractDeclarator(_leftParentesis : NToken, abstractDeclarator : AbstractDeclarator, _rightParentesis : NToken, tail : List[DirectAbstractDeclaratorTailElement]) : DirectAbstractDeclarator
+     {
+        DirectAbstractDeclarator(Some(abstractDeclarator), NList.ToList(tail))
+     }
+
+     singularDirectAbstractDeclarator(tail : List[DirectAbstractDeclaratorTailElement]) : DirectAbstractDeclarator
+     {
+        DirectAbstractDeclarator(None(), NList.ToList(tail))
      }
   }
 }

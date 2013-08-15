@@ -110,6 +110,12 @@
     <Compile Include="AST\Declarator\Declarator.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AST\Declarator\DirectAbstractDeclarator.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AST\Declarator\DirectAbstractDeclaratorTailElement.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="AST\Declarator\DirectDeclarator.n">
       <SubType>Code</SubType>
     </Compile>

@@ -1,0 +1,22 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.AST.DeclarationSpecifiers;
+
+namespace Nemerle.Pinvoke.AST.Declarator
+{
+  public variant DirectAbstractDeclaratorTailElement
+  {
+    | AssignmentExpression { TypeQualifiers : list[TypeQualifier]; expression : Expressions.AssignmentExpression }
+    | StaticAssignmentExpression1 { TypeQualifiers : list[TypeQualifier]; expression : Expressions.AssignmentExpression } 
+    | StaticAssignmentExpression2 { TypeQualifiers : list[TypeQualifier]; expression : Expressions.AssignmentExpression } 
+    | Asterik {  }
+    | FunctionWithParameters {}
+  }
+}
