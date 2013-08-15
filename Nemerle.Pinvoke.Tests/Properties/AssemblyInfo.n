@@ -1,6 +1,9 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
+using Nemerle.Surround;
 
 [assembly: Nemerle.Macro.Resource(@"Properties\Resources.resx")]
 [assembly: Nemerle.Macro.Settings(@"Properties\Settings.settings")]
@@ -34,3 +37,16 @@ using System.Runtime.InteropServices;
 //
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+
+[assembly: DefineSurround("Red", false,
+  Console.ForegroundColor = ConsoleColor.Red,
+  Console.ResetColor())]
+
+[assembly: DefineSurround("Green", false,
+  Console.ForegroundColor = ConsoleColor.Green,
+  Console.ResetColor())]
+
+[assembly: DefineSurround("Yellow", false,
+  Console.ForegroundColor = ConsoleColor.Yellow,
+  Console.ResetColor())]

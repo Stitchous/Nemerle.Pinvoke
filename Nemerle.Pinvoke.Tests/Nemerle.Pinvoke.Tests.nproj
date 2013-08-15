@@ -37,6 +37,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
+    <Reference Include="Nemerle.Peg, Version=1.2.0.12, Culture=neutral, PublicKeyToken=null">
+      <Name>Nemerle.Peg</Name>
+      <AssemblyName>Nemerle.Peg.dll</AssemblyName>
+      <HintPath>C:\Program Files (x86)\Nemerle\net-4.0\Nemerle.Peg.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -59,8 +64,30 @@
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ErrorInfo.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Main.n" />
     <Compile Include="Properties\AssemblyInfo.n" />
+    <Compile Include="TestCase.n">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="positive" />
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <MacroProjectReference Include="..\Nemerle.Pinvoke.Tests.Macros\Nemerle.Pinvoke.Tests.Macros.nproj">
+      <Name>Nemerle.Pinvoke.Tests.Macros</Name>
+      <Project>{e05faf9e-dcc6-4ff8-8acf-fc8e175fab72}</Project>
+      <Private>False</Private>
+    </MacroProjectReference>
+    <ProjectReference Include="..\Nemerle.Pinvoke\Nemerle.Pinvoke.nproj">
+      <Name>Nemerle.Pinvoke</Name>
+      <Project>{5997a485-1b4b-4844-b751-7d960cd66ef0}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <!--

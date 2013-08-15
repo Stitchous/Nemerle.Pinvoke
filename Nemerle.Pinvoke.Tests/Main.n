@@ -7,11 +7,50 @@ using System.Collections.Generic;
 using System.Console;
 using System.Linq;
 
+using Nemerle.Surround;
+
+using Nemerle.Pinvoke.Tests.Macros;
+
+namespace Nemerle.Pinvoke.Tests
+{
 module Program
 {
-  Main() : void
-  {
-    WriteLine("Hi!");
-    _ = ReadLine();
-  }
+    RunTest(test : TestCase) : bool
+    {
+        false
+    }
+    
+  Main() : int
+    {
+      mutable totalTests = 0;
+      mutable totalFailed = 0;
+      
+      foreach(test in GetTestCases("positive\\*.c"))
+      {
+        unless(RunTest(test))
+          totalFailed += 1;
+        totalTests += 1;
+      }
+
+      //foreach(test in GetTestCases("negative\\*.c"))
+      //{
+      //  unless(RunTest(test))
+      //    totalFailed += 1;
+      //  totalTests += 1;
+      //}
+
+      if(totalFailed == 0)
+      {
+        surroundwith(Green)
+          WriteLine($"All $totalTests tests passed.");
+        0
+      }
+      else
+      {
+        surroundwith(Red)
+          WriteLine($"$totalFailed tests of $totalTests failed.");
+        -1
+      }
+    }
+}
 }

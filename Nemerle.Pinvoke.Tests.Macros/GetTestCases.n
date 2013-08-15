@@ -16,6 +16,7 @@ namespace Nemerle.Pinvoke.Tests.Macros
 {
   macro GetTestCases(fileMask : string)
   {
+      assert2(false);
     if(Manager().IsIntelliSenseMode)
     {
       <[ [] ]>
@@ -33,8 +34,14 @@ namespace Nemerle.Pinvoke.Tests.Macros
     {
       def maskFileName = Path.GetFileName(fileMask);
       def maskFileDir = Path.GetDirectoryName(fileMask);
+      
       def fileNames =
-        if(fileMask.IndexOfAny(array['*', '?']) >= 0)
+        if(!Directory.Exists(maskFileDir))
+        {
+            Message.Error($"directory '$maskFileDir' not found");
+            []
+        }
+        else if(fileMask.IndexOfAny(array['*', '?']) >= 0)
           Directory.GetFiles(maskFileDir, maskFileName, SearchOption.TopDirectoryOnly)
         else
           Directory.GetFiles(maskFileDir, maskFileName);
@@ -55,17 +62,17 @@ namespace Nemerle.Pinvoke.Tests.Macros
         def validatorName = Macros.NewSymbol("__AST_VALIDATOR__" + fileName);
 
         tb.Define(<[ decl:
-          private $(validatorName : name)(unit : CSharpParser.CompilationUnit) : bool
+          private $(validatorName : name)(unit : Nemerle.Pinvoke.AST.Declaration) : bool
           {
             $(testCase.ValidateAst)
           }
         ]>);
 
         testCases ::= <[
-          CSharpParser.Tests.TestCase(
+          Nemerle.Pinvoke.Tests.TestCase(
             $(testCase.FileName : string),
             Nemerle.Peg.SourceSnapshot($(testCase.Source : string)),
-            [..$(testCase.ErrorInfo.Map(e => <[ CSharpParser.Tests.ErrorInfo($(e.Line : int), $(e.Message : string)) ]>))],
+            [..$(testCase.ErrorInfo.Map(e => <[ Nemerle.Pinvoke.Tests.ErrorInfo($(e.Line : int), $(e.Message : string)) ]>))],
             $(validatorName : name))
         ]>
       }
@@ -73,7 +80,7 @@ namespace Nemerle.Pinvoke.Tests.Macros
         Message.Warning($"no files matching `$fileMask' found");
 
       tb.Define(<[ decl:
-        public GetTestCases() : list[CSharpParser.Tests.TestCase]
+        public GetTestCases() : list[Nemerle.Pinvoke.Tests.TestCase]
         {
           [..$(testCases.Rev())]
         }
@@ -148,7 +155,7 @@ namespace Nemerle.Pinvoke.Tests.Macros
         Util.locate(e.Location,
           match(e)
           {
-            | <[ Id($(id : string)) ]> => <[ CSharpParser.Identifier where ( Id = $(id : string) ) ]>
+            | <[ Id($(id : string)) ]> => <[ Nemerle.Pinvoke.AST.Identifiers.Identifier where ( Id = $(id : string) ) ]>
 
             | <[ $e as $x ]>    => <[ $(prepareNodePattern(e)) as $x ]>
             | <[ $e when $x ]>  => <[ $(prepareNodePattern(e)) when $x ]>

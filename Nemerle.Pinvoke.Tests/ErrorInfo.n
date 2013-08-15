@@ -1,0 +1,27 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace Nemerle.Pinvoke.Tests
+{
+  [Record]
+  public class ErrorInfo
+  {
+    [Accessor] line : int;
+    [Accessor] message : string;
+
+    public MatchMessage(actualError : string) : bool
+    {
+      if(string.IsNullOrEmpty(message))
+        true
+      else
+        Regex.IsMatch(actualError, message)
+    }
+  }
+}
