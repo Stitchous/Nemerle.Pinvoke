@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Nemerle.Pinvoke.Ast.Constraints;
 using Nemerle.Pinvoke.Ast.Declarations;
 using Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers;
 using Nemerle.Pinvoke.Ast.Declarations.Declarator;
@@ -42,8 +43,7 @@ namespace Nemerle.Pinvoke
 
      DeclarationSpecifierScopeEnd(_ : bool) : bool
      {
-        def hasDuplicates = _declarationSpecifiersScope.GroupBy(d => d.GetType()).Any(group => group.Count() > 1);
-        !hasDuplicates
+        DeclarationSpecifierListConstraint.Check(_declarationSpecifiersScope)
      }
 
      DeclarationSpecifierListScopeBegin() : void

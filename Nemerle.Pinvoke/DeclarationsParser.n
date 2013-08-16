@@ -315,7 +315,8 @@ namespace Nemerle.Pinvoke
                                                  "register")S;
       
       builtInTypeSpecifier : TypeSpecifier  = 
-                                                ("void"           / 
+                                                (
+                                                "void"           / 
                                                 "char"           / 
                                                 "short"          / 
                                                 "int"            / 
@@ -389,10 +390,10 @@ namespace Nemerle.Pinvoke
       enumerator                    : Enumerator = normalEnumerator / enumeratorWithExplicitValue;
      
       typeQualifier : TypeQualifier 
-                                      = "const"    / 
+                                      = ("const"    / 
                                         "restrict" /
                                         "volatile" /
-                                        "_Atomic";
+                                        "_Atomic")S;
 
       typeQualifeierDeclarationSpecifier    : DeclarationSpecifier  = typeQualifier;
       functionSpecifier                     : FunctionSpecifier     = "inline" / "_Noreturn";

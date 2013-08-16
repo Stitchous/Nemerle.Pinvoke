@@ -83,7 +83,7 @@
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Ast\Constraints\SpecifierQualifierListConstraint.n">
+    <Compile Include="Ast\Constraints\DeclarationSpecifierListConstraint.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Ast\Declarations\Declaration.n">
