@@ -9,10 +9,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Nemerle.Pinvoke.Ast.Identifiers;
+using Nemerle.Pinvoke.Macros;
 
 namespace Nemerle.Pinvoke.Ast.Declarations.Declarator
 {
      [Record]
+     [StandardNode("direct-declarator-head ")]
      public variant DirectDeclaratorHead : Located      
      {
         | Simple { Name : Identifier} 

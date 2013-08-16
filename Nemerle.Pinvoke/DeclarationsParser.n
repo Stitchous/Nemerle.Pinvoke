@@ -283,11 +283,20 @@ namespace Nemerle.Pinvoke
       declaration : Declaration =   normalDeclaration  /
                                     staticAssertDeclaration;
       
-      declarationSpecifiers : list[DeclarationSpecifier]  =   (storageClassSpecifier                /
-                                                               typeDeclarationSpecifier             /
-                                                               typeQualifeierDeclarationSpecifier   /
-                                                               functionDeclarationSpecifier         /
-                                                               alignmentDeclarationSpecifier)+;
+      declarationSpecifiers : list[DeclarationSpecifier]  =   
+                                            DeclarationSpecifierList 
+                                            {
+                                                ( 
+                                                    DeclarationSpecifier 
+                                                    {
+                                                        storageClassSpecifier                /
+                                                        typeDeclarationSpecifier             /
+                                                        typeQualifeierDeclarationSpecifier   /
+                                                        functionDeclarationSpecifier         /
+                                                        alignmentDeclarationSpecifier 
+                                                    } 
+                                                )+
+                                            };
                               
       initDeclaratorList : list[InitDeclarator]   = initDeclarator (','s initDeclarator)*;
       
@@ -352,6 +361,7 @@ namespace Nemerle.Pinvoke
       declarationSpecifierQualifier : DeclarationSpecifier = typeQualifier;
       
       declarationSpecifierBuiltInTypeSpecifierList : list[DeclarationSpecifier] = (declarationSpecifierQualifier / declarationSpecifierBuiltInTypeSpecifier)+;
+
       declarationSpecifierTypeSpecifierList : list[DeclarationSpecifier]  = typeSpecifier;
 
       specifierQualifierList : list[DeclarationSpecifier] = typeQualifier* (declarationSpecifierBuiltInTypeSpecifierList / declarationSpecifierTypeSpecifierList) typeQualifier*;

@@ -36,6 +36,24 @@ namespace Nemerle.Pinvoke
         NList.ToList(lst)
      }
 
+     DeclarationSpecifierScopeBegin() : void
+     {
+     }
+
+     DeclarationSpecifierScopeEnd(_ : bool) : bool
+     {
+        def hasDuplicates = _declarationSpecifiersScope.GroupBy(d => d.GetType()).Any(group => group.Count() > 1);
+        !hasDuplicates
+     }
+
+     DeclarationSpecifierListScopeBegin() : void
+     {
+        _declarationSpecifiersScope = [];
+     }
+
+     DeclarationSpecifierListScopeEnd(_ : bool) : void
+     {}
+
      // initDeclarator (s ',' initDeclarator)*;
      initDeclaratorList(firstInitDeclarator : InitDeclarator, tailList : List[(NToken * InitDeclarator)]) : list[InitDeclarator]
      {
@@ -66,7 +84,11 @@ namespace Nemerle.Pinvoke
            | _                => throw InvalidOperationException($"Unknown storage class: $(GetText(token))");
         }
 
-        DeclarationSpecifier.StorageClass(value = storageClassSpecifier)
+        def storageClass = DeclarationSpecifier.StorageClass(value = storageClassSpecifier);
+       _declarationSpecifiersScope = storageClass :: _declarationSpecifiersScope;
+
+       storageClass
+
      }
 
      builtInTypeSpecifier(token : NToken) : TypeSpecifier
@@ -111,7 +133,10 @@ namespace Nemerle.Pinvoke
 
      typeDeclarationSpecifier(typeSpecifier : TypeSpecifier) : DeclarationSpecifier
      {
-        DeclarationSpecifier.TypeSpecifier(value = typeSpecifier);
+        def typeSpecifier = DeclarationSpecifier.TypeSpecifier(value = typeSpecifier);
+        _declarationSpecifiersScope = typeSpecifier :: _declarationSpecifiersScope;
+
+        typeSpecifier 
      }
 
      // "enum"s identifier? '{'s enumeratorList ','s '}'s;
@@ -470,6 +495,7 @@ namespace Nemerle.Pinvoke
      {
         Designator.Identifier(identifier)
      }
-     
+   
+     mutable _declarationSpecifiersScope : list[DeclarationSpecifier];
   }
 }

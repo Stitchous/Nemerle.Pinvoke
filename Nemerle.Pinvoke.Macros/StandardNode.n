@@ -1,0 +1,62 @@
+﻿using System;
+using System.Diagnostics;
+
+using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Compiler;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Compiler.Parsetree;
+
+namespace Nemerle.Pinvoke.Macros
+{
+    [Nemerle.MacroUsage (MacroPhase.WithTypedMembers, 
+                       MacroTargets.Class,
+                       Inherited = false, AllowMultiple = false)]
+    macro StandardNode(typeBuilder : TypeBuilder, standardName : string)
+    {   
+        //_ = Debugger.Launch();
+    
+        typeBuilder.Define(<[decl: public static StandardName : string 
+            { get { $(standardName : string) }} ]>);
+            
+        def MakeBody(typeBuilder, acc)
+        {
+            def fields = typeBuilder.GetFields (BindingFlags.Public %| BindingFlags.NonPublic %|
+            BindingFlags.Instance %| BindingFlags.DeclaredOnly);
+            
+            fields.FoldRight(acc, (x, acc) =>
+            {
+                def acc = if (acc is PExpr.Literal) acc 
+                else <[ " " + $acc ]>;
+                        
+                <[$(x.Name : dyn).ToString() + $acc]> 
+            });
+        }
+                    
+        def body = MakeBody(typeBuilder, <[""]>);
+            
+        def variants = typeBuilder.GetVariantOptions();
+        
+        if (variants.IsEmpty())
+        {        
+            typeBuilder.Define(<[ decl: public override ToString() : string { StandardName + "(" + $body  + ")"} ]>);
+        }
+        else
+        {
+            _ = variants.ForAll( typeBuilder => 
+            {  
+                def standardName = typeBuilder.UserData[Constants.StandardNameMacroName] :> string;
+        
+                def optionBody = if (string.IsNullOrEmpty(standardName))
+                    MakeBody(typeBuilder, body); 
+                else
+                    <[ $(standardName : string)  ]>;
+                
+                typeBuilder.Define(<[ decl: public override ToString() : string 
+                        { StandardName + "(" + $optionBody + ")" } ]>);
+                true 
+            });
+        }            
+    }
+}

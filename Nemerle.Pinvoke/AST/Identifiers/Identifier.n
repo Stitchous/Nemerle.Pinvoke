@@ -8,9 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Nemerle.Pinvoke.Macros;
+
 namespace Nemerle.Pinvoke.Ast.Identifiers
 {
   [Record]
+  [StandardNode("identifier")]
   public class Identifier : Located
   {
     [Accessor] id : string;

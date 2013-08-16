@@ -7,24 +7,35 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Nemerle.Pinvoke.Macros;
+
 namespace Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers
 {
+  [StandardNode("type-specifier")]
   public variant TypeSpecifier
   {
+    [StandardName("void")]
     | Void
     | Char
     | Short
+    [StandardName("int")]
     | Int
     | Long
     | Float
     | Double
     | Signed
     | Unsigned
+    [StandardName("bool")]
     | Bool
+    [StandardName("complex")]
     | Complex
+    [StandardName("atomic-type-specifier")]
     | AtomicTypeSpecifier { TypeName : TypeName }
+    [StandardName("struct-or-union")]
     | StructOrUnion { Specifier : StructOrUnionSpecifier }
+    [StandardName("enum")]
     | Enum { Specifier : EnumSpecifier }
+    [StandardName("typedef-name")]
     | TypedefName { Name : string }
   }
 }

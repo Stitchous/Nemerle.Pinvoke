@@ -1,0 +1,36 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.Ast.Declarations;
+using Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers;
+
+namespace Nemerle.Pinvoke.Ast.Constraints
+{
+  public module SpecifierQualifierListConstraint
+  {
+    public Check(specifierQualifierList : list[DeclarationSpecifier]) : bool
+    {
+        def typeSpecifiersList = specifierQualifierList
+        .Filter(
+            declarationSpecifier => 
+                match(declarationSpecifier) {| DeclarationSpecifier.TypeSpecifier => true | _=> false})
+        .Map(x => x :> DeclarationSpecifier.TypeSpecifier);
+    
+        def allowedMultSpecifiers : list[list[TypeSpecifier]] =
+        [
+            //[TypeSpecifier.Signed , TypeSpecifier.Char ]
+        ];
+
+        false
+    
+    }
+
+    
+  }
+}

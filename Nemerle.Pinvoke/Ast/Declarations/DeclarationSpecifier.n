@@ -8,10 +8,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers;
+using Nemerle.Pinvoke.Macros;
 
 namespace Nemerle.Pinvoke.Ast.Declarations
 {
     [Record]
+    [StandardNode("declaration-specifier")]
     public variant DeclarationSpecifier
     {
         | Alignment         { Value : AlignmentSpecifier }

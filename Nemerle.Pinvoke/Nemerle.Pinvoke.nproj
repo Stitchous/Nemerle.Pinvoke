@@ -83,6 +83,9 @@
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ast\Constraints\SpecifierQualifierListConstraint.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Ast\Declarations\Declaration.n">
       <SubType>Code</SubType>
     </Compile>
@@ -205,7 +208,15 @@
     <Folder Include="Ast\Expressions" />
     <Folder Include="Ast\Identifiers" />
     <Folder Include="Ast\Declarations" />
+    <Folder Include="Ast\Constraints" />
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <MacroProjectReference Include="..\Nemerle.Pinvoke.Macros\Nemerle.Pinvoke.Macros.nproj">
+      <Name>Nemerle.Pinvoke.Macros</Name>
+      <Project>{6b7e8233-98d5-4f40-9053-3338007993bc}</Project>
+      <Private>False</Private>
+    </MacroProjectReference>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <!--

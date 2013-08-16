@@ -8,11 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Nemerle.Pinvoke.Macros;
 using Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers;
 
 namespace Nemerle.Pinvoke.Ast.Declarations.Declarator
 {
   [Record]
+  [StandardNode("declarator")]
   public class Declarator : Located
   {
     Pointer : option[Pointer];
