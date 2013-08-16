@@ -131,10 +131,19 @@
     <Compile Include="Ast\Declarations\Declarator\StructDeclarator.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Ast\Declarations\Designator.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Ast\Declarations\Enumerator.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Ast\Declarations\EnumSpecifier.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Declarations\Initializer.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Declarations\InitializerListElement.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Ast\Declarations\ParameterDeclaration.n">

@@ -298,15 +298,15 @@ namespace Nemerle.Pinvoke
                                                 initDeclaratorWithInitializer;
                               
       storageClassSpecifier : DeclarationSpecifier = 
-                                                "typedef"       /
-                                                "extern"        /
-                                                "static"        /
-                                                "_Thread_local" /
-                                                "auto"          /
-                                                "register";
+                                                ("typedef"       /
+                                                 "extern"        /
+                                                 "static"        /
+                                                 "_Thread_local" /
+                                                 "auto"          /
+                                                 "register")S;
       
-      builtInTypeSpecifier : DeclarationSpecifier  = 
-                                                "void"           / 
+      builtInTypeSpecifier : TypeSpecifier  = 
+                                                ("void"           / 
                                                 "char"           / 
                                                 "short"          / 
                                                 "int"            / 
@@ -316,9 +316,9 @@ namespace Nemerle.Pinvoke
                                                 "signed"         /
                                                 "unsigned"       /
                                                 "_Bool"          /
-                                                "_Complex";
+                                                "_Complex")S;
       
-      structOrUnionTypeSpecifier : DeclarationSpecifier = structOrUnionSpecifier;
+      structOrUnionTypeSpecifier : TypeSpecifier = structOrUnionSpecifier;
 
       enumTypeSpecifier : TypeSpecifier = enumSpecifier;
       typedefTypeSpecifier : TypeSpecifier = typedefName;
@@ -326,16 +326,18 @@ namespace Nemerle.Pinvoke
 
 
       typeSpecifier : TypeSpecifier  =
+                              builtInTypeSpecifier      /
                               atomicTypeSpecifier       /
+                              structOrUnionTypeSpecifier /
                               enumTypeSpecifier         /
                               typedefTypeSpecifier;
       
       typeDeclarationSpecifier : DeclarationSpecifier = typeSpecifier;
       
       forwardDeclarationStructOrUnionSpecifier : StructOrUnionSpecifier = structOrUnion identifier;
-      declarationStructOrUnionSpecifier        : StructOrUnionSpecifier = (structOrUnion identifier? '{'s structDeclarationList '}'s);
-      structOrUnionSpecifier                   : StructOrUnionSpecifier = forwardDeclarationStructOrUnionSpecifier / 
-                                                                          declarationStructOrUnionSpecifier;
+      declarationStructOrUnionSpecifier        : StructOrUnionSpecifier = structOrUnion identifier? '{'s structDeclarationList '}'s;
+      structOrUnionSpecifier                   : StructOrUnionSpecifier = declarationStructOrUnionSpecifier / 
+                                                                          forwardDeclarationStructOrUnionSpecifier;
       
       structOrUnion : StructOrUnion   = ("struct" / "union")S;
       
@@ -346,19 +348,20 @@ namespace Nemerle.Pinvoke
       structDeclaration  : StructDeclaration = normalStructDeclaration /
                                                staticAssertStructDeclaration;
 
-      typeSpecifierSpecifierQualifierList : list[DeclarationSpecifier] = typeSpecifier specifierQualifierList?;
-      typeQualifierSpecifierQualifierList : list[DeclarationSpecifier] = typeQualifier specifierQualifierList;
+      declarationSpecifierBuiltInTypeSpecifier : DeclarationSpecifier = builtInTypeSpecifier;
+      declarationSpecifierQualifier : DeclarationSpecifier = typeQualifier;
+      
+      declarationSpecifierBuiltInTypeSpecifierList : list[DeclarationSpecifier] = (declarationSpecifierQualifier / declarationSpecifierBuiltInTypeSpecifier)+;
+      declarationSpecifierTypeSpecifierList : list[DeclarationSpecifier]  = typeSpecifier;
 
-      specifierQualifierList : list[DeclarationSpecifier] = typeSpecifierSpecifierQualifierList / typeQualifierSpecifierQualifierList;
+      specifierQualifierList : list[DeclarationSpecifier] = typeQualifier* (declarationSpecifierBuiltInTypeSpecifierList / declarationSpecifierTypeSpecifierList) typeQualifier*;
 
-
-                               
       structDeclaratorList   : list[StructDeclarator] = structDeclarator (','s structDeclarator)*;
       
       normalStructDeclarator : StructDeclarator = declarator;
       bitFieldStructDeclarator : StructDeclarator = declarator? ':'s constantExpression;
 
-      structDeclarator       = normalStructDeclarator / bitFieldStructDeclarator;
+      structDeclarator       : StructDeclarator = normalStructDeclarator / bitFieldStructDeclarator;
 
       normalEnumSpecifier : EnumSpecifier = "enum"S identifier? '{'s enumeratorList '}'s;
       enumSpecifierWithComma : EnumSpecifier = "enum"S identifier? '{'s enumeratorList ','s '}'s;
@@ -457,19 +460,25 @@ namespace Nemerle.Pinvoke
                        
       typedefName    = identifier;
       
-      initializer    = assignmentExpression      / 
-                       '{'s initializerList '}'s /
-                       '{'s initializerList ','s '}'s;
+      assignmentExpressionInitializer   : Initializer = assignmentExpression;
+      InitializerListInitializer        : Initializer = '{'s initializerList '}'s;
+      ColonTermiatedInitializerListInitializer : Initializer = '{'s initializerList ','s '}'s;
+
+      initializer : Initializer  = assignmentExpressionInitializer / 
+                                   InitializerListInitializer      /
+                                   ColonTermiatedInitializerListInitializer;
       
-      initializerListElement = designation? initializer;
-      initializerList        = initializerListElement (','s initializerListElement)*;
+      initializerListElement        : InitializerListElement        = designation? initializer;
+      initializerList               : list[InitializerListElement]  = initializerListElement (','s initializerListElement)*;
                         
-      designation = designatorList '='s;
+      designation                   : list[Designator] = designatorList '='s;
       
-      designatorList = designator+;
+      designatorList                : List[Designator] = designator+;
       
-      designator = '['s constantExpression ']'s /
-                    '.'s identifier;
+      constantExpressionDesignator  : Designator = '['s constantExpression ']'s;
+      identifierDesignator          : Designator = '.'s identifier;
+
+      designator                    : Designator = constantExpressionDesignator / identifierDesignator;
                     
       staticAssertStructDeclaration : StructDeclaration = staticAssertDeclaration;
       staticAssertDeclaration       : Declaration       = "_Static_assert"s '('s constantExpression ','s stringLiteral ')'s;
