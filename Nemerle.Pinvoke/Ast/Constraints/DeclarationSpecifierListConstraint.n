@@ -1,0 +1,82 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.Ast.Declarations;
+using Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers;
+
+namespace Nemerle.Pinvoke.Ast.Constraints
+{
+  public module DeclarationSpecifierListConstraint
+  {
+    public Check(specifierQualifierList : list[DeclarationSpecifier]) : bool
+    {
+        def typeSpecifierList = specifierQualifierList
+        .Filter(
+            declarationSpecifier => 
+                match(declarationSpecifier) {| DeclarationSpecifier.TypeSpecifier => true | _=> false})
+        .Map(x => (x :> DeclarationSpecifier.TypeSpecifier).Value);
+    
+
+        def SortByType(lst)
+        {
+            lst.Sort((t1,t2) => 
+                {
+                    def str1 = t1.GetType().ToString();
+                    def str2 = t2.GetType().ToString();
+                    str1.CompareTo(str2)
+                });
+        }
+
+        def IsAllowedMultiType(lst)
+        {
+            allowedMultSpecifiers.Any(typeSpecifierList => 
+            {
+                def lst1 = SortByType(typeSpecifierList).Select(t => t.GetType());
+                def lst2 = SortByType(lst).Select(t => t.GetType());
+                lst1.SequenceEqual(lst2)
+            })
+        }
+
+        match(typeSpecifierList)
+        {
+            | [] 
+            | [_] => true
+            | lst => IsAllowedMultiType(lst)
+        }
+    }
+
+    static allowedMultSpecifiers : list[list[TypeSpecifier]] =
+        [
+            [TypeSpecifier.Signed() ,           TypeSpecifier.Char()],
+            [TypeSpecifier.Unsigned() ,         TypeSpecifier.Char()],
+            [TypeSpecifier.Signed() ,           TypeSpecifier.Short()],
+            [TypeSpecifier.Short() ,            TypeSpecifier.Int()],
+            [TypeSpecifier.Signed(),            TypeSpecifier.Short(),          TypeSpecifier.Int()],
+            [TypeSpecifier.Unsigned(),          TypeSpecifier.Short()],
+            [TypeSpecifier.Unsigned(),          TypeSpecifier.Short(),          TypeSpecifier.Int() ],
+            [TypeSpecifier.Signed(),            TypeSpecifier.Int()],
+            [TypeSpecifier.Unsigned(),          TypeSpecifier.Int()],
+            [TypeSpecifier.Signed(),            TypeSpecifier.Long()],
+            [TypeSpecifier.Long(),              TypeSpecifier.Int()],
+            [TypeSpecifier.Signed(),            TypeSpecifier.Long(),           TypeSpecifier.Int() ],
+            [TypeSpecifier.Unsigned(),          TypeSpecifier.Long()],
+            [TypeSpecifier.Unsigned(),          TypeSpecifier.Long(),           TypeSpecifier.Int() ],
+            [TypeSpecifier.Long(),              TypeSpecifier.Long()],
+            [TypeSpecifier.Signed(),            TypeSpecifier.Long(),           TypeSpecifier.Long()],
+            [TypeSpecifier.Long(),              TypeSpecifier.Long(),           TypeSpecifier.Int() ],
+            [TypeSpecifier.Signed(),            TypeSpecifier.Long(),           TypeSpecifier.Long(),       TypeSpecifier.Int() ],
+            [TypeSpecifier.Unsigned(),          TypeSpecifier.Long(),           TypeSpecifier.Long(),],
+            [TypeSpecifier.Unsigned(),          TypeSpecifier.Long(),           TypeSpecifier.Long(),       TypeSpecifier.Int() ],
+            [TypeSpecifier.Long(),              TypeSpecifier.Double()],
+            [TypeSpecifier.Float(),             TypeSpecifier.Complex()],
+            [TypeSpecifier.Double(),            TypeSpecifier.Complex()],
+            [TypeSpecifier.Long(),              TypeSpecifier.Double(),         TypeSpecifier.Complex(), ]
+        ];
+  }
+}
