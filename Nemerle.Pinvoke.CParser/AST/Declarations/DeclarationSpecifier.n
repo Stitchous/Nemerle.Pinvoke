@@ -1,0 +1,25 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.CParser.Ast.Declarations.DeclarationSpecifiers;
+using Nemerle.Pinvoke.CParser.Macros;
+
+namespace Nemerle.Pinvoke.CParser.Ast.Declarations
+{
+    [Record]
+    [StandardNode]
+    public variant DeclarationSpecifier
+    {
+        | Alignment         { Value : AlignmentSpecifier }
+        | Function          { Value : FunctionSpecifier }
+        | StorageClass      { Value : StorageClassSpecifier }
+        | TypeQualifier     { Value : DeclarationSpecifiers.TypeQualifier}
+        | TypeSpecifier     { Value : DeclarationSpecifiers.TypeSpecifier }
+    }  
+}

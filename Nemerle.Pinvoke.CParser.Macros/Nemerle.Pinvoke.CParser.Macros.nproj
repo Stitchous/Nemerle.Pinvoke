@@ -5,18 +5,18 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>4a5ae1d3-2705-4a1f-9fe5-07bc3504c16d</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>6b7e8233-98d5-4f40-9053-3338007993bc</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Nemerle.Pinvoke.Tests</RootNamespace>
-    <AssemblyName>Nemerle.Pinvoke.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>Nemerle.Pinvoke.CParser.Macros</RootNamespace>
+    <AssemblyName>Nemerle.Pinvoke.CParser.Macros</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NoStdLib>true</NoStdLib>
     <NemerleVersion>Net-4.0</NemerleVersion>
     <NemerleBinPathRoot Condition=" '$(NemerleBinPathRoot)' == '' ">$(ProgramFiles)\Nemerle</NemerleBinPathRoot>
     <Nemerle Condition=" '$(Nemerle)' == '' ">$(NemerleBinPathRoot)\$(NemerleVersion)</Nemerle>
-    <Name>Nemerle.Pinvoke.Tests</Name>
+    <Name>Nemerle.Pinvoke.CParser.Macros</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,11 +37,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
-    <Reference Include="Nemerle.Peg, Version=1.2.0.12, Culture=neutral, PublicKeyToken=null">
-      <Name>Nemerle.Peg</Name>
-      <AssemblyName>Nemerle.Peg.dll</AssemblyName>
-      <HintPath>C:\Program Files (x86)\Nemerle\net-4.0\Nemerle.Peg.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -57,44 +52,35 @@
     <Reference Include="Nemerle">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(Nemerle)\Nemerle.dll</HintPath>
-      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nemerle.Compiler">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(Nemerle)\Nemerle.Compiler.dll</HintPath>
     </Reference>
     <MacroReference Include="Nemerle.Linq">
       <HintPath>$(Nemerle)\Nemerle.Linq.dll</HintPath>
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ErrorInfo.n">
+    <Compile Include="Constants.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Main.n" />
     <Compile Include="Properties\AssemblyInfo.n" />
-    <Compile Include="TestCase.n">
+    <Compile Include="StandardName.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="StandardNode.n">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="positive" />
     <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <MacroProjectReference Include="..\Nemerle.Pinvoke.Tests.Macros\Nemerle.Pinvoke.Tests.Macros.nproj">
-      <Name>Nemerle.Pinvoke.Tests.Macros</Name>
-      <Project>{e05faf9e-dcc6-4ff8-8acf-fc8e175fab72}</Project>
-      <Private>False</Private>
-    </MacroProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Nemerle.Pinvoke.CParser\Nemerle.Pinvoke.CParser.nproj">
-      <Name>Nemerle.Pinvoke.CParser</Name>
-      <Project>{5997a485-1b4b-4844-b751-7d960cd66ef0}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <!--
 		To modify your build process, add your task inside one of the targets below and uncomment it. 
 		Other similar extension points exist, see Microsoft.Common.targets.
+
 	<Target Name="BeforeBuild">
 	</Target>
 	<Target Name="AfterBuild">

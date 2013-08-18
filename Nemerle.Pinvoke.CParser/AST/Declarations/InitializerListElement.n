@@ -1,0 +1,19 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Nemerle.Pinvoke.CParser.Ast.Declarations
+{
+  [Record]
+  public class InitializerListElement
+  {
+    [Accessor] designation : list[Designator];
+
+    [Accessor] initializer : Initializer;
+  }
+}
