@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Nemerle.Pinvoke.CParser.Ast.Constraints;
+using Nemerle.Pinvoke.CParser.Ast.Declarations;
 using Nemerle.Pinvoke.CParser.Ast.Declarations.DeclarationSpecifiers;
 using Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator;
 using Nemerle.Pinvoke.CParser.Ast.Expressions;
