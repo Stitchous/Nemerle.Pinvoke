@@ -9,10 +9,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Nemerle.Pinvoke.Ast.Expressions;
+using Nemerle.Pinvoke.Macros;
 
 namespace Nemerle.Pinvoke.Ast.Declarations.Declarator
 {
   [Record]
+  [StandardNode("struct-declarator")]  
   public variant StructDeclarator : Located
   {
     | NormalDeclarator { value : Declarator }

@@ -9,10 +9,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Nemerle.Pinvoke.Ast.Identifiers;
+using Nemerle.Pinvoke.Macros;
 
 namespace Nemerle.Pinvoke.Ast.Declarations
 {
   [Record]
+  [StandardNode("struct-or-union-specifier")]
   public variant StructOrUnionSpecifier : Located
   {
     | Declaration {  StructOrUnion : StructOrUnion; Name : option[Identifier]; declarations : list[StructDeclaration] }

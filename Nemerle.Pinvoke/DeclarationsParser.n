@@ -431,7 +431,7 @@ namespace Nemerle.Pinvoke
       normalPointer         : Pointer = '*'s typeQualifierList?;
       recurrentPointer      : Pointer = '*'s typeQualifierList? pointer;
 
-      pointer : Pointer = normalPointer / recurrentPointer;
+      pointer : Pointer = recurrentPointer / normalPointer;
                 
       typeQualifierList : list[TypeQualifier] = typeQualifier+;
       

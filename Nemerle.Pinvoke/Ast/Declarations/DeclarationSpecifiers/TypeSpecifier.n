@@ -31,7 +31,7 @@ namespace Nemerle.Pinvoke.Ast.Declarations.DeclarationSpecifiers
     | Complex
     [StandardName("atomic-type-specifier")]
     | AtomicTypeSpecifier { TypeName : TypeName }
-    [StandardName("struct-or-union")]
+    
     | StructOrUnion { Specifier : StructOrUnionSpecifier }
     [StandardName("enum")]
     | Enum { Specifier : EnumSpecifier }
