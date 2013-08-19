@@ -11,6 +11,7 @@ using Nemerle.Surround;
 
 using Nemerle.Pinvoke.CParser;
 using Nemerle.Pinvoke.Tests.Macros;
+using Nemerle.Pinvoke.CParser.Ast.ExternalDefinitions;
 
 namespace Nemerle.Pinvoke.Tests
 {
@@ -36,14 +37,19 @@ namespace Nemerle.Pinvoke.Tests
             def parser = DeclarationsParser();
             match(parser.Parse(test.Source))
             {
-                | Some(decl) =>
+                | Some([externalDeclaration]) =>
 
-                    unless(test.ValidateAst(decl))
+                    def failAstValidation() 
                     {
-                        surroundwith(Red)
-                            WriteLine($"AST validation failed for `$(test.FileName)'");
-
+                        surroundwith(Red) WriteLine($"AST validation failed for `$(test.FileName)'");
                         testIsPassed = false;
+                    }
+                
+                    match(externalDeclaration)
+                    {
+                        | ExternalDeclaration.Declaration as decl =>
+                                unless(test.ValidateAst(decl.Value)) failAstValidation()
+                        | _ =>  failAstValidation()
                     }
 
                 | _ =>

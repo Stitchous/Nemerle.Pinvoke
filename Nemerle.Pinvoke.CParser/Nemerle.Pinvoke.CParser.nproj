@@ -175,6 +175,9 @@
     <Compile Include="Ast\Expressions\ConstantExpression.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Ast\ExternalDefinitions\ExternalDeclaration.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Ast\Identifiers\Identifier.n">
       <SubType>Code</SubType>
     </Compile>
@@ -190,6 +193,10 @@
       <DependentUpon>DeclarationsParser.n</DependentUpon>
     </Compile>
     <Compile Include="DeclarationsParser.Expressions.n">
+      <SubType>Code</SubType>
+      <DependentUpon>DeclarationsParser.n</DependentUpon>
+    </Compile>
+    <Compile Include="DeclarationsParser.ExternalDefinitions.n">
       <SubType>Code</SubType>
       <DependentUpon>DeclarationsParser.n</DependentUpon>
     </Compile>
@@ -210,6 +217,7 @@
     <Folder Include="Ast\Identifiers" />
     <Folder Include="Ast\Declarations" />
     <Folder Include="Ast\Constraints" />
+    <Folder Include="Ast\ExternalDefinitions" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>

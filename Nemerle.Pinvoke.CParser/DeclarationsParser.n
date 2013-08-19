@@ -12,12 +12,13 @@ using System.Linq;
 using Nemerle.Pinvoke.CParser.Ast.Declarations;
 using Nemerle.Pinvoke.CParser.Ast.Declarations.DeclarationSpecifiers;
 using Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator;
+using Nemerle.Pinvoke.CParser.Ast.ExternalDefinitions;
 using Nemerle.Pinvoke.CParser.Ast.Expressions;
 using Nemerle.Pinvoke.CParser.Ast.Identifiers;
 
 namespace Nemerle.Pinvoke.CParser
 {
-  [PegGrammar(Options = EmitDebugSources, declaration,
+  [PegGrammar(Options = EmitDebugSources, translationUnit,
   grammar
   {
       any                 = ['\u0000'..'\uFFFF'];
@@ -534,21 +535,24 @@ namespace Nemerle.Pinvoke.CParser
       
       #region A.2.4 External definitions
       
-      translationUnit     = externalDeclaration+;
+      translationUnit           : list[ExternalDeclaration] = externalDeclaration+;
                         
-      externalDeclaration = functionDefinition / declaration;
+      externalDeclaration       : ExternalDeclaration = functionDefinition / externalDeclarationDeclaration;
       
-      functionDefinition  = declarationSpecifiers declarator declarationList? compoundStatement;
+      externalDeclarationDeclaration : ExternalDeclaration = declaration;
+
+      functionDefinition        : ExternalDeclaration = declarationSpecifiers declarator declarationList? compoundStatement;
       
-      declarationList     = declaration+;
+      declarationList = declaration+;
       
       #endregion
   })]
   public partial class DeclarationsParser
   {
-     typeName(_ : list[DeclarationSpecifier], _ : option[AbstractDeclarator]) : TypeName
+     // speciﬁer-qualiﬁer-list abstract-declaratoropt
+     typeName(declarationSpecifiers : list[DeclarationSpecifier], abstractDeclarator : option[AbstractDeclarator]) : TypeName
      {
-        TypeName("")
+        TypeName(declarationSpecifiers, abstractDeclarator)
      }
   }
 }
