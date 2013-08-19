@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.Ast.Declarations;
+using Nemerle.Pinvoke.CParser.Ast.Declarations;
 
 namespace Nemerle.Pinvoke.Tests
 {

@@ -83,8 +83,10 @@
       <Project>{e05faf9e-dcc6-4ff8-8acf-fc8e175fab72}</Project>
       <Private>False</Private>
     </MacroProjectReference>
-    <ProjectReference Include="..\Nemerle.Pinvoke\Nemerle.Pinvoke.nproj">
-      <Name>Nemerle.Pinvoke</Name>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nemerle.Pinvoke.CParser\Nemerle.Pinvoke.CParser.nproj">
+      <Name>Nemerle.Pinvoke.CParser</Name>
       <Project>{5997a485-1b4b-4844-b751-7d960cd66ef0}</Project>
       <Private>True</Private>
     </ProjectReference>

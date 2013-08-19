@@ -1,0 +1,88 @@
+﻿using System;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
+
+using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Compiler;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Compiler.Parsetree;
+
+namespace Nemerle.Pinvoke.CParser.Macros
+{
+    [MacroUsage (MacroPhase.WithTypedMembers, 
+                    MacroTargets.Class,
+                    Inherited = false, AllowMultiple = false)]
+    macro StandardNode(typeBuilder : TypeBuilder, params standardNameList : list[PExpr])
+    {   
+        def PrintUsageError()
+        {
+            Message.Error("Expected zero or one string literal parameter.");
+        }
+
+        def GetStandardNameFromTypeName(typeName)
+        {
+            Regex.Replace(typeName, @"(\p{Ll})(\p{Lu})" , "$1-$2").ToLower()
+        }
+
+        match(standardNameList)
+        {
+            | [] => StandardNodeImpl.DoTransform(typeBuilder, GetStandardNameFromTypeName(typeBuilder.Name))
+            | [expr is PExpr.Literal] => 
+                    match(expr.val)
+                    {
+                        | stringLiteral is Literal.String => StandardNodeImpl.DoTransform(typeBuilder, stringLiteral.val)
+                        | _ => PrintUsageError()
+                    }
+            | _ => PrintUsageError()
+        }
+    }
+
+    module StandardNodeImpl
+    {
+        public DoTransform(typeBuilder : TypeBuilder, standardName : string) : void
+        {
+            typeBuilder.Define(<[decl: public static StandardName : string 
+            { get { $(standardName : string) }} ]>);
+
+            def MakeBody(typeBuilder, acc)
+            {
+                def fields = typeBuilder.GetFields (BindingFlags.Public %| BindingFlags.NonPublic %|
+                                                    BindingFlags.Instance %| BindingFlags.DeclaredOnly);
+
+                fields.FoldRight(acc, (x, acc) =>
+            {
+                                      def acc = if (acc is PExpr.Literal) acc 
+                                                   else <[ " " + $acc ]>;
+
+                <[$(x.Name : dyn).ToString() + $acc]> 
+            });
+            }
+
+            def body = MakeBody(typeBuilder, <[""]>);
+
+            def variantOptionTypeBuiders = typeBuilder.GetVariantOptions();
+
+            if (variantOptionTypeBuiders.IsEmpty())
+            {        
+                typeBuilder.Define(<[ decl: public override ToString() : string { StandardName + "(" + $body  + ")"} ]>);
+            }
+            else
+            {
+                foreach(variantOptionTypeBuilder in variantOptionTypeBuiders)
+                {  
+                    def standardName = variantOptionTypeBuilder.UserData[Constants.StandardNameMacroName] :> string;
+
+                    def optionBody = if (string.IsNullOrEmpty(standardName))
+                                         MakeBody(typeBuilder, body); 
+                                        else
+                    <[ $(standardName : string)  ]>;
+
+                    variantOptionTypeBuilder.Define(<[ decl: public override ToString() : string 
+                        { StandardName + "(" + $optionBody + ")" } ]>);
+                }
+            }
+        }
+    }
+}

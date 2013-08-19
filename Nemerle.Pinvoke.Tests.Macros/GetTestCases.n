@@ -61,7 +61,7 @@ namespace Nemerle.Pinvoke.Tests.Macros
         def validatorName = Macros.NewSymbol("__AST_VALIDATOR__" + fileName);
 
         tb.Define(<[ decl:
-          private $(validatorName : name)(unit : Nemerle.Pinvoke.Ast.Declarations.Declaration) : bool
+          private $(validatorName : name)(unit : Nemerle.Pinvoke.CParser.Ast.Declarations.Declaration) : bool
           {
             $(testCase.ValidateAst)
           }
