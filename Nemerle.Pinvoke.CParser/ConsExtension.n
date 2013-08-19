@@ -10,11 +10,11 @@ using System.Linq;
 
 namespace Nemerle.Pinvoke.CParser
 {
- module ConsExtension
- {
-    public Cons[T](this head : T, tail : List[(NToken * T)]) : list[T]
-     {
-        head::NList.ToList(tail).Map((_,x) => x)
-     }
- }
+    module ConsExtension
+    {
+        internal Cons[T](this head : T, tail : List[(NToken * T)]) : list[T]
+        {
+            head::NList.ToList(tail).Map((_,x) => x)
+        }
+    }
 }
