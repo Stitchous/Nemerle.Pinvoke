@@ -15,7 +15,12 @@ namespace Nemerle.Pinvoke.CParser.Macros
                     MacroTargets.Class,
                     Inherited = false, AllowMultiple = false)]
     macro StandardNode(typeBuilder : TypeBuilder, params standardNameList : list[PExpr])
-    {   
+    {
+        unless (Nemerle.Macros.ImplicitCTX().Manager.IsIntelliSenseMode)
+        {
+            _ = Debugger.Launch();
+        }
+        
         def PrintUsageError()
         {
             Message.Error("Expected zero or one string literal parameter.");
@@ -41,10 +46,10 @@ namespace Nemerle.Pinvoke.CParser.Macros
 
     module StandardNodeImpl
     {
-        public DoTransform(typeBuilder : TypeBuilder, standardName : string) : void
+        public DoTransform(typeBuilder : TypeBuilder, standardNodeName : string) : void
         {
             typeBuilder.Define(<[decl: public static StandardName : string 
-            { get { $(standardName : string) }} ]>);
+            { get { $(standardNodeName : string) }} ]>);
 
             def MakeBody(typeBuilder, acc)
             {
@@ -75,9 +80,8 @@ namespace Nemerle.Pinvoke.CParser.Macros
                     def standardName = variantOptionTypeBuilder.UserData[Constants.StandardNameMacroName] :> string;
 
                     def optionBody = if (string.IsNullOrEmpty(standardName))
-                                         MakeBody(typeBuilder, body); 
-                                        else
-                    <[ $(standardName : string)  ]>;
+                                         MakeBody(variantOptionTypeBuilder, body); 
+                                     else <[ $(standardName : string) ]>;
 
                     variantOptionTypeBuilder.Define(<[ decl: public override ToString() : string 
                         { StandardName + "(" + $optionBody + ")" } ]>);
