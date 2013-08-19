@@ -7,7 +7,7 @@ using Nemerle.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nemerle.Pinvoke.Macros;
+using Nemerle.Pinvoke.CParser.Macros;
 
 namespace Nemerle.Pinvoke.CParser.Ast.Declarations
 {
