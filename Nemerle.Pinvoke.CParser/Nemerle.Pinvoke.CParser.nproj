@@ -211,16 +211,16 @@
     <Compile Include="ReflectionTree\BuiltInType.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ReflectionTree\ParameterDeclaration.n">
+    <Compile Include="ReflectionTree\Field.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ReflectionTree\StructDeclarator.n">
+    <Compile Include="ReflectionTree\ParameterDeclaration.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ReflectionTree\TopLevelEntry.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ReflectionTree\TypeDeclaration.n">
+    <Compile Include="ReflectionTree\Type.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ReflectionTree\TypedefAlias.n">

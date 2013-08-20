@@ -13,10 +13,9 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
 {
   [Record]
   [StandardNode]
-  public class StructDeclarator
+  public class Field
   {
     Name : string;  
-    Type : TypeDeclaration;
+    Type : ReflectionTree.Type;
   }
-
 }

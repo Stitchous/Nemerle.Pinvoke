@@ -3,7 +3,6 @@ using Nemerle.Collections;
 using Nemerle.Text;
 using Nemerle.Utility;
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,6 +12,9 @@ using Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator;
 using Nemerle.Pinvoke.CParser.Ast.Declarations.DeclarationSpecifiers;
 
 using Nemerle.Pinvoke.CParser.ReflectionTree;
+
+using NotImplementedException = System.NotImplementedException;
+using NotSupportedException = System.NotSupportedException;
 
 namespace Nemerle.Pinvoke.CParser
 {
@@ -54,8 +56,6 @@ namespace Nemerle.Pinvoke.CParser
         
         def typeDeclaration = CreateTypeDeclaration(declarationSpecifiers);
 
-
-
         def aliases = 
         initDeclarators.Map(
             initDeclarator =>
@@ -68,7 +68,7 @@ namespace Nemerle.Pinvoke.CParser
                 }) 
         .Map(TypedefAlias);
 
-        [TopLevelEntry.Typedef(aliases), TopLevelEntry.TypeDeclaration(typeDeclaration)]
+        [TopLevelEntry.Typedef(aliases), TopLevelEntry.Type(typeDeclaration)]
     }
 
     ParseDeclarator(declarator : Declarator) : string * option[Pointer]
@@ -97,16 +97,16 @@ namespace Nemerle.Pinvoke.CParser
         }
     }
 
-    NormalizePointers(typeDeclaration : TypeDeclaration, declarator : string * option[Pointer]) : string * TypeDeclaration
+    NormalizePointers(typeDeclaration : ReflectionTree.Type, declarator : string * option[Pointer]) : string * ReflectionTree.Type
     {
         match(declarator)
         {
             | (name, None) => (name, typeDeclaration)
-            | (name, Some(pointer)) => NormalizePointers(TypeDeclaration.Pointer(typeDeclaration), (name, pointer.InnerPointer))
+            | (name, Some(pointer)) => NormalizePointers(Type.Pointer(typeDeclaration), (name, pointer.InnerPointer))
         }
     }
     
-    CreateStructOrUnionTypeDeclaration(specifier : StructOrUnionSpecifier) : TypeDeclaration
+    CreateStructOrUnionTypeDeclaration(specifier : StructOrUnionSpecifier) : Type
     {
         match(specifier)
         {
@@ -124,7 +124,7 @@ namespace Nemerle.Pinvoke.CParser
                                         | StructDeclarator.NormalDeclarator as normalDeclarator =>
                                             {
                                                 def normalized = NormalizePointers(typeDeclaration, ParseDeclarator(normalDeclarator.value));
-                                                ReflectionTree.StructDeclarator(normalized)
+                                                ReflectionTree.Field(normalized)
                                             }
                                         | _ => throw NotSupportedException()
                                     }
@@ -136,15 +136,15 @@ namespace Nemerle.Pinvoke.CParser
                     
                     match(value.StructOrUnion)
                     {
-                        | StructOrUnion.Struct => TypeDeclaration.Struct(optionalName, members)
-                        | StructOrUnion.Union  => TypeDeclaration.Union(optionalName, members)
+                        | StructOrUnion.Struct => Type.Struct(optionalName, members)
+                        | StructOrUnion.Union  => Type.Union(optionalName, members)
                     }
                 }
             | _ => throw NotImplementedException()
         }
     }
 
-    CreateTypeDeclaration(declarationSpecifiers : list[DeclarationSpecifier]) : TypeDeclaration
+    CreateTypeDeclaration(declarationSpecifiers : list[DeclarationSpecifier]) : Type
     {
         match(declarationSpecifiers.OfType.[DeclarationSpecifier.TypeSpecifier]().Map(x => x.Value))
         {
@@ -152,8 +152,8 @@ namespace Nemerle.Pinvoke.CParser
             match(typeSpecifier)
             {
             | TypeSpecifier.StructOrUnion as value => CreateStructOrUnionTypeDeclaration(value.Specifier)
-            | TypeSpecifier.TypedefName as value => TypeDeclaration.Typedef(value.Name)
-            | Char => TypeDeclaration.BuiltIn(BuiltInType.Char())
+            | TypeSpecifier.TypedefName as value => Type.Typedef(value.Name)
+            | Char => Type.BuiltIn(BuiltInType.Char())
             }
         | _ => throw NotImplementedException()
         }

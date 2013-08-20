@@ -13,17 +13,17 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
 {
   [Record]
   [StandardNode]
-  public variant TypeDeclaration
+  public variant Type
   {
     | Struct
         {
             Name    : option[string];
-            Members : list[StructDeclarator];
+            Members : list[Field];
         }   
     | Union
         {
             Name    : option[string];
-            Members : list[StructDeclarator];
+            Members : list[Field];
         }
     | BuiltIn
         {
@@ -37,7 +37,7 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
 
     | Pointer
         {
-            Pointee : TypeDeclaration
+            Pointee : Type
         }
   }
 }

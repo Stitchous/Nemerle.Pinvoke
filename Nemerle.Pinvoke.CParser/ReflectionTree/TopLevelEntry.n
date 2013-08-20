@@ -20,14 +20,14 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
             Aliases : list[TypedefAlias];
         }
 
-    | TypeDeclaration
+    | Type
         {
-            Value : ReflectionTree.TypeDeclaration
+            Value : ReflectionTree.Type
         }
     | Function
         {
             Name : string;
-            ReturnValue : TypeDeclaration;
+            ReturnValue : Type;
             Parameters : list[ParameterDeclaration];
         }
   }

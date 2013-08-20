@@ -16,6 +16,6 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
   public class TypedefAlias
   {
     public Name : string;
-    public Type : TypeDeclaration;
+    public Type : Type;
   }
 }
