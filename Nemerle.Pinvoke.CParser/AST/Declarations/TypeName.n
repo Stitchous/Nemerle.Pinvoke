@@ -12,6 +12,8 @@ namespace Nemerle.Pinvoke.CParser.Ast.Declarations
   [Record]
   public class TypeName
   {
-    public Name : string { get; set };
+    [Accessor] declarationSpecifiers : list[DeclarationSpecifier];
+    
+    [Accessor] abstractDeclarator : option[Declarator.AbstractDeclarator];
   }
 }

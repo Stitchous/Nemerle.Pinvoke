@@ -1,0 +1,43 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.CParser.Macros;
+
+namespace Nemerle.Pinvoke.CParser.ReflectionTree
+{
+  [Record]
+  [StandardNode]
+  public variant TypeDeclaration
+  {
+    | Struct
+        {
+            Name    : option[string];
+            Members : list[StructDeclarator];
+        }   
+    | Union
+        {
+            Name    : option[string];
+            Members : list[StructDeclarator];
+        }
+    | BuiltIn
+        {
+            Type : BuiltInType;
+        }
+
+    | Typedef 
+        {
+            Name : string;
+        }
+
+    | Pointer
+        {
+            Pointee : TypeDeclaration
+        }
+  }
+}

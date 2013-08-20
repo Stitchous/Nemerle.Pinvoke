@@ -17,8 +17,8 @@ namespace Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator
   [StandardNode]
   public class Declarator : Located
   {
-    Pointer : option[Pointer];
+    public Pointer : option[Pointer];
     
-    DirectDeclarator : DirectDeclarator;
+    public DirectDeclarator : DirectDeclarator;
   }
 }

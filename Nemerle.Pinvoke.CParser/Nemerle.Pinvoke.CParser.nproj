@@ -175,6 +175,9 @@
     <Compile Include="Ast\Expressions\ConstantExpression.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Ast\ExternalDefinitions\ExternalDeclaration.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Ast\Identifiers\Identifier.n">
       <SubType>Code</SubType>
     </Compile>
@@ -193,6 +196,10 @@
       <SubType>Code</SubType>
       <DependentUpon>DeclarationsParser.n</DependentUpon>
     </Compile>
+    <Compile Include="DeclarationsParser.ExternalDefinitions.n">
+      <SubType>Code</SubType>
+      <DependentUpon>DeclarationsParser.n</DependentUpon>
+    </Compile>
     <Compile Include="DeclarationsParser.Identifiers.n">
       <SubType>Code</SubType>
       <DependentUpon>DeclarationsParser.n</DependentUpon>
@@ -201,6 +208,27 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
+    <Compile Include="ReflectionTree\BuiltInType.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReflectionTree\ParameterDeclaration.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReflectionTree\StructDeclarator.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReflectionTree\TopLevelEntry.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReflectionTree\TypeDeclaration.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReflectionTree\TypedefAlias.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TreeConverter.n">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Ast" />
@@ -210,6 +238,8 @@
     <Folder Include="Ast\Identifiers" />
     <Folder Include="Ast\Declarations" />
     <Folder Include="Ast\Constraints" />
+    <Folder Include="Ast\ExternalDefinitions" />
+    <Folder Include="ReflectionTree" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>

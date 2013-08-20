@@ -9,14 +9,14 @@ using System.Linq;
 
 using Nemerle.Pinvoke.CParser.Macros;
 
-namespace Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator
+namespace Nemerle.Pinvoke.CParser.ReflectionTree
 {
   [Record]
   [StandardNode]
-  public class InitDeclarator
+  public class StructDeclarator
   {
-    public Declarator : Declarator;
-
-    public Initializer : option[Initializer];
+    Name : string;  
+    Type : TypeDeclaration;
   }
+
 }

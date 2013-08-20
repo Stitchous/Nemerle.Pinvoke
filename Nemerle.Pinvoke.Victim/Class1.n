@@ -1,0 +1,18 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.Macros;
+
+[assembly:Include("EventTraceLogFileDescriptor.c", Externals = [TIME_ZONE_INFORMATION = TimeZoneInformation])]
+
+namespace Nemerle.Pinvoke.Victim
+{
+  public class Class1
+  {
+  }
+}

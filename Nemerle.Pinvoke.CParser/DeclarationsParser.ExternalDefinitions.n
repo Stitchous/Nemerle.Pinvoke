@@ -1,0 +1,33 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Peg;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.CParser.Ast.Declarations;
+using Nemerle.Pinvoke.CParser.Ast.ExternalDefinitions;
+
+namespace Nemerle.Pinvoke.CParser
+{
+  partial class DeclarationsParser
+  {
+    externalDeclarationDeclaration(declaration : Declaration) : ExternalDeclaration
+    {
+        ExternalDeclaration.Declaration(declaration)
+    }
+
+    functionDefinition(_ : list[DeclarationSpecifier], _ : Declarator.Declarator, _ : NToken, _ : NToken) : ExternalDeclaration
+    {
+        ExternalDeclaration.FunctionDefinition()
+    }
+
+    translationUnit(externalDeclarationList : List[ExternalDeclaration]) : list[ExternalDeclaration]
+    {
+        NList.ToList(externalDeclarationList)
+    }
+  }
+}
