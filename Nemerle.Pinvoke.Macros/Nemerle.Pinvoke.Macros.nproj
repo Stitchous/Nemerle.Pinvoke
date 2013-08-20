@@ -64,9 +64,6 @@
   <ItemGroup>
     <Compile Include="Macro1.n" />
     <Compile Include="Properties\AssemblyInfo.n" />
-    <Compile Include="ReflectionTree\Declaration.n">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ReflectionTree" />

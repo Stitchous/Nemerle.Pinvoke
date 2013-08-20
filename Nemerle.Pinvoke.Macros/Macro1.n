@@ -6,6 +6,7 @@ using Nemerle.Utility;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -52,16 +53,17 @@ namespace Nemerle.Pinvoke.Macros
 
       def parser = DeclarationsParser();
 
-      assert2(false);
-      
-      def str = parser.Parse(content);
+      unless (Nemerle.Macros.ImplicitCTX().Manager.IsIntelliSenseMode)
+      {
+          _ = Debugger.Launch();
+      }
 
+      def str = parser.Parse(content);
       
+      def reflectionTree = str.Map(CParser.TreeConverter.Convert);
+      Console.WriteLine(reflectionTree.ToString());
       
       def value = str.Map(s => s.ToString()).WithDefault("");
-
-
-
 
       def builder = typer.Env.Define(
         <[

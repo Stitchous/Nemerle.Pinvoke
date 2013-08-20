@@ -1,4 +1,5 @@
-﻿typedef struct _EVENT_TRACE_LOGFILE 
+﻿
+typedef struct _EVENT_TRACE_LOGFILE 
 {
   LPTSTR                       LogFileName;
   LPTSTR                       LoggerName;

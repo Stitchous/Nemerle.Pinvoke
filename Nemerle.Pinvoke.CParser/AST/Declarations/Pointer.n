@@ -19,6 +19,6 @@ namespace Nemerle.Pinvoke.CParser.Ast.Declarations
   {
     TypeQualifierList : option[list[TypeQualifier]];
 
-    InnerPointer : option[Pointer];
+    public InnerPointer : option[Pointer];
   }
 }

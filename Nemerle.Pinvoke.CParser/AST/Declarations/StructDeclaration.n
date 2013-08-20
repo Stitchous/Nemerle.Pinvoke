@@ -17,8 +17,8 @@ namespace Nemerle.Pinvoke.CParser.Ast.Declarations
   [StandardNode("struct-declaration")]  
   public class StructDeclaration : Located
   {
-    DeclarationSpecifierList : list[DeclarationSpecifier];
+    public DeclarationSpecifierList : list[DeclarationSpecifier];
 
-    StructDeclaratorsList : list[StructDeclarator]; 
+    public StructDeclaratorsList : list[StructDeclarator]; 
   }
 }

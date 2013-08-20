@@ -1,0 +1,163 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.CParser.Ast.ExternalDefinitions;
+using Nemerle.Pinvoke.CParser.Ast.Declarations;
+using Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator;
+using Nemerle.Pinvoke.CParser.Ast.Declarations.DeclarationSpecifiers;
+
+using Nemerle.Pinvoke.CParser.ReflectionTree;
+
+namespace Nemerle.Pinvoke.CParser
+{
+  public module TreeConverter
+  {
+    public Convert(externalDeclarations : list[ExternalDeclaration]) : list[TopLevelEntry]
+    {
+        externalDeclarations.Map(x =>
+            match(x)
+            {
+                | ExternalDeclaration.Declaration as declaration => CreateTopLevelEntry(declaration.Value)
+                | _  => throw NotImplementedException()
+            }).Flatten()
+    }
+    
+    CreateTopLevelEntry(declaration : Declaration) : list[TopLevelEntry]
+    {
+        def normalDeclaration = 
+            match(declaration)
+            {
+                | Declaration.Normal as value => value
+                | _  => throw NotImplementedException()
+            }
+
+        match(normalDeclaration.DeclarationSpecifiers)
+        {
+            | DeclarationSpecifier.StorageClass as value :: tail 
+                => match(value.Value)
+                    {
+                        | StorageClassSpecifier.Typedef => CreateTypedefEntry(tail, normalDeclaration.InitDeclarationList.WithDefault([]));
+                        | _ => throw NotImplementedException()
+                    }
+            | _ => throw NotImplementedException()
+        }
+    }
+
+    CreateTypedefEntry(declarationSpecifiers : list[DeclarationSpecifier], initDeclarators : list[InitDeclarator]) :  list[TopLevelEntry]
+    {
+        
+        def typeDeclaration = CreateTypeDeclaration(declarationSpecifiers);
+
+
+
+        def aliases = 
+        initDeclarators.Map(
+            initDeclarator =>
+                {
+                    match(initDeclarator)
+                    {
+                    | InitDeclarator(declarator, None) => NormalizePointers(typeDeclaration, ParseDeclarator(declarator))
+                    | _ => throw NotSupportedException()
+                    }
+                }) 
+        .Map(TypedefAlias);
+
+        [TopLevelEntry.Typedef(aliases), TopLevelEntry.TypeDeclaration(typeDeclaration)]
+    }
+
+    ParseDeclarator(declarator : Declarator) : string * option[Pointer]
+    {
+        match (declarator)
+        {
+            | Declarator(None, _ as directDeclarator) 
+                    => match(directDeclarator.Head)
+                    {
+                        | DirectDeclaratorHead.Simple as simpleDeclarator => (simpleDeclarator.Name.Id, None())
+                        | _ => throw NotSupportedException(declarator.ToString())
+                    }
+            | Declarator(Some(pointer), _ as directDeclarator) 
+                => match(directDeclarator.Head)
+                {
+                    | DirectDeclaratorHead.Recurrent(innerDeclarator) => 
+                                                
+                            match(ParseDeclarator(innerDeclarator))
+                            {
+                                | (name, None()) => (name, Some(pointer))
+                                | _ => throw NotSupportedException()
+                            }
+                                                
+                    | DirectDeclaratorHead.Simple as simpleDeclarator => (simpleDeclarator.Name.Id, Some(pointer))
+                }
+        }
+    }
+
+    NormalizePointers(typeDeclaration : TypeDeclaration, declarator : string * option[Pointer]) : string * TypeDeclaration
+    {
+        match(declarator)
+        {
+            | (name, None) => (name, typeDeclaration)
+            | (name, Some(pointer)) => NormalizePointers(TypeDeclaration.Pointer(typeDeclaration), (name, pointer.InnerPointer))
+        }
+    }
+    
+    CreateStructOrUnionTypeDeclaration(specifier : StructOrUnionSpecifier) : TypeDeclaration
+    {
+        match(specifier)
+        {
+            | StructOrUnionSpecifier.Declaration as value => 
+                {
+                    def members = value.declarations.Map(d => 
+                        {
+                            def typeDeclaration =  CreateTypeDeclaration(d.DeclarationSpecifierList);
+                            
+                            match(d.StructDeclaratorsList)
+                            {
+                                | [structDeclarator] =>     
+                                    match(structDeclarator)
+                                    {
+                                        | StructDeclarator.NormalDeclarator as normalDeclarator =>
+                                            {
+                                                def normalized = NormalizePointers(typeDeclaration, ParseDeclarator(normalDeclarator.value));
+                                                ReflectionTree.StructDeclarator(normalized)
+                                            }
+                                        | _ => throw NotSupportedException()
+                                    }
+                            }
+                            
+                    });
+
+                    def optionalName = value.Name.Map(i => i.Id);
+                    
+                    match(value.StructOrUnion)
+                    {
+                        | StructOrUnion.Struct => TypeDeclaration.Struct(optionalName, members)
+                        | StructOrUnion.Union  => TypeDeclaration.Union(optionalName, members)
+                    }
+                }
+            | _ => throw NotImplementedException()
+        }
+    }
+
+    CreateTypeDeclaration(declarationSpecifiers : list[DeclarationSpecifier]) : TypeDeclaration
+    {
+        match(declarationSpecifiers.OfType.[DeclarationSpecifier.TypeSpecifier]().Map(x => x.Value))
+        {
+        | [typeSpecifier] => 
+            match(typeSpecifier)
+            {
+            | TypeSpecifier.StructOrUnion as value => CreateStructOrUnionTypeDeclaration(value.Specifier)
+            | TypeSpecifier.TypedefName as value => TypeDeclaration.Typedef(value.Name)
+            | Char => TypeDeclaration.BuiltIn(BuiltInType.Char())
+            }
+        | _ => throw NotImplementedException()
+        }
+    }
+
+  }
+}

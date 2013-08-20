@@ -208,6 +208,27 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
+    <Compile Include="ReflectionTree\BuiltInType.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReflectionTree\ParameterDeclaration.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReflectionTree\StructDeclarator.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReflectionTree\TopLevelEntry.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReflectionTree\TypeDeclaration.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ReflectionTree\TypedefAlias.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TreeConverter.n">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Ast" />
@@ -218,6 +239,7 @@
     <Folder Include="Ast\Declarations" />
     <Folder Include="Ast\Constraints" />
     <Folder Include="Ast\ExternalDefinitions" />
+    <Folder Include="ReflectionTree" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
