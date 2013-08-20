@@ -1,0 +1,63 @@
+﻿using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Collections;
+
+using System;
+using System.Linq;
+using System.Windows.Input;
+using System.Reactive.Subjects;
+using System.Collections.Generic;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer.Commands
+{
+  public class ObservableCommand[T] : IObservable[T], ICommand, IDisposable
+  {
+      public this()
+      {
+        CanExecuteChanged = (_, _) => {};
+      }
+      
+      #region IObservable[T] Members
+
+      public Subscribe(observer : IObserver[T]) : IDisposable
+      {
+        _subject.Subscribe(observer);
+      }
+
+      #endregion
+
+      #region ICommand Members
+
+      public CanExecute(parameter : object) : bool
+      {
+        _canExecutePredicate(parameter :> T);
+      }
+
+      public event CanExecuteChanged : EventHandler;
+
+      public Execute(parameter : object) : void
+      {
+         _subject.OnNext(parameter :> T);
+      }
+
+      #endregion
+      
+      #region IDisposable Members
+
+      public Dispose() : void
+      {
+        _subject.OnCompleted();
+        _subject.Dispose();
+      }
+
+      #endregion
+      
+      public RaiseCanExecuteChaged() : void
+      {
+        CanExecuteChanged(this, EventArgs.Empty);
+      }
+      
+      private _subject : Subject[T] = Subject.[T]();
+      private _canExecutePredicate : Predicate[T];
+  }
+}

@@ -11,6 +11,8 @@ Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Pinvoke.CParser.Mac
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Pinvoke.CParser.Visualizer", "Nemerle.Pinvoke.CParser.Visualizer\Nemerle.Pinvoke.CParser.Visualizer.nproj", "{72FAB0B9-7BA9-4958-B67A-3FE8017CE629}"
 EndProject
+Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Pinvoke.CParser.Visualizer.Macros", "Nemerle.Pinvoke.CParser.Visualizer.Macros\Nemerle.Pinvoke.CParser.Visualizer.Macros.nproj", "{0EBEADE8-9B2A-4559-83F8-5F74AC2B04EA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{72FAB0B9-7BA9-4958-B67A-3FE8017CE629}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72FAB0B9-7BA9-4958-B67A-3FE8017CE629}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72FAB0B9-7BA9-4958-B67A-3FE8017CE629}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EBEADE8-9B2A-4559-83F8-5F74AC2B04EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EBEADE8-9B2A-4559-83F8-5F74AC2B04EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EBEADE8-9B2A-4559-83F8-5F74AC2B04EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EBEADE8-9B2A-4559-83F8-5F74AC2B04EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

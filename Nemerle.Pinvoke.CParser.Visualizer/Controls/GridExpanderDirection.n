@@ -1,0 +1,9 @@
+﻿namespace Nemerle.Pinvoke.CParser.Visualizer.Controls
+{
+    public enum GridExpanderDirection
+    {
+        | None = 0
+        | Next = 1
+        | Previous = 2
+    }
+}

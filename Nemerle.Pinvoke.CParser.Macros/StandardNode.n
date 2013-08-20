@@ -16,10 +16,10 @@ namespace Nemerle.Pinvoke.CParser.Macros
                     Inherited = false, AllowMultiple = false)]
     macro StandardNode(typeBuilder : TypeBuilder, params standardNameList : list[PExpr])
     {
-        unless (Nemerle.Macros.ImplicitCTX().Manager.IsIntelliSenseMode)
-        {
-            _ = Debugger.Launch();
-        }
+        //unless (Nemerle.Macros.ImplicitCTX().Manager.IsIntelliSenseMode)
+        //{
+        //    _ = Debugger.Launch();
+        //}
         
         def PrintUsageError()
         {

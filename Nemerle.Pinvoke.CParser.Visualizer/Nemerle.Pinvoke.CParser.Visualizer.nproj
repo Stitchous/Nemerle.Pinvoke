@@ -41,7 +41,6 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -61,20 +60,108 @@
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\CommandBehavior.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Commands\EventHooker.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Commands\RelayCommand.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Commands\RelayCommandBase.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Commands\RelayCommandGeneric.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Controls\TreeViewConnectingLines.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Controls\TreeViewItemConnectingLineInfo.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
+    <Compile Include="View\MultiplyConverter.n">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Commands" />
+    <Folder Include="Controls\" />
+    <Folder Include="Resources\" />
+    <Folder Include="View" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-     <ApplicationDefinition Include="App.xaml">
+    <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="App.xaml.cs">
+    <Compile Include="App.xaml.n">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="View\AstViewer.xaml">
+      <SubType>Content</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Include="Controls\GridExpander.cs">
+      <SubType>Content</SubType>
+    </Compile>
+    <Compile Include="Controls\GridExpanderDirection.n">
+      <SubType>Content</SubType>
+    </Compile>
+    <Page Include="Resources\BorderStyle.xaml">
+      <SubType>Content</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\CommonResources.xaml">
+      <SubType>Content</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\ExpanderStyle.xaml">
+      <SubType>Content</SubType>
+    </Page>
+    <Page Include="Resources\GridSplitterStyle.xaml">
+      <SubType>Content</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\HeaderedContentControlStyle.xaml">
+      <SubType>Content</SubType>
+    </Page>
+    <Page Include="Resources\ListBoxStyle.xaml">
+      <SubType>Content</SubType>
+    </Page>
+    <Page Include="Resources\ScrollBarStyle.xaml">
+      <SubType>Content</SubType>
+    </Page>
+    <Page Include="Resources\ScrollViewerStyle.xaml">
+      <SubType>Content</SubType>
+    </Page>
+    <Page Include="Resources\TextBlockStyle.xaml">
+      <SubType>Content</SubType>
+    </Page>
+    <Page Include="Resources\TreeViewStyle.xaml">
+      <SubType>Content</SubType>
+    </Page>
+    <Page Include="Resources\ValidationTooltipStyle.xaml">
+      <SubType>Content</SubType>
+    </Page>
+    <Compile Include="View\AstViewer.xaml.n">
+      <SubType>Content</SubType>
+      <DependentUpon>View\AstViewer.xaml</DependentUpon>
+      <Generator>MSBuild:Compile</Generator>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <MacroProjectReference Include="..\Nemerle.Pinvoke.CParser.Visualizer.Macros.nproj\Nemerle.Pinvoke.CParser.Visualizer.Macros.nproj">
+      <Name>Nemerle.Pinvoke.CParser.Visualizer.Macros</Name>
+      <Project>{0ebeade8-9b2a-4559-83f8-5f74ac2b04ea}</Project>
+      <Private>False</Private>
+    </MacroProjectReference>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <PropertyGroup>

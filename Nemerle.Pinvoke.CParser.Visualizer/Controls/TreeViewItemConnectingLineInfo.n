@@ -1,0 +1,208 @@
+﻿// (c) Copyright Microsoft Corporation.
+// This source is subject to the Microsoft Public License (Ms-PL).
+// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// All other rights reserved.
+
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
+using System.Windows.Shapes;
+
+using Nemerle.Assertions;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer.Controls
+{
+    /// <summary>
+    /// Represents the necessary information to draw connecting lines in a
+    /// TreeViewItem.
+    /// </summary>
+    /// <QualityBand>Experimental</QualityBand>
+    internal class TreeViewItemConnectingLineInfo
+    {
+        /// <summary>
+        /// Gets the TreeViewItem.
+        /// </summary>
+        public Item : TreeViewItem { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the vertical connecting line of the TreeViewItem.
+        /// </summary>
+        public VerticalConnectingLine : Line { get; set; }
+
+        /// <summary>
+        /// Gets or sets the horizontal connecting line of the TreeViewItem.
+        /// </summary>
+        public HorizontalConnectingLine : Line { get; set; }
+
+        /// <summary>
+        /// Gets or sets the expander button of the TreeViewItem.
+        /// </summary>
+        public ExpanderButton : ToggleButton { get; set; }
+
+        /// <summary>
+        /// Gets or sets the header of the TreeViewItem.
+        /// </summary>
+        public Header : FrameworkElement { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the TreeViewItemConnectingLineInfo
+        /// class.
+        /// </summary>
+        /// <param name="item">The TreeViewItem.</param>
+        public this([NotNull] item : TreeViewItem)
+        {
+            Item = item;
+
+            // Position the connecting lines when the layout is updated
+            item.LayoutUpdated += (_) => PositionConnectingLines();
+            item.Expanded += (_) => PositionConnectingLines();
+            item.Collapsed += (_) => PositionConnectingLines();
+            item.ItemContainerGenerator.ItemsChanged += (_) => PositionConnectingLines();
+        }
+
+        /// <summary>
+        /// Position the connecting lines in the TreeViewItem.
+        /// </summary>
+        private PositionConnectingLines() : void
+        {
+            PositionHorizontalConnectingLine();
+            PositionVerticalConnectingLine();
+        }
+        
+        private GetLastItem() : TreeViewItem
+        {
+            TreeViewConnectingLines.GetTreeViewItemSafe(Item.ItemContainerGenerator.ContainerFromIndex(Item.Items.Count - 1))
+        }
+        
+        /// <summary>
+        /// Position the vertical connecting line in the TreeViewItem.
+        /// </summary>
+        private PositionVerticalConnectingLine() : void
+        {
+            return:
+            {
+                // Nothing to position if we don't have a connecting line
+                when (VerticalConnectingLine == null)
+                {
+                    return()
+                }
+
+                // Nothing to position if there are no nested items or if we're
+                // collapsed
+                when (!Item.IsExpanded || Item.Items.Count <= 0)
+                {
+                    VerticalConnectingLine.Visibility = Visibility.Collapsed;
+                    return()
+                }
+
+                // Get the last nested item (which tells us how far down to draw the
+                // connecting line)
+                def lastItem = GetLastItem();
+                
+                when (lastItem == null)
+                {
+                    VerticalConnectingLine.Visibility = Visibility.Collapsed;
+                    return()
+                }
+
+                // Get the element on the last nested item that the vertical line
+                // should connect to
+                def info = TreeViewConnectingLines.GetConnectingLineInfo(lastItem);
+                def connection = 
+                    if (lastItem.HasItems)
+                        info.ExpanderButton : FrameworkElement 
+                    else
+                        info.HorizontalConnectingLine : FrameworkElement;
+                when (connection != null)
+                {
+                    def bounds = GetBoundsRelativeTo(connection, VerticalConnectingLine);
+                    when (bounds == null)
+                    {
+                        return()
+                    }
+
+                    mutable bottomY = bounds.Value.Y;
+
+                    // Augment the length with the Y offset of the horizontal
+                    // connecting line
+                    bottomY += info.HorizontalConnectingLine.Y1;
+                    
+                    VerticalConnectingLine.Y2 = bottomY -  if (lastItem.HasItems) VerticalConnectingLine.X1 else 0.0;
+                }
+
+                VerticalConnectingLine.Visibility = Visibility.Visible; 
+            }
+        }
+        
+        private PositionHorizontalConnectingLine() : void
+        {
+            return:
+            {
+                // Nothing to position if we don't have a connecting line
+                when (HorizontalConnectingLine == null || Item == null)
+                {
+                    return()
+                }
+
+                // Get the element on the item that the horizontal line
+                // should connect to
+                def info = TreeViewConnectingLines.GetConnectingLineInfo(Item);
+                def connection = info.ExpanderButton : FrameworkElement;
+                
+                when (connection != null)
+                {
+                    def bounds = GetBoundsRelativeTo(connection, HorizontalConnectingLine);
+                    
+                    def centerY = (bounds.Value.Height + bounds.Value.Top) / 2.0;
+
+                    HorizontalConnectingLine.Y1 = centerY;
+                    HorizontalConnectingLine.Y2 = centerY;
+                    
+                    when (!Item?.HasItems)
+                        HorizontalConnectingLine.X1 = VerticalConnectingLine.X1 + 3;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Get the bounds of an element relative to another element.
+        /// </summary>
+        /// <param name="element">The element.</param>
+        /// <param name="otherElement">
+        /// The element relative to the other element.
+        /// </param>
+        /// <returns>
+        /// The bounds of the element relative to another element, or null if
+        /// the elements are not related.
+        /// </returns>
+        /// <exception cref="T:System.ArgumentNullException">
+        /// <paramref name="element"/> is null.
+        /// </exception>
+        /// <exception cref="T:System.ArgumentNullException">
+        /// <paramref name="otherElement"/> is null.
+        /// </exception>
+        static GetBoundsRelativeTo([NotNull] element : FrameworkElement, [NotNull] otherElement : UIElement) : Rect?
+        {
+            try
+            {
+                mutable origin, bottom;
+                def transform = element.TransformToVisual(otherElement);
+                
+                if (transform != null &&
+                    transform.TryTransform(Point(), out origin) &&
+                    transform.TryTransform(Point(element.ActualWidth, element.ActualHeight), out bottom))
+                    {
+                        Rect(origin, bottom) : Rect?
+                    }
+                else
+                    null : Rect?
+            }
+            catch
+            {
+                | _ => null : Rect?// Ignore any exceptions thrown while trying to transform
+            }
+        }
+    }
+}

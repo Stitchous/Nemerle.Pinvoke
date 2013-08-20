@@ -1,0 +1,166 @@
+﻿// (c) Copyright Microsoft Corporation.
+// This source is subject to the Microsoft Public License (Ms-PL).
+// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// All other rights reserved.
+
+using System;
+using System.Windows;
+using System.Diagnostics.CodeAnalysis;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Shapes;
+
+using Nemerle.Assertions;
+using Nemerle.WPF;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer.Controls
+{
+    public module TreeViewConnectingLines
+    {
+        #region internal attached TreeViewItemConnectingLineInfo ConnectingLineInfo
+        /// <summary>
+        /// Gets the value of the ConnectingLineInfo attached property for a
+        /// specified TreeViewItem.
+        /// </summary>
+        /// <param name="element">
+        /// The TreeViewItem from which the property value is read.
+        /// </param>
+        /// <returns>
+        /// The ConnectingLineInfo property value for the TreeViewItem.
+        /// </returns>
+        internal GetConnectingLineInfo([NotNull] element : TreeViewItem) : TreeViewItemConnectingLineInfo
+        {
+            // Get the info and create on demand if necessary
+            match(element.GetValue(ConnectingLineInfoProperty))
+            {
+                | value is TreeViewItemConnectingLineInfo => value : TreeViewItemConnectingLineInfo
+                | _ => 
+                        def info = TreeViewItemConnectingLineInfo(element); 
+                        element.SetValue(ConnectingLineInfoProperty, info); 
+                        info
+            }        
+        }
+
+        /// <summary>
+        /// Identifies the ConnectingLineInfo dependency property.
+        /// </summary>
+        internal ConnectingLineInfoProperty : DependencyProperty =
+            DependencyProperty.RegisterAttached(
+                "ConnectingLineInfo",
+                typeof(TreeViewItemConnectingLineInfo),
+                typeof(TreeViewConnectingLines),
+                PropertyMetadata(default(TreeViewItemConnectingLineInfo)));
+                
+        #endregion internal attached TreeViewItemConnectingLineInfo ConnectingLineInfo
+
+        [DependencyProperty(IsAttached,
+            Metadata = FrameworkPropertyMetadata(default(TreeViewItem), OnIsVerticalConnectingLineOfPropertyChanged))]
+        public static GetIsVerticalConnectingLineOf([NotNull] element : Line) : TreeViewItem;
+        
+        private static OnIsVerticalConnectingLineOfPropertyChanged(d : DependencyObject, e : DependencyPropertyChangedEventArgs) : void
+        {
+            def source = GetAs.[Line](d);
+            mutable value = GetAs.[TreeViewItem](e.NewValue);
+
+            if (value != null)
+            {
+                def info = GetConnectingLineInfo(value);
+                info.VerticalConnectingLine = source;
+            }
+            else
+            {
+                value = GetAs.[TreeViewItem](e.OldValue);
+                when (value != null)
+                {
+                    def info = GetConnectingLineInfo(value);
+                    info.VerticalConnectingLine = null;
+                }
+            }
+        }
+        
+        [DependencyProperty(IsAttached,
+            Metadata = FrameworkPropertyMetadata(default(TreeViewItem), OnIsHorizontalConnectingLineOfPropertyChanged))]
+        public static GetIsHorizontalConnectingLineOf([NotNull] element : Line) : TreeViewItem;
+        
+        private static OnIsHorizontalConnectingLineOfPropertyChanged(d : DependencyObject, e : DependencyPropertyChangedEventArgs) : void
+        {
+            def source = GetAs.[Line](d);
+            mutable value = GetAs.[TreeViewItem](e.NewValue);            
+
+            if (value != null)
+            {
+                def info = GetConnectingLineInfo(value);
+                info.HorizontalConnectingLine = source;
+            }
+            else
+            {
+                value = GetAs.[TreeViewItem](e.OldValue);
+                when (value != null)
+                {
+                    def info = GetConnectingLineInfo(value);
+                    info.HorizontalConnectingLine = null;
+                }
+            }
+        }
+        
+        [DependencyProperty(IsAttached,
+            Metadata = FrameworkPropertyMetadata(default(TreeViewItem), OnIsExpanderButtonOfPropertyChanged))]
+        public static GetIsExpanderButtonOf([NotNull] element : ToggleButton) : TreeViewItem;
+        
+        private static OnIsExpanderButtonOfPropertyChanged(d : DependencyObject, e : DependencyPropertyChangedEventArgs) : void
+        {
+            def source = GetAs.[ToggleButton](d);
+            mutable value = GetAs.[TreeViewItem](e.NewValue);
+
+            if (value != null)
+            {
+                def info = GetConnectingLineInfo(value);
+                info.ExpanderButton = source;
+            }
+            else
+            {
+                value = GetAs.[TreeViewItem](e.OldValue);
+                when (value != null)
+                {
+                    def info = GetConnectingLineInfo(value);
+                    info.ExpanderButton = null;    
+                }
+            }
+        }
+        
+        [DependencyProperty(IsAttached, Metadata = FrameworkPropertyMetadata(default(TreeViewItem), OnIsHeaderOfPropertyChanged))]
+        public static GetIsHeaderOf(element : FrameworkElement) : TreeViewItem;
+
+        private static OnIsHeaderOfPropertyChanged(d : DependencyObject, e : DependencyPropertyChangedEventArgs) : void
+        {
+            def source = GetAs.[FrameworkElement](d);
+            mutable value = GetAs.[TreeViewItem](e.NewValue);
+
+            if (value != null)
+            {
+                def info = GetConnectingLineInfo(value);
+                info.Header = source;
+            }
+            else
+            {
+                value = GetAs.[TreeViewItem](e.OldValue);
+                when (value != null)
+                {
+                    def info = GetConnectingLineInfo(value);
+                    info.Header = null;
+                }
+            }
+        }
+        
+        internal static GetTreeViewItemSafe(treeViewItem : object) : TreeViewItem
+        {
+            GetAs.[TreeViewItem](treeViewItem)
+        }
+        
+        private GetAs[T](value : object) : T where T : object
+        {
+            | value is T => value : T
+            | _ => null
+        }
+    }
+}

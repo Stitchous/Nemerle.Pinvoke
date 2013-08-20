@@ -1,0 +1,249 @@
+﻿using Nemerle;
+using Nemerle.Assertions;
+using Nemerle.Collections;
+using Nemerle.Compiler;
+using Nemerle.Compiler.Parsetree;
+using Nemerle.Compiler.Typedtree;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Windows;
+
+//BUG: Can't add macro reference on existing Nemerle.WPF.dll in GAC (got 'namespace Nemerle.WPF doesn't exist' error) 
+namespace Nemerle.WPF
+{
+  [MacroUsage(MacroPhase.BeforeInheritance, MacroTargets.Property, Inherited = false, AllowMultiple = false)]
+  public macro DependencyProperty(typeBuilder : TypeBuilder, property : ParsedProperty, params options : list[PExpr])
+  {
+    DependencyPropertyImpl.Implement(typeBuilder, property, Macros.ImplicitCTX(), options);
+  }
+
+  [MacroUsage(MacroPhase.BeforeInheritance, MacroTargets.Method, Inherited = false, AllowMultiple = false)]
+  public macro DependencyProperty(typeBuilder : TypeBuilder, method : ParsedMethod, params options : list[PExpr])
+  {
+    DependencyPropertyImpl.Implement(typeBuilder, method, Macros.ImplicitCTX(), options);
+  }
+
+  internal module DependencyPropertyImpl
+  {
+    private PropertyFieldName(propertyName : string) : string
+    {
+      propertyName + "Property"
+    }
+
+    private PropertyKeyFieldName(propertyName : string) : string
+    {
+      propertyName + "PropertyKey"
+    }
+
+    private PropertyFieldName(propertyName : string, readOnly : bool) : string
+    {
+      if(readOnly)
+        PropertyKeyFieldName(propertyName)
+      else
+        PropertyFieldName(propertyName)
+    }
+
+    private GetOptions([NotNull] options : list[PExpr], [NotNull] propertyType : PExpr) : PExpr * PExpr * bool * PExpr * bool
+    {
+      // Check, that option specified once
+      def check(item, value)
+      {
+        match(value)
+        {
+          | null => item
+          | _ => Message.Error(item.Location, $"Duplicated option: '$item'."); null
+        }
+      };
+
+      mutable metadata, validate, isReadOnly, addOwner, isAttached;
+      foreach(item in options)
+      {
+        | <[ IsAttached ]> => isAttached = true
+        | <[ Metadata = $value ]> => metadata = check(value, metadata)
+        | <[ ValidateCallback = $value ]> =>
+            Message.Warning(item.Location, "Use 'Validate' parameter instead of 'ValidateCallback'.");
+            validate = check(<[ ValidateValueCallback(value => $value(value :> $propertyType)) ]>, validate)
+        | <[ Validate = $value ]> =>
+            def callback = match(value)
+            {
+              | <[ $_ => $_ ]> => <[ ValidateValueCallback(value => $value(value :> $propertyType)) ]>
+              | <[ $(name : name) ]> => <[ ValidateValueCallback(value => $(name : name)(value :> $propertyType)); ]>
+              | <[ $qualified.$(name : name) ]> => <[ ValidateValueCallback(value => $qualified.$(name : name)(value :> $propertyType)); ]>
+              | _ => <[ ValidateValueCallback(value => 
+                     {
+                       def lambda = $("value" : dyn) => { $value; };
+                        lambda(value :> $propertyType);
+                     }); ]>
+            }
+            validate = check(callback, validate)
+
+        | <[ IsReadOnly = $value ]> => match(value)
+          {
+            | <[ true ]> | <[ false ]> => isReadOnly = check(value, isReadOnly)
+            | _ => Message.Error(value.Location, $"Unsupported expression: '$(value)'. Boolean expected.");
+          }
+        | <[ IsReadOnly ]> => isReadOnly = check(<[ true ]>, isReadOnly)
+        | <[ $("AddOwner" : dyn) : $value ]> => addOwner = check(value, addOwner)
+        | _ => Message.Error(item.Location, $"Invalid option: '$item'.")
+      };
+      
+      def readOnly = match(isReadOnly)
+      {
+        | <[ true ]> => true;
+        | _ => /* false, null */ false;
+      };
+      
+      when(addOwner != null && (validate != null || readOnly))
+        Message.FatalError(addOwner.Location, "'AddOwner' with 'IsReadOnly' or 'Validate' parameters does not supported.");
+
+      (metadata ?? <[ null ]>, validate ?? <[ null ]>, readOnly, addOwner, isAttached)
+    }
+
+    private DeclareFields(typeBuilder : TypeBuilder, propertyName : string, propertyType : PExpr, access : NemerleModifiers, options : list[PExpr]) : bool
+    {
+      def (metadata, validate, readOnly, addOwner, isAttached) = GetOptions(options, propertyType);
+      def args =
+        if(addOwner == null) [<[ $(propertyName : string) ]>, <[ typeof($propertyType) ]>, <[ typeof($(typeBuilder.ParsedTypeName)) ]>, metadata, validate]
+        else [<[ typeof($(typeBuilder.ParsedTypeName)) ]>, metadata];
+      def name = PropertyFieldName(propertyName);
+      def define(property)
+      {
+        property.Attributes |= access & NemerleModifiers.AccessModifiers;
+        typeBuilder.Define(property);
+      };
+
+      match((readOnly, isAttached, addOwner != null))
+      {
+        | (false, false, false) => define(<[decl: static $(name : dyn) : DependencyProperty = DependencyProperty.Register(..$args); ]>)
+        | (false, true, false) => define(<[decl: static $(name : dyn) : DependencyProperty = DependencyProperty.RegisterAttached(..$args); ]>)
+        | (true, false, false) => 
+            def nameKey = PropertyKeyFieldName(propertyName);
+            typeBuilder.Define(<[decl: private static $(nameKey : dyn) : DependencyPropertyKey = DependencyProperty.RegisterReadOnly(..$args); ]>);
+            define(<[decl: static $(name : dyn) : DependencyProperty = $(nameKey : dyn).DependencyProperty; ]>)
+        | (true, true, false) => 
+            def nameKey = PropertyKeyFieldName(propertyName);
+            typeBuilder.Define(<[decl: private static $(nameKey : dyn) : DependencyPropertyKey = DependencyProperty.RegisterAttachedReadOnly(..$args); ]>);
+            define(<[decl: static $(name : dyn) : DependencyProperty = $(nameKey : dyn).DependencyProperty; ]>)
+        | (_ , _, true) => define(<[decl: static $(name : dyn) : DependencyProperty = $addOwner.$(name : dyn).AddOwner(..$args); ]>)
+      }
+
+      readOnly
+    }
+
+    private MakeGetValue(@this : PExpr, propertyName : string, propertyType : PExpr, typer : Typer) : PExpr
+    {
+      def name = PropertyFieldName(propertyName);
+      def propertyFixedType = typer.BindFixedType(propertyType);
+      
+      if(propertyFixedType.Equals(typer.InternalType.Object))
+        <[ $(@this).GetValue($(name : dyn))]>
+      else
+        <[ $(@this).GetValue($(name : dyn)) :> $propertyType ]>
+    }
+
+    private MakeSetValue(@this : PExpr, propertyName : string, readOnly : bool) : PExpr
+    {
+      def name = PropertyFieldName(propertyName, readOnly);
+      <[ $(@this).SetValue($(name : dyn), $("value" : dyn)) ]>
+    }
+
+    private GetSetterAccessModifiers(readOnly : bool, getterAccessModifiers : NemerleModifiers) : NemerleModifiers
+    {
+      if(readOnly)
+        NemerleModifiers.Private
+      else
+        getterAccessModifiers & NemerleModifiers.AccessModifiers
+    }
+
+    private CheckArgumentNull(argument : PExpr) : PExpr
+    {
+      def name = argument.ToString();
+      <[
+        when($(argument) == null)
+          throw ArgumentNullException($(name : string));
+      ]>
+    }
+
+    public Implement(typeBuilder : TypeBuilder, property : ClassMember.Property, typer : Typer, options : list[PExpr]) : void
+    {
+      def redundant = property.Attributes & ~NemerleModifiers.AccessModifiers;
+      when(redundant != 0)
+        Message.Error(property.Location, $"Unsupported dependency property attributes: '$redundant'. Only access modifiers allowed.");
+
+      def propertyType = property.returnType;
+
+      def accessor(accessor)
+      {
+        | Some(fn) => fn
+        | _ => Message.FatalError(property.Location, "Both getter and setter should be specified for dependency property.");
+      };
+      def getter = accessor(property.getter);
+      def setter = accessor(property.setter);
+
+      def checkAccessorAttributes(accessor)
+      {
+        when(accessor.Attributes %&& NemerleModifiers.AccessModifiers)
+          Message.Error(accessor.Location, "Property accessors can not contains access modifiers.")
+      };
+      checkAccessorAttributes(getter);
+      checkAccessorAttributes(setter);
+      def propertyAccess = property.Attributes & NemerleModifiers.AccessModifiers;
+
+      def readOnly = DeclareFields(typeBuilder, property.Name, propertyType, propertyAccess, options);
+      getter.Body = MakeGetValue(<[ this ]>, property.Name, propertyType, typer); 
+      setter.Attributes |= GetSetterAccessModifiers(readOnly, propertyAccess);
+      setter.Body = MakeSetValue(<[ this ]>, property.Name, readOnly);
+    }
+
+    public Implement(typeBuilder : TypeBuilder, method : ClassMember.Function, typer : Typer, options : list[PExpr]) : void
+    {
+      unless(method.Attributes %&& NemerleModifiers.Static)
+        Message.Error(method.Location, "Attached property method should be static.");
+
+      def redundant = method.Attributes & ~(NemerleModifiers.AccessModifiers | NemerleModifiers.Static);
+      when(redundant != 0)
+        Message.Error(method.Location, $"Unsupported dependency property attributes: '$redundant'. Only access modifiers and $(NemerleModifiers.Static) allowed.");
+
+      def GetMethodPrefix = "Get";
+      def SetMethodPrefix = "Set";
+
+      def getterName = method.Name;
+      when(String.IsNullOrEmpty(getterName) || getterName.Length <= GetMethodPrefix.Length || !getterName.StartsWith(GetMethodPrefix))
+        Message.Error(method.Location, "Dependency property name should be 'Get<DependencyPropertyName>'.");
+
+      def parameters = method.header.Parameters;
+      when(parameters.Length != 1)
+        Message.Error(method.Location, "Attached property method should have exactly one parameter of type 'DependencyObject' or derived.");
+      def parameter = parameters.Head;
+
+      def propertyName = getterName.Substring(GetMethodPrefix.Length);
+      def setterName = SetMethodPrefix + propertyName;
+      def propertyType = method.header.ReturnType;
+
+      def parameterName = parameter.Name;
+      def parameterType = parameter.Type;
+      def propertyAccess = method.Attributes & NemerleModifiers.AccessModifiers;
+
+      def readOnly = DeclareFields(typeBuilder, propertyName, propertyType, propertyAccess, options);
+
+      method.Body = <[
+                    $(CheckArgumentNull(<[ $(parameterName : dyn) ]>));
+                    $(MakeGetValue(<[ $(parameterName : dyn) ]>, propertyName, propertyType, typer));
+                    ]>;
+
+      def setter = <[decl:
+        static $(setterName : dyn)($(parameterName : dyn) : $(parameterType), value : $(propertyType)) : void
+        {
+          $(CheckArgumentNull(<[ $(parameterName : dyn) ]>));
+          $(MakeSetValue(<[ $(parameterName : dyn) ]>, propertyName, readOnly));
+        }
+      ]>;
+      setter.Attributes |= GetSetterAccessModifiers(readOnly, propertyAccess);
+      typeBuilder.Define(setter);
+    }
+  }
+}

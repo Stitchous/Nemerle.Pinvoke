@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Windows.Input;
+
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer.Commands
+{
+  public abstract class RelayCommandBase : ICommand
+  {      
+      protected this()
+      {
+          CanExecuteChanged = (_) => {};
+      }
+      
+      public RaiseCanExecuteChanged() : void
+      {
+        CanExecuteChanged(this, EventArgs.Empty);
+      }
+
+      public event CanExecuteChanged : EventHandler;
+      
+      public abstract CanExecute(parameter : object) : bool;
+      
+      public abstract Execute(parameter : object) : void;
+  }
+}
