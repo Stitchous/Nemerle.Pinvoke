@@ -157,7 +157,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <MacroProjectReference Include="..\Nemerle.Pinvoke.CParser.Visualizer.Macros.nproj\Nemerle.Pinvoke.CParser.Visualizer.Macros.nproj">
+    <MacroProjectReference Include="..\Nemerle.Pinvoke.CParser.Visualizer.Macros\Nemerle.Pinvoke.CParser.Visualizer.Macros.nproj">
       <Name>Nemerle.Pinvoke.CParser.Visualizer.Macros</Name>
       <Project>{0ebeade8-9b2a-4559-83f8-5f74ac2b04ea}</Project>
       <Private>False</Private>
