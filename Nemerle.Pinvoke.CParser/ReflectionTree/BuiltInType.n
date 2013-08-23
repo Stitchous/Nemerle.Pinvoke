@@ -15,8 +15,25 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
   public variant BuiltInType
   {
     | Void
+   
     | Char
+    | SignedChar
+    | UnsignedChar
     | Short
+    | UnsignedShort
+    | Int
+    | UnsignedInt
+    | Long
+    | UnsignedLong
+    | LongLong
+    | UnsignedLongLong
+    | Float
+    | Double
+    | Bool
+    | Complex
+    | LongDouble
+    | FloatComplex
+    | DoubleComplex
+    | LongDoubleComplex
   }
-
 }

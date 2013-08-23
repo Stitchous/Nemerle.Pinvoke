@@ -39,5 +39,6 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
         {
             Pointee : Type
         }
+
   }
 }

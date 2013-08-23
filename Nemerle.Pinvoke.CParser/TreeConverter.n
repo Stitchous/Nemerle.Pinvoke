@@ -68,7 +68,11 @@ namespace Nemerle.Pinvoke.CParser
                 }) 
         .Map(TypedefAlias);
 
-        [TopLevelEntry.Typedef(aliases), TopLevelEntry.Type(typeDeclaration)]
+
+        def newTypeDeclarations = if(typeDeclaration is Type.Struct || typeDeclaration is Type.Union)  [TopLevelEntry.Type(typeDeclaration)] else [];
+        
+        TopLevelEntry.Typedef(aliases) :: newTypeDeclarations;
+            
     }
 
     ParseDeclarator(declarator : Declarator) : string * option[Pointer]
@@ -153,9 +157,52 @@ namespace Nemerle.Pinvoke.CParser
             {
             | TypeSpecifier.StructOrUnion as value => CreateStructOrUnionTypeDeclaration(value.Specifier)
             | TypeSpecifier.TypedefName as value => Type.Typedef(value.Name)
-            | Char => Type.BuiltIn(BuiltInType.Char())
+            | Void      => Type.BuiltIn(BuiltInType.Void())
+            | Char      => Type.BuiltIn(BuiltInType.Char())
+            | Short     => Type.BuiltIn(BuiltInType.Short())
+            | Int       => Type.BuiltIn(BuiltInType.Int())
+            | Long      => Type.BuiltIn(BuiltInType.Long())
+            | Float     => Type.BuiltIn(BuiltInType.Float())
+            | Double    => Type.BuiltIn(BuiltInType.Double())
+            | Signed    => Type.BuiltIn(BuiltInType.Int())
+            | Unsigned  => Type.BuiltIn(BuiltInType.UnsignedInt())
+            | Bool      => Type.BuiltIn(BuiltInType.Bool())
+            | Complex   => Type.BuiltIn(BuiltInType.Complex())
             }
-        | _ => throw NotImplementedException()
+        | typeSpecifierList =>
+            {
+                def builtInType = 
+                    match(typeSpecifierList)
+                    {
+                    | [TypeSpecifier.Signed() ,           TypeSpecifier.Char()]                                                             =>  BuiltInType.SignedChar();
+                    | [TypeSpecifier.Unsigned() ,         TypeSpecifier.Char()]                                                             =>  BuiltInType.UnsignedChar();
+                    | [TypeSpecifier.Signed() ,           TypeSpecifier.Short()]                                                            =>  BuiltInType.Short();
+                    | [TypeSpecifier.Short() ,            TypeSpecifier.Int()]                                                              =>  BuiltInType.Short();
+                    | [TypeSpecifier.Signed(),            TypeSpecifier.Short(),          TypeSpecifier.Int()]                              =>  BuiltInType.Short();
+                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Short()]                                                            =>  BuiltInType.UnsignedShort();
+                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Short(),          TypeSpecifier.Int() ]                             =>  BuiltInType.UnsignedShort();
+                    | [TypeSpecifier.Signed(),            TypeSpecifier.Int()]                                                              =>  BuiltInType.Int();
+                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Int()]                                                              =>  BuiltInType.UnsignedInt();
+                    | [TypeSpecifier.Signed(),            TypeSpecifier.Long()]                                                             =>  BuiltInType.Long();
+                    | [TypeSpecifier.Long(),              TypeSpecifier.Int()]                                                              =>  BuiltInType.Long();
+                    | [TypeSpecifier.Signed(),            TypeSpecifier.Long(),           TypeSpecifier.Int() ]                             =>  BuiltInType.Long();
+                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Long()]                                                             =>  BuiltInType.UnsignedLong();
+                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Long(),           TypeSpecifier.Int() ]                             =>  BuiltInType.UnsignedLong();
+                    | [TypeSpecifier.Long(),              TypeSpecifier.Long()]                                                             =>  BuiltInType.LongLong();
+                    | [TypeSpecifier.Signed(),            TypeSpecifier.Long(),           TypeSpecifier.Long()]                             =>  BuiltInType.LongLong();
+                    | [TypeSpecifier.Long(),              TypeSpecifier.Long(),           TypeSpecifier.Int() ]                             =>  BuiltInType.LongLong();
+                    | [TypeSpecifier.Signed(),            TypeSpecifier.Long(),           TypeSpecifier.Long(),       TypeSpecifier.Int() ] =>  BuiltInType.LongLong();
+                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Long(),           TypeSpecifier.Long(),]                            =>  BuiltInType.UnsignedLongLong();
+                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Long(),           TypeSpecifier.Long(),       TypeSpecifier.Int() ] =>  BuiltInType.UnsignedLongLong();
+                    | [TypeSpecifier.Long(),              TypeSpecifier.Double()]                                                           =>  BuiltInType.LongDouble();
+                    | [TypeSpecifier.Float(),             TypeSpecifier.Complex()]                                                          =>  BuiltInType.FloatComplex();
+                    | [TypeSpecifier.Double(),            TypeSpecifier.Complex()]                                                          =>  BuiltInType.DoubleComplex();
+                    | [TypeSpecifier.Long(),              TypeSpecifier.Double(),         TypeSpecifier.Complex(),]                         =>  BuiltInType.LongDoubleComplex();
+                    | _ => throw NotSupportedException()
+                    };
+
+                Type.BuiltIn(builtInType)
+            }
         }
     }
 

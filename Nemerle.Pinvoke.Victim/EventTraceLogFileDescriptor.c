@@ -1,4 +1,16 @@
 ﻿
+
+typedef long long LONGLONG;
+typedef short wchar_t;
+typedef wchar_t * LPTSTR;
+typedef unsigned long ULONG;
+typedef void * PVOID;
+typedef unsigned long long LARGE_INTEGER;
+typedef LPTSTR LPWSTR;
+
+typedef unsigned short USHORT;
+typedef unsigned long long ULONGLONG;
+
 typedef struct _EVENT_TRACE_LOGFILE 
 {
   LPTSTR                       LogFileName;
@@ -100,7 +112,7 @@ typedef struct _EVENT_HEADER_EXTENDED_DATA_ITEM {
   USHORT    Reserved1;
   USHORT    ExtType;
   USHORT Linkage;
-    USHORT    DataSize;
+  USHORT    DataSize;
   ULONGLONG DataPtr;
 } EVENT_HEADER_EXTENDED_DATA_ITEM, *PEVENT_HEADER_EXTENDED_DATA_ITEM;
 

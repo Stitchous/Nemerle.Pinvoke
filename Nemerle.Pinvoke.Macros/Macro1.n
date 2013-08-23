@@ -1,6 +1,7 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
 using Nemerle.Compiler;
+using Nemerle.Compiler.Parsetree;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -11,6 +12,7 @@ using System.IO;
 using System.Linq;
 
 using Nemerle.Pinvoke.CParser;
+using Nemerle.Pinvoke.CParser.ReflectionTree;
 
 namespace Nemerle.Pinvoke.Macros
 {
@@ -52,12 +54,12 @@ namespace Nemerle.Pinvoke.Macros
       Macros.DefineCTX(typer);
 
       def parser = DeclarationsParser();
-      /*
+      
       unless (Nemerle.Macros.ImplicitCTX().Manager.IsIntelliSenseMode)
       {
           _ = Debugger.Launch();
       }
-      */
+      
 
       def str = parser.Parse(content);
       
@@ -80,24 +82,66 @@ namespace Nemerle.Pinvoke.Macros
         
       builder.Compile();
 
-      /*def topLevelMemberDescriptors = parser.Parse(content).Value;
-
-      def MapTypeName(originalName)
+      foreach(entry in reflectionTree.WithDefault([]))
       {
-                topLevelMemberDescriptors
-                    .Where(s => s.HaveAlias(originalName))
-                    .Select(s => PrettyPrint(s.BestAlias()))
-                    .FirstOrDefault()
-            ??  externals
-                    .Where(s => s[0] == originalName)
-                    .Select(s => s[1]).FirstOrDefault()
-            ??  TypeMapping.ConvertType(originalName);
+        Generate(entry).Map(e => typer.Env.Define(e)).Iter(builder => builder.Compile());
       }
 
-      foreach(descriptor in topLevelMemberDescriptors)
-      {
-        descriptor.Generate(typer, MapTypeName);
-      }*/
     }
-  }
+
+    private Generate(entry : TopLevelEntry) : option[ClassMember.TypeDeclaration]
+    {
+        | TopLevelEntry.Typedef as typedef  => None()
+        | TopLevelEntry.Type as type        => Generate(type.Value)
+        | TopLevelEntry.Function            => None()
+    }
+
+    private Generate(type : ReflectionTree.Type) : option[ClassMember.TypeDeclaration]
+    {
+        | Type.Struct   as value    => Some(GenereateStruct(value)) 
+        | Type.Union    => None()
+        | Type.BuiltIn  => None()
+        | Type.Typedef  => None()
+        | Type.Pointer  => None()
+    }
+
+    private GenereateStruct(structType : Type.Struct) : ClassMember.TypeDeclaration
+    {
+        
+        def name = structType.Name.Value;
+        def members = Generate(structType.Members);
+        <[decl: struct $(name : dyn) { ..$members }]>
+
+    }
+
+    private Generate(fields : list[Field]) : list[ClassMember]
+    {
+        def convert(field : Field)
+        {
+            def name = field.Name;
+            def type = GetReferenceName(field.Type);
+            <[ decl: public mutable $(name : dyn) : $(type : dyn);]>
+        }
+        
+        //fields.Map(f => convert(f))
+        []
+    }
+    
+    private GetReferenceName(type : ReflectionTree.Type) : string
+    {
+        | Type.Struct as value    => value.Name.WithDefault(GenerateNameForUnnamed())
+        | Type.Union  as value    => value.Name.WithDefault(GenerateNameForUnnamed())
+        | Type.BuiltIn as value   =>  throw NotImplementedException()
+        | Type.Typedef as value   => value.Name
+        | Type.Pointer as value   => GetReferenceName(value.Pointee)
+    }
+  
+    GenerateNameForUnnamed() : string
+    {
+        "unnamed"
+    }
+
+}
+  
+  
 }

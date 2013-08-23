@@ -12,7 +12,7 @@ using Nemerle.Pinvoke.Macros;
 
 namespace Nemerle.Pinvoke.Victim
 {
-  public class Class1
+  public struct Class1
   {
   }
 }

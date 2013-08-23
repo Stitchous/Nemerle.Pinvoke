@@ -45,16 +45,6 @@
       <Private>False</Private>
     </MacroReference>
     <Reference Include="mscorlib" />
-    <Reference Include="Nemerle.ComputationExpressions">
-      <Name>Nemerle.ComputationExpressions</Name>
-      <AssemblyName>Nemerle.ComputationExpressions.dll</AssemblyName>
-      <HintPath>C:\Program Files (x86)\Nemerle\net-4.0\Nemerle.ComputationExpressions.dll</HintPath>
-    </Reference>
-    <Reference Include="Nemerle.ComputationExpressions.Macros">
-      <Name>Nemerle.ComputationExpressions.Macros</Name>
-      <AssemblyName>Nemerle.ComputationExpressions.Macros.dll</AssemblyName>
-      <HintPath>C:\Program Files (x86)\Nemerle\net-4.0\Nemerle.ComputationExpressions.Macros.dll</HintPath>
-    </Reference>
     <Reference Include="Nemerle.Peg">
       <Name>Nemerle.Peg</Name>
       <AssemblyName>Nemerle.Peg.dll</AssemblyName>

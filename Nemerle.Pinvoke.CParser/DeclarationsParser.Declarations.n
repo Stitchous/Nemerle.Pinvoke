@@ -3,7 +3,7 @@ using Nemerle.Collections;
 using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
-using Nemerle.ComputationExpressions;
+//using Nemerle.ComputationExpressions;
 
 using System;
 using System.Collections.Generic;
@@ -120,9 +120,9 @@ namespace Nemerle.Pinvoke.CParser
         TypeSpecifier.Enum(specifier = enumSpecifier);
      }
 
-     typedefTypeSpecifier(token : NToken) : TypeSpecifier
+     typedefTypeSpecifier(identifier : Identifier) : TypeSpecifier
      {
-        TypeSpecifier.TypedefName(GetText(token));
+        TypeSpecifier.TypedefName(identifier.Id);
      }
 
      // "_Atomic"s '('s typeName ')'s;

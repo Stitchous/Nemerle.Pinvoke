@@ -15,7 +15,7 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
   [StandardNode]
   public class Field
   {
-    Name : string;  
-    Type : ReflectionTree.Type;
+    public Name : string;  
+    public Type : ReflectionTree.Type;
   }
 }
