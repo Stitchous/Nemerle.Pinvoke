@@ -30,10 +30,8 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Model
     
     [Memoize] protected static GetStandardNameFromType(type : Type) : string
     {
-        Regex.Matches(type.Name, @"(\p{Lu}+\P{Lu}*)").
-            Cast.[Match]().
-            Select(regexMatch => regexMatch.Value.ToLowerInvariant()).
-            Aggregate((acc, next) => acc + "-" + next);
+        //TODO: try get name from StandardName static property
+        Regex.Replace(type.Name, @"(\p{Ll})(\p{Lu})" , "$1-$2").ToLower()
     }
   }
 }

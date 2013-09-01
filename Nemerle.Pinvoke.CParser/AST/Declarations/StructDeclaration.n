@@ -14,7 +14,7 @@ using Nemerle.Pinvoke.CParser.Macros;
 namespace Nemerle.Pinvoke.CParser.Ast.Declarations
 {
   [Record]
-  [StandardNode("struct-declaration")]  
+  [StandardNode]  
   public class StructDeclaration : Located
   {
     public DeclarationSpecifierList : list[DeclarationSpecifier];

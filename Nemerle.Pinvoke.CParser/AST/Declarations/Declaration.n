@@ -20,5 +20,4 @@ namespace Nemerle.Pinvoke.CParser.Ast.Declarations
     | Normal { DeclarationSpecifiers : list[DeclarationSpecifier]; InitDeclarationList : option[list[InitDeclarator]] }
     | StaticAssert
   }
-
 }

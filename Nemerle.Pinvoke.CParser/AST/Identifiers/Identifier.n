@@ -13,7 +13,7 @@ using Nemerle.Pinvoke.CParser.Macros;
 namespace Nemerle.Pinvoke.CParser.Ast.Identifiers
 {
   [Record]
-  [StandardNode("identifier")]
+  [StandardNode]
   public class Identifier : Located
   {
     [Accessor] id : string;

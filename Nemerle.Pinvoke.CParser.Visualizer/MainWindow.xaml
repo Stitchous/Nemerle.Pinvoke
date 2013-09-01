@@ -6,7 +6,7 @@
         Title="CParser AST Viewer"
         Width="800"
         Height="600"
-        FontFamily="Segoe UI"
+        FontFamily="{StaticResource FontFamilyNormal}"
         TextOptions.TextFormattingMode="Display"
         WindowStyle="SingleBorderWindow">
     <DockPanel>

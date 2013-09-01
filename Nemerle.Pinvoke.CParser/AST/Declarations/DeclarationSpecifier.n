@@ -1,5 +1,6 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
+using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -14,7 +15,7 @@ namespace Nemerle.Pinvoke.CParser.Ast.Declarations
 {
     [Record]
     [StandardNode]
-    public variant DeclarationSpecifier
+    public variant DeclarationSpecifier : Located
     {
         | Alignment         { Value : AlignmentSpecifier }
         | Function          { Value : FunctionSpecifier }

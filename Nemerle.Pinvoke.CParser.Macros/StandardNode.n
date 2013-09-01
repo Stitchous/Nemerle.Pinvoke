@@ -52,7 +52,7 @@ namespace Nemerle.Pinvoke.CParser.Macros
 
             def MakeBody(typeBuilder, acc)
             {
-                def fields = typeBuilder.GetFields (BindingFlags.Public %| BindingFlags.NonPublic %|
+                def fields = typeBuilder.GetFields(BindingFlags.Public %| BindingFlags.NonPublic %|
                                                     BindingFlags.Instance %| BindingFlags.DeclaredOnly);
 
                 fields.FoldRight(acc, (x, acc) =>

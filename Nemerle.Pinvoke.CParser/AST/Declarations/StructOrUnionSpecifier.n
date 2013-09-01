@@ -14,7 +14,7 @@ using Nemerle.Pinvoke.CParser.Macros;
 namespace Nemerle.Pinvoke.CParser.Ast.Declarations
 {
   [Record]
-  [StandardNode("struct-or-union-specifier")]
+  [StandardNode]
   public variant StructOrUnionSpecifier : Located
   {
     | Declaration {  StructOrUnion : StructOrUnion; Name : option[Identifier]; declarations : list[StructDeclaration] }

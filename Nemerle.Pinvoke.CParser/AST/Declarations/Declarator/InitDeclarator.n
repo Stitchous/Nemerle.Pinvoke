@@ -1,5 +1,6 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
+using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -13,7 +14,7 @@ namespace Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator
 {
   [Record]
   [StandardNode]
-  public class InitDeclarator
+  public class InitDeclarator : Located
   {
     public Declarator : Declarator;
 
