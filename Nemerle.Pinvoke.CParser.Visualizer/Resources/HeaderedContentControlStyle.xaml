@@ -12,8 +12,8 @@
                             Padding="4"
                             SnapsToDevicePixels="True">
                         <TextBlock HorizontalAlignment="Center"
-                                   FontFamily="{StaticResource FontBoldFamily}"
-                                   FontSize="{StaticResource FontBigSize}"
+                                   FontFamily="{StaticResource FontFamilyBold}"
+                                   FontSize="{StaticResource FontSizeBig}"
                                    Foreground="White"
                                    Text="{TemplateBinding Content}" />
                     </Border>

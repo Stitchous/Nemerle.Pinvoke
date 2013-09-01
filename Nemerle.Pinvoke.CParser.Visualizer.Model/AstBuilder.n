@@ -1,0 +1,244 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Linq;
+using SCG = System.Collections.Generic;
+
+using CPepper.CodeModel;
+
+using Nemerle.Extensions;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer.Model
+{
+  public module AstBuilder
+  {
+    public Build(source: string) : GrammarNode
+    {
+      def translationUnit = DeclarationParser().Parse(source).Value;
+      
+      CodeModelNode(translationUnit, TranslationUnit.StandardName)<- 
+        { Children ::= GetNodes(translationUnit.Declarations) };
+    }
+    
+    GetNodes(declarations: list[Declaration]) : list[GrammarNode]
+    {  
+        if (!declarations.Any())
+            []
+        else
+            [VirtualNode("declaration-seq")<- Children ::= declarations.Map(
+                decl =>
+                {
+                    match(decl)
+                    {
+                        | Declaration.BlockDeclaration as block => GetNodes(block.value)
+                        | _ => GetNodes(decl)
+                    }
+                    
+                }).Flatten()]
+    }
+    
+    GetNodes(located: Nemerle.Peg.Located) : list[GrammarNode]
+    {
+        [CodeModelNode(located, "NOT IMPLEMENTED")]   
+    }
+   
+    GetNodes(declaration: BlockDeclaration) : list[GrammarNode]
+    {
+        def declNode = CodeModelNode(declaration, Declaration.StandardName);
+        
+        def declChildNode =  CodeModelNode(declaration, BlockDeclaration.StandardName);
+        
+        declChildNode.Children.AddRange( match(declaration)
+        {
+            | AsmDefinition as asmDef => [CodeModelNode(asmDef, AsmDefinition.StandardName)<- Children::= NotImplementedNodes]
+            | SimpleDeclaration as simpleDecl => GetNodes(simpleDecl.value)
+        });
+        
+        declNode.Children.Add(declChildNode);
+        
+        [declNode]
+    }
+    
+    GetNodes(declaration: Declaration) : list[GrammarNode]
+    {
+        def declNode = CodeModelNode(declaration, Declaration.StandardName);
+        
+        declNode.Children.AddRange(
+        match(declaration)
+        {
+            | ExplicitSpecialization as expSpec => 
+                [CodeModelNode(expSpec, ExplicitSpecialization.StandardName) <- Children ::= GetNodes(expSpec.value) ]
+                
+            | ExplicitInstantiation as expInst => 
+                [CodeModelNode(expInst, ExplicitInstantiation.StandardName) <- Children ::= GetNodes(expInst.value) ]
+                
+            | LinkageSpecification as linkageSpec => 
+                [CodeModelNode(linkageSpec, LinkageSpecification.StandardName) <- Children ::= GetNodes(linkageSpec.value) ]
+                
+            | NamespaceDefinition as namespaceDef => GetNodes(namespaceDef.value)
+
+            | _ => [NotImplementedNode]
+        });
+        
+        [declNode]
+    }
+    
+    GetNodes(simpleDeclaration: SimpleDeclaration): list[GrammarNode]
+    {
+        [CodeModelNode(simpleDeclaration, SimpleDeclaration.StandardName) <- 
+            { Children ::= GetNodes(simpleDeclaration.DeclSpecifiers) + 
+              GetNodes(simpleDeclaration.InitDeclarators)}] 
+    }
+    
+    GetNodes(declSpecifiers: list[DeclSpecifier]): list[GrammarNode]
+    {
+        if (!declSpecifiers.Any())
+            []
+        else
+            [VirtualNode("decl-specifier-seq")<- 
+            { 
+                Children ::= declSpecifiers.Map(declSpecifier => GetNodes(declSpecifier)).Flatten();
+            }]
+    }
+    
+    GetNodes(declSpecifier: DeclSpecifier): list[GrammarNode]
+    {
+        def node = CodeModelNode(declSpecifier, DeclSpecifier.StandardName);
+        
+        node.Children.AddRange(
+        match(declSpecifier)
+        {
+            | Friend  as friend  => [CodeModelNode(friend, friend.ToString()/*TODO: fixme*/)]
+            | Typedef as typedef => [CodeModelNode(typedef, typedef.ToString()/*TODO: fixme*/)]
+            | StorageClassSpecifier(value)  => [CodeModelNode(value, value.ToString()) /*TODO: fixme*/]
+            | FunctionSpecifier(value)      => [CodeModelNode(value, value.ToString()) /*TODO: fixme*/]
+            | TypeSpecifier(value)          => GetNodes(value)
+        }
+        );
+        
+        [node]
+    }
+    
+    GetNodes(typeSpecifier: TypeSpecifier): list[GrammarNode]
+    {
+        [CodeModelNode(typeSpecifier, TypeSpecifier.StandardName)<- 
+        {
+            Children ::= match(typeSpecifier)
+            {
+             | ClassSpecifier(value)          => GetNodes(value) 
+             | EnumSpecifier(value)           => GetNodes(value) 
+             | CvQualifier(value)             => [CodeModelNode(value, value.ToString())]
+             | SimpleTypeSpecifier(value)     => GetNodes(value)
+             | ElaboratedTypeSpecifier(_value) => [NotImplementedNode]
+            }
+        }]
+    }
+    
+    static GetNodes(classSpecifier: ClassSpecifier) : list[GrammarNode]
+    {
+      GetNodes(classSpecifier.Name) + GetNodes(classSpecifier.Content)
+    }
+    
+    static GetNodes(classHead: ClassHead): list[GrammarNode]
+    {
+        [CodeModelNode(classHead, ClassHead.StandardName)<- 
+        { 
+            Children ::= GetNodes(classHead.ClassKey) + NotImplementedNodes 
+        }]
+    }
+    
+    static GetNodes(classKey: ClassKey): list[GrammarNode]
+    {
+        [CodeModelNode(classKey, ClassKey.StandardName)<- { Children ::= [CodeModelNode(classKey, classKey.ToString())] }] //TODO: fixme
+    }
+    
+    static GetNodes(memberSpecifications: list[MemberSpecification]): list[GrammarNode]
+    {
+        memberSpecifications.Map(memberSpecification => GetNodes(memberSpecification)).Flatten();
+    }
+    
+    static GetNodes(memberSpecification: MemberSpecification): list[GrammarNode]
+    {
+        [CodeModelNode(memberSpecification, MemberSpecification.StandardName)<- { Children ::= NotImplementedNodes} ]
+    }
+     
+    static GetNodes(_enumSpecifier: EnumSpecifier) : list[GrammarNode]
+    {
+        [NotImplementedNode]
+      //[CodeModelNode(enumSpecifier) <- { Children ::= [NotImplementedNode] }]
+    }
+    
+    GetNodes(simpleTypeSpecifier: SimpleTypeSpecifier): list[GrammarNode]
+    {
+        [CodeModelNode(simpleTypeSpecifier, SimpleTypeSpecifier.StandardName)<-
+        { Children ::= match(simpleTypeSpecifier)
+            {
+            | TemplateId 
+            | TypeName   => [NotImplementedNode]
+            | _          => []
+            }
+         }]
+    }
+    
+    GetNodes(initDeclarators: list[InitDeclarator]): list[GrammarNode]
+    {
+        if (!initDeclarators.Any())
+            []
+        else
+            [VirtualNode("init-declarator-list") <- 
+            {
+                Children ::= initDeclarators.Map(initDeclarator => 
+                CodeModelNode(initDeclarator, InitDeclarator.StandardName)<- 
+                        {
+                            Children ::= GetNodes(initDeclarator)
+                        })
+            }]
+    }
+    
+    GetNodes(_initDeclarator: InitDeclarator): list[GrammarNode]
+    {
+        NotImplementedNodes
+    }
+    
+    GetNodes(namedNamespaceDefinition: NamedNamespaceDefinition): list[GrammarNode]
+    {
+        [CodeModelNode(namedNamespaceDefinition, NamedNamespaceDefinition.StandardName)<-
+        { Children ::=
+            [ VirtualNode("original-namespace-definition OR extension-namespace-definition")<- 
+                        { Children ::= GetNodes(namedNamespaceDefinition.Name) + 
+                          [VirtualNode("namespace-body") <-
+                            Children ::= GetNodes(namedNamespaceDefinition.Body)] }]}]  
+    }
+    
+    GetNodes(namespaceDefinition: NamespaceDefinition): list[GrammarNode]
+    {
+        [CodeModelNode(namespaceDefinition, NamespaceDefinition.StandardName) <-
+        Children ::= match(namespaceDefinition)
+        {
+            | Named as n => GetNodes(n.value)
+            | Unnamed as u => GetNodes(u.value);
+        }]
+    }
+    
+    GetNodes(unnamedNamespaceDefinition: UnnamedNamespaceDefinition):list[GrammarNode]
+    {
+        [CodeModelNode(unnamedNamespaceDefinition, UnnamedNamespaceDefinition.StandardName) <-
+            { Children ::= GetNodes(unnamedNamespaceDefinition.Body)}] 
+    }
+    
+    GetNodes(literal: Literal): list[GrammarNode]
+    {
+        [CodeModelNode(literal, literal.ToString())] //TODO: expand literal node according to standard
+    }
+    
+    GetNodes(identifier: Identifier): list[GrammarNode]
+    {
+        [CodeModelNode(identifier, Identifier.StandardName)]
+    }
+    
+    NotImplementedNode : GrammarNode = VirtualNode("NOT IMPLEMENTED!");
+    NotImplementedNodes : list[GrammarNode] = [NotImplementedNode];
+  }
+}

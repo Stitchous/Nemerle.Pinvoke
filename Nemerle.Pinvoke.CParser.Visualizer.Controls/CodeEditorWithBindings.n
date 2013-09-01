@@ -1,0 +1,67 @@
+﻿using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Rendering;
+
+using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.WPF;
+
+using System;
+using System.Linq;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Documents;
+using System.Collections.Generic;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer.Controls
+{
+  public class CodeEditorWithBindings: TextEditor
+  {
+        [DependencyProperty(Metadata = PropertyMetadata(OnDocumentTextChanged))]
+        public DocumentText : string { get {} set {} }
+        
+        [DependencyProperty(Metadata = UIPropertyMetadata(0, OnHighlightingIntervalChanged))]
+        public HighlightingStart : int { get{} set{} }
+            
+        [DependencyProperty(Metadata = UIPropertyMetadata(0, OnHighlightingIntervalChanged))]
+        public HighlightingLength : int { get{} set{} }
+        
+        protected override OnTextChanged(e : EventArgs) : void
+        {
+            DocumentText = Text;
+            base.OnTextChanged(e);
+        }
+        
+        protected override OnLostFocus(e : RoutedEventArgs) : void
+        {
+            ShowHighlighting();
+            base.OnLostFocus(e);
+        }
+        
+        private static OnDocumentTextChanged(d : DependencyObject, e : DependencyPropertyChangedEventArgs) : void
+        {
+            def editor = d :> CodeEditorWithBindings;
+            def newText = e.NewValue :> string;
+            
+            when(editor.Text != newText)
+                editor.Text = newText;
+        }
+ 
+        private static OnHighlightingIntervalChanged(d : DependencyObject, _ : DependencyPropertyChangedEventArgs) : void
+        {
+            def editor = d :> CodeEditorWithBindings;
+            
+            when (!editor.TextArea.IsFocused)
+                editor.ShowHighlighting();
+        }
+        
+        private ShowHighlighting() : void
+        {
+            def documentLength = Document?.TextLength;
+            
+            when (HighlightingStart <=  documentLength && HighlightingStart + HighlightingLength <= documentLength)
+                Select(HighlightingStart, HighlightingLength);
+        }
+    }
+}

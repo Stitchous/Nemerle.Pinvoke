@@ -1,0 +1,39 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using System.Text.RegularExpressions;
+
+using Nemerle;
+using Nemerle.Utility;
+using Nemerle.Assertions;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer.Model
+{
+  public abstract class GrammarNode
+  {
+    protected this(name : string)
+        requires !string.IsNullOrEmpty(name)
+    {
+      Name = name
+    }
+    
+    public abstract NodeInfo : string { get; }
+    
+    public virtual Name : string { get; private set; }
+   
+    public abstract Location : int * int { get; }
+    
+    public Parent : option[GrammarNode] { get; internal set; }
+    
+    public abstract Children : IEnumerable[GrammarNode] { get; }
+    
+    [Memoize] protected static GetStandardNameFromType(type : Type) : string
+    {
+        Regex.Matches(type.Name, @"(\p{Lu}+\P{Lu}*)").
+            Cast.[Match]().
+            Select(regexMatch => regexMatch.Value.ToLowerInvariant()).
+            Aggregate((acc, next) => acc + "-" + next);
+    }
+  }
+}

@@ -1,0 +1,33 @@
+﻿using System;
+using System.Reflection;
+using System.Reflection.BindingFlags;
+using System.Windows;
+using System.Windows.Input;
+
+using Nemerle.Assertions;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer.Commands
+{
+    public class EventHooker
+    {
+        public GetNewEventHandlerToRunCommand(eventInfo : EventInfo) : Delegate
+            requires eventInfo != null && eventInfo.EventHandlerType != null 
+        {
+            Delegate.CreateDelegate(eventInfo.EventHandlerType, 
+                                    this,
+                                    GetType().GetMethod("OnEventRaised", NonPublic | Instance));
+        }
+
+        #pragma warning disable 10003
+        
+        private OnEventRaised(sender : object, _ : EventArgs) : void
+        {
+            def command = (sender :> DependencyObject).GetValue(CommandBehavior.CommandProperty) :> ICommand;
+            def commandParameter = (sender :> DependencyObject).GetValue(CommandBehavior.CommandParameterProperty);
+            
+            command?.Execute(commandParameter);
+        }
+        
+        #pragma warning restore 10003
+    }
+}

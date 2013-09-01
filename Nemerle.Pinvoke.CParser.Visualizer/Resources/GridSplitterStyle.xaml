@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="clr-namespace:Nemerle.Pinvoke.CParser.Visualizer.Controls">
+                    xmlns:controls="clr-namespace:Nemerle.Pinvoke.CParser.Visualizer.Controls;assembly=Nemerle.Pinvoke.CParser.Visualizer.Controls">
 
     <!--  GridExpander Handle Style  -->
     <Style x:Key="ExpanderHandleStyle" TargetType="ToggleButton">

@@ -1,0 +1,186 @@
+﻿using System;
+using System.Reflection;
+using System.Diagnostics;
+using System.Diagnostics.Debug;
+using SCG = System.Collections.Generic;
+
+using Nemerle;
+using Nemerle.Assertions;
+using Nemerle.Compiler;
+using Nemerle.Macros;
+using Nemerle.Utility;
+using Nemerle.Collections;
+using Nemerle.Extensions;
+using PT = Nemerle.Compiler.Parsetree;
+using TT = Nemerle.Compiler.Typedtree;
+using TypeInfo = Nemerle.Compiler.TypeInfo;
+
+using Nemerle.Pinvoke.CParser.Visualizer.Model;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
+{
+ module GrammarNodeBuilder
+    {
+        [Record (Include = [name])]
+        class NodeGenerator
+        {
+            [Accessor] name : string;
+            [Accessor (Body, flags = WantSetter)] mutable body : PT.PExpr;
+        }
+        
+        internal CreateRoot(parent : PT.PExpr, t : FixedType): PT.PExpr
+        {
+            NodeGenerators.Clear();
+            def rootGenerator = CreateNodes(parent, t);
+            
+            def generators = NodeGenerators.Keys.Map(typeInfo => 
+            <[def $(NodeGenerators[typeInfo].Name : usesite)(val : $(GetTypeExpression(typeInfo.FullName))) 
+            $(NodeGenerators[typeInfo].Body)]>);
+            
+            def joinedGenerators = PT.PExpr.DefFunctions(generators.Map(generator => 
+            PT.Function_decl(generator.funs.Head.header, generator.funs.Head.body)));
+            
+            PT.PExpr.Sequence([joinedGenerators, rootGenerator]);
+        }
+        
+        private CreateNodes(parent : PT.PExpr, t : FixedType): PT.PExpr
+        {
+          match(t)
+          {
+            | Class(typeInfo, args) when typeInfo.SystemType.Equals(typeof(option[_])) => 
+                def valueExpr = <[($parent).Value]>;
+                <[
+                if (($parent).IsNone)
+                    []   
+                else
+                    $(CreateNodes(valueExpr, args.Head.Fix()))    
+                ]>
+            | Class(typeInfo, args) when typeInfo.SystemType.Equals(typeof(list[_])) => 
+                <[
+                if ($parent == null)
+                    []
+                else
+                    ($parent).Map(fun(_e){ $(CreateNodes(<[_e]>, args.Head.Fix()))}).Flatten();
+                ]>
+            | Class(typeInfo, _) when typeInfo.SystemType.IsSubclassOf(typeof(Nemerle.Peg.Located)) => 
+                unless (NodeGenerators.ContainsKey(typeInfo))
+                    AddNodeGenerator(typeInfo);
+                
+                <[$(NodeGenerators[typeInfo].Name : usesite)($parent)]>
+                
+            | _ => <[[]]> //e.g. object list of types other than Located
+          }     
+        }
+        
+        private AddNodeGenerator(typeInfo : TypeInfo) : void
+        {
+            NodeGenerators[typeInfo] = NodeGenerator($<#"Create nodes from $(typeInfo.FullName)"#>); 
+            NodeGenerators[typeInfo].Body =
+            if(SurrogateNodeTypes.Contains(typeInfo.SystemType))
+            <[
+                 if (val == null)
+                    []
+                 else
+                    $(BuildChildrenGetter(<[val]>, typeInfo))
+            ]>
+            else
+            <[
+            {
+                 if (val == null)
+                    []
+                 else
+                 {
+                    def node = LocatedNode.[$(GetTypeExpression(typeInfo.FullName))](val);
+                    node.AddChildren($(BuildChildrenGetter(<[val]>, typeInfo)));
+                    [node]
+                 }
+             }]>;
+        }
+        
+        private BuildChildrenGetter(valueExpression : PT.PExpr, typeInfo : TypeInfo): PT.PExpr
+        {
+            match(typeInfo.GetTydecl())
+            {
+                | Variant(options)   => ExpandVariant(valueExpression, options)
+                | _                  => ExpandVariantOptionOrClass(valueExpression, typeInfo)
+            }
+        }
+        
+        private ExpandVariant(parent : PT.PExpr, opts : list[TypeInfo]): PT.PExpr
+        {
+            def cases = opts.FoldRight([<[ case: | _ => throw Exception() ]>], 
+            (variantOption, cases) => 
+            {
+                <[ case: | $(variantOption.Name : usesite) as $($"_$(variantOption.Name)" : usesite) => 
+                $(ExpandVariantOptionOrClass(<[$($"_$(variantOption.Name)" : usesite)]>, variantOption)) ]> :: cases
+            });
+            
+            <[match($parent)  { ..$cases }]>
+        }
+        
+        private ExpandVariantOptionOrClass(valueExpression : PT.PExpr, typeInfo : TypeInfo): PT.PExpr
+        {
+            def members = GetMembers(typeInfo);
+            
+            if (members.IsEmpty() && (typeInfo.GetTydecl() is TT.TypeDeclaration.VariantOption))
+            {
+                <[[LeafNode(typeof($(GetTypeExpression(typeInfo.FullName))))]]>
+            }
+            else
+            {
+                members.FoldLeft(<[[]]>, (next, acc) => 
+                    <[($acc + $(CreateNodes(<[$valueExpression.$(next.Name : usesite)]>, next.GetMemType())))]>)
+            }
+        }
+        
+        private GetMembers(typeInfo : TypeInfo) : list[IMember]
+        {
+            typeInfo.GetMembers(BindingFlags.Instance %| BindingFlags.Public).Filter(
+                m => 
+                match(typeInfo.GetTydecl())
+                {
+                    | VariantOption => m is IField || m is IProperty
+                    | _             => m is IProperty
+                } && IsListOrOptionOrLocated(m.GetMemType()))
+        }
+        
+        private IsListOrOptionOrLocated(fixedType : FixedType) : bool
+        {
+            fixedType is FixedType.Class && 
+            { 
+                def systemType = fixedType.TypeInfo.SystemType;
+                    
+                systemType.Equals(typeof(option[_])) ||
+                systemType.Equals(typeof(list[_]))   ||
+                systemType.IsSubclassOf(typeof(Nemerle.Peg.Located))
+            }
+        }
+        
+        [DebuggerStepThrough]
+        private GetTypeExpression(qualifiedTypeName: string): PT.PExpr
+        {
+          PT.PExpr.FromQualifiedIdentifier(ManagerClass.Instance, qualifiedTypeName)
+        }
+        
+        private NodeGenerators : SCG.Dictionary[TypeInfo, NodeGenerator] = SCG.Dictionary.[TypeInfo, NodeGenerator]();
+        private SurrogateNodeTypes : list[Type] = [/*typeof(Declarators.DirectDeclarator.Tail)*/];
+    }
+ 
+    
+  macro BuildGrammarNode(expression : expr)
+  {
+    def makeResult(p, t)
+    {
+        _ = Debugger.Launch();
+        def expr = GrammarNodeBuilder.CreateRoot(p, t.Type.Fix());
+        expr
+    }
+    
+    def typer = ImplicitCTX();
+    
+    if (Manager().IsIntelliSenseMode)
+        <[[]:list[VirtualNode]]>
+    else
+        typer.TransformWhenAllTypesWouldBeInfered(makeResult, typer.TypeExpr(expression), expression)
+  }
+}

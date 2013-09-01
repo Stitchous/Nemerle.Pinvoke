@@ -63,8 +63,8 @@
             <Border>
                 <TextBlock MaxWidth="250"
                            Margin="8,4,8,4"
-                           FontFamily="{StaticResource FontNormalFamily}"
-                           FontSize="{StaticResource FontNormalSize}"
+                           FontFamily="{StaticResource FontFamilyNormal}"
+                           FontSize="{StaticResource FontSizeNormal}"
                            Foreground="{StaticResource WindowBrush}"
                            Text="{Binding (Validation.Errors)[0].ErrorContent}"
                            TextWrapping="Wrap"

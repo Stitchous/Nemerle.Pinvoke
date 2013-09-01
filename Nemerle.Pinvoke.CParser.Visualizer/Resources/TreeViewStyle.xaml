@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="clr-namespace:Nemerle.Pinvoke.CParser.Visualizer.Controls"
+                    xmlns:controls="clr-namespace:Nemerle.Pinvoke.CParser.Visualizer.Controls;assembly=Nemerle.Pinvoke.CParser.Visualizer.Controls"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!--  TreeView Style  -->
@@ -343,8 +343,8 @@
                                         <ContentControl Margin="7,5,7,5"
                                                         HorizontalAlignment="Left"
                                                         Cursor="{TemplateBinding Cursor}"
-                                                        FontFamily="{StaticResource FontF_Normal}"
-                                                        FontSize="{StaticResource FontS}"
+                                                        FontFamily="{StaticResource FontFamilyNormal}"
+                                                        FontSize="{StaticResource FontSizeSmall}"
                                                         Foreground="{StaticResource ControlDarkDarkBrush}">
                                             <ContentPresenter x:Name="Content"
                                                               Content="{TemplateBinding Content}"
@@ -353,8 +353,8 @@
                                     </Grid>
                                 </ControlTemplate>
                             </Button.Template>
-                            <ContentControl FontFamily="{StaticResource FontF_Normal}"
-                                            FontSize="{StaticResource FontS}"
+                            <ContentControl FontFamily="{StaticResource FontFamilyNormal}"
+                                            FontSize="{StaticResource FontSizeSmall}"
                                             Foreground="{StaticResource ControlDarkDarkBrush}">
                                 <ContentPresenter Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" />
                             </ContentControl>

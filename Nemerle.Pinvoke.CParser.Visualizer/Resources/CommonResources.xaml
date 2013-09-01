@@ -27,10 +27,10 @@
     <SolidColorBrush x:Key="WindowTextBrush" Color="#FF000000" />
 
     <!--  Fonts  -->
-    <FontFamily x:Key="FontNormalFamily">Segoe UI</FontFamily>
-    <FontFamily x:Key="FontBoldFamily">Segoe UI Semibold</FontFamily>
-    <sys:Double x:Key="FontBigSize">14</sys:Double>
-    <sys:Double x:Key="FontNormalSize">13</sys:Double>
-    <sys:Double x:Key="FontSmallSize">12</sys:Double>
+    <FontFamily x:Key="FontFamilyNormal">Segoe UI</FontFamily>
+    <FontFamily x:Key="FontFamilyBold">Segoe UI Semibold</FontFamily>
+    <sys:Double x:Key="FontSizeBig">14</sys:Double>
+    <sys:Double x:Key="FontSizeNormal">13</sys:Double>
+    <sys:Double x:Key="FontSizeSmall">12</sys:Double>
 
 </ResourceDictionary>

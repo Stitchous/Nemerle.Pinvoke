@@ -18,7 +18,7 @@ using Nemerle.Pinvoke.CParser.Ast.Identifiers;
 
 namespace Nemerle.Pinvoke.CParser
 {
-  [PegGrammar(Options = EmitDebugSources, translationUnit,
+  [PegGrammar(Options = EmitDebugSources, declaration,
   grammar
   {
       any                 = ['\u0000'..'\uFFFF'];

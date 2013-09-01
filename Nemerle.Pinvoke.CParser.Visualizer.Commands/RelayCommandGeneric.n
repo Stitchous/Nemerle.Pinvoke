@@ -1,0 +1,37 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Windows.Input;
+
+using Nemerle.Assertions;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer.Commands
+{
+    public class RelayCommand[T] : RelayCommandBase
+    {
+        public this(execute : Action[T])
+        {
+            this(execute, _ => true);
+        }
+
+        public this(execute : Action[T], canExecute : Predicate[T])
+            requires execute != null && canExecute != null
+        {
+            _execute    = execute;
+            _canExecute = canExecute;
+        }
+
+        public override CanExecute(parameter : object) : bool
+        {
+            _canExecute(parameter :> T);
+        }
+
+        public override Execute(parameter : object) : void
+        {
+            _execute(parameter :> T);
+        }
+
+        private _execute    : Action[T];
+        private _canExecute : Predicate[T];
+    }
+}

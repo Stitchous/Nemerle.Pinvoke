@@ -91,8 +91,8 @@
 
     <!--  ListBoxItemStyle  -->
     <Style TargetType="ListBoxItem">
-        <Setter Property="FontFamily" Value="{StaticResource FontNormalFamily}" />
-        <Setter Property="FontSize" Value="{StaticResource FontNormalSize}" />
+        <Setter Property="FontFamily" Value="{StaticResource FontFamilyNormal}" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeNormal}" />
         <Setter Property="Padding" Value="3" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalContentAlignment" Value="Top" />

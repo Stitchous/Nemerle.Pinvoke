@@ -1,0 +1,25 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Globalization;
+using System.Linq;
+using System.Windows.Data;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer.Controls
+{
+   public class MultiplyConverter : IMultiValueConverter
+    {
+        public Convert(values : array[object], _ : Type, _ : object, _ : CultureInfo) : object
+        {
+            values.OfType.[double]().Aggregate(1.0, (current, t) => current * t)
+        }
+
+        public ConvertBack(_ : object, _ : array[Type], _ : object, _ : CultureInfo) : array[object]
+        {
+            throw NotImplementedException();
+        }
+    }
+}

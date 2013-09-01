@@ -1,0 +1,24 @@
+﻿using System;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+using Nemerle;
+using Nemerle.Assertions;
+using Nemerle.Peg;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer.Model
+{
+  public class LocatedNode[T] : CompositeNode where T : Located
+  {
+      public this(located : T)
+        requires located != null
+      { 
+        base(GetStandardNameFromType(typeof(T)));
+        Location = (located.StartPos, located.EndPos)
+      }
+      
+      public override NodeInfo : string { get { $"Located: $(typeof(T)) ($(this.Location[0]):$(this.Location[1]))" } }
+      
+      public override Location : int * int { get; private set; }
+   }
+}

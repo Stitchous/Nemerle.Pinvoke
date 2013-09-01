@@ -1,0 +1,106 @@
+﻿using Nemerle;
+using Nemerle.Assertions;
+using Nemerle.Collections;
+using Nemerle.Compiler;
+using Nemerle.Compiler.Parsetree;
+using Nemerle.Compiler.Typedtree;
+using Nemerle.Text;
+using Nemerle.Utility;
+ 
+using System;
+using SCG = System.Collections.Generic;
+using System.Linq;
+using System.ComponentModel;
+ 
+namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
+{
+    [MacroUsage(MacroPhase.BeforeInheritance, MacroTargets.Class, Inherited = false, AllowMultiple = false)]  
+    public macro ImplementsNotifyPropertyChanged(tb : TypeBuilder)
+    {
+        NotifyPropertyChangedHelper.ImplementInterface(tb);
+    }
+ 
+    [MacroUsage(MacroPhase.WithTypedMembers, MacroTargets.Class, Inherited = false, AllowMultiple = false)]  
+    public macro ImplementsNotifyPropertyChanged(tb : TypeBuilder)
+    {
+        NotifyPropertyChangedHelper.FixProperties(tb)
+    }
+ 
+    [MacroUsage(MacroPhase.BeforeInheritance, MacroTargets.Property, Inherited = false, AllowMultiple = false)]  
+    public macro IgnoreProperty(tb : TypeBuilder, property : ParsedProperty)
+    {
+        NotifyPropertyChangedHelper.RegisterIgnored(tb, property)
+    }
+   
+    module NotifyPropertyChangedHelper
+    {       
+        public RegisterIgnored(tb : TypeBuilder, property : ClassMember.Property) : void
+        {
+            ignore(ignoredProperties.Add(tb, property.Name))
+        }      
+       
+        public FixProperties(tb : TypeBuilder) : void
+        {
+            def properties = tb
+                .GetProperties()
+                .Filter(property => !ignoredProperties.Contains(tb, property.Name));
+           
+            foreach(property is PropertyBuilder in properties)
+            {
+                def setter = (property.GetSetter() :> MethodBuilder);    
+                when (setter != null)
+                {
+                    setter.Body = <[
+                        $(setter.Body);
+                        RaisePropertyChanged($(property.Name : string));
+                    ]>;
+                }
+            }
+        }
+       
+        public ImplementInterface(tb : TypeBuilder) : void
+        {
+            def handlerFieldName = Macros.NewSymbol("PropertyChanged");
+            def fieldDecl = <[ decl:
+                private mutable $(handlerFieldName.Id : usesite) : PropertyChangedEventHandler;
+            ]>;          
+ 
+            def modifyEvent(modifier)
+            {
+                <[
+                mutable tempHandler;
+                mutable handler = $(handlerFieldName.Id : usesite);
+                do
+                {
+                    tempHandler = handler;
+                    def newHandler = $(modifier)(tempHandler, value) :> PropertyChangedEventHandler;
+                    handler = System.Threading.Interlocked.CompareExchange(ref $(handlerFieldName.Id : usesite), newHandler, tempHandler);
+                } while(handler != tempHandler);
+                ]>
+            }
+            def eventDecl = <[decl:
+                public event PropertyChanged : PropertyChangedEventHandler 
+                {
+                    add { $(modifyEvent(<[ Delegate.Combine ]>)); }
+                    remove { $(modifyEvent(<[ Delegate.Remove ]>)); }
+                }
+                ]>;
+ 
+            def raisePropertyChangedMethodDecl = <[ decl:
+                protected RaisePropertyChanged(propertyName: string) : void
+                {
+                    def handler = $(handlerFieldName.Id : usesite);
+                    when (handler != null)
+                        handler(this, PropertyChangedEventArgs(propertyName));
+                }
+                ]>;
+           
+            tb.Define(fieldDecl);
+            tb.Define(eventDecl);
+            tb.Define(raisePropertyChangedMethodDecl);
+            tb.AddImplementedInterface(<[INotifyPropertyChanged]>);
+        }
+        
+        private ignoredProperties : SCG.HashSet[TypeBuilder * string] = SCG.HashSet()
+    }
+}

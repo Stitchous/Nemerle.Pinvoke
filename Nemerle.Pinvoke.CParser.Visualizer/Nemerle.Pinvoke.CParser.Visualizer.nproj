@@ -37,9 +37,40 @@
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <MacroReference Include="Nemerle.Xml.Macro, Version=1.2.0.43, Culture=neutral, PublicKeyToken=null">
+      <Name>Nemerle.Xml.Macro</Name>
+      <AssemblyName>Nemerle.Xml.Macro.dll</AssemblyName>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Nemerle\net-4.0\Nemerle.Xml.Macro.dll</HintPath>
+      <Private>False</Private>
+    </MacroReference>
+    <Reference Include="ICSharpCode.AvalonEdit, Version=4.3.1.9429, Culture=neutral, PublicKeyToken=9cc39be672370310">
+      <Name>ICSharpCode.AvalonEdit</Name>
+      <AssemblyName>ICSharpCode.AvalonEdit.dll</AssemblyName>
+      <HintPath>..\packages\AvalonEdit.4.3.1.9430\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Reactive.Core, Version=2.1.30214.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <Name>System.Reactive.Core</Name>
+      <AssemblyName>System.Reactive.Core.dll</AssemblyName>
+      <HintPath>..\packages\Rx-Core.2.1.30214.0\lib\Net45\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces, Version=2.1.30214.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <Name>System.Reactive.Interfaces</Name>
+      <AssemblyName>System.Reactive.Interfaces.dll</AssemblyName>
+      <HintPath>..\packages\Rx-Interfaces.2.1.30214.0\lib\Net45\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq, Version=2.1.30214.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <Name>System.Reactive.Linq</Name>
+      <AssemblyName>System.Reactive.Linq.dll</AssemblyName>
+      <HintPath>..\packages\Rx-Linq.2.1.30214.0\lib\Net45\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices, Version=2.1.30214.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <Name>System.Reactive.PlatformServices</Name>
+      <AssemblyName>System.Reactive.PlatformServices.dll</AssemblyName>
+      <HintPath>..\packages\Rx-PlatformServices.2.1.30214.0\lib\Net45\System.Reactive.PlatformServices.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -60,37 +91,27 @@
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\CommandBehavior.n">
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <None Include="Gallery\Demo\decl1.c">
       <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Commands\EventHooker.n">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Compile Include="MainWindow.xaml.n">
       <SubType>Code</SubType>
+      <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Commands\RelayCommand.n">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Commands\RelayCommandBase.n">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Commands\RelayCommandGeneric.n">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Controls\TreeViewConnectingLines.n">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Controls\TreeViewItemConnectingLineInfo.n">
+    <Compile Include="MainWindowViewModel.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
-    <Compile Include="View\MultiplyConverter.n">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Commands" />
-    <Folder Include="Controls\" />
+    <Folder Include="Gallery" />
+    <Folder Include="Gallery\Demo" />
     <Folder Include="Resources\" />
-    <Folder Include="View" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
@@ -104,16 +125,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="View\AstViewer.xaml">
-      <SubType>Content</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Compile Include="Controls\GridExpander.cs">
-      <SubType>Content</SubType>
-    </Compile>
-    <Compile Include="Controls\GridExpanderDirection.n">
-      <SubType>Content</SubType>
-    </Compile>
     <Page Include="Resources\BorderStyle.xaml">
       <SubType>Content</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -150,11 +161,6 @@
     <Page Include="Resources\ValidationTooltipStyle.xaml">
       <SubType>Content</SubType>
     </Page>
-    <Compile Include="View\AstViewer.xaml.n">
-      <SubType>Content</SubType>
-      <DependentUpon>View\AstViewer.xaml</DependentUpon>
-      <Generator>MSBuild:Compile</Generator>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <MacroProjectReference Include="..\Nemerle.Pinvoke.CParser.Visualizer.Macros\Nemerle.Pinvoke.CParser.Visualizer.Macros.nproj">
@@ -162,6 +168,33 @@
       <Project>{0ebeade8-9b2a-4559-83f8-5f74ac2b04ea}</Project>
       <Private>False</Private>
     </MacroProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nemerle.Pinvoke.CParser.Visualizer.Commands\Nemerle.Pinvoke.CParser.Visualizer.Commands.nproj">
+      <Name>Nemerle.Pinvoke.CParser.Visualizer.Commands</Name>
+      <Project>{b0ede838-9a89-418b-bf6d-e1c454709caf}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nemerle.Pinvoke.CParser.Visualizer.Controls\Nemerle.Pinvoke.CParser.Visualizer.Controls.nproj">
+      <Name>Nemerle.Pinvoke.CParser.Visualizer.Controls</Name>
+      <Project>{a2ecc929-d0c1-4da2-847e-621865266192}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nemerle.Pinvoke.CParser.Visualizer.ModelBuilder\Nemerle.Pinvoke.CParser.Visualizer.ModelBuilder.nproj">
+      <Name>Nemerle.Pinvoke.CParser.Visualizer.ModelBuilder</Name>
+      <Project>{6f75e878-a751-4134-9113-685078a43df7}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nemerle.Pinvoke.CParser.Visualizer.Model\Nemerle.Pinvoke.CParser.Visualizer.Model.nproj">
+      <Name>Nemerle.Pinvoke.CParser.Visualizer.Model</Name>
+      <Project>{1e7b9658-801f-46a9-b897-97b7d7316fb6}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config">
+      <SubType>Content</SubType>
+    </Content>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <PropertyGroup>

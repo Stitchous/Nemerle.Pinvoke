@@ -39,6 +39,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
+    <Reference Include="Nemerle.Peg, Version=1.2.0.43, Culture=neutral, PublicKeyToken=null">
+      <Name>Nemerle.Peg</Name>
+      <AssemblyName>Nemerle.Peg.dll</AssemblyName>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Nemerle\net-4.0\Nemerle.Peg.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -64,11 +69,23 @@
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DependencyProperty.n" />
+    <Compile Include="GrammarNodeBuilder.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="NotifyPropertyChangedHelper.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nemerle.Pinvoke.CParser.Visualizer.Model\Nemerle.Pinvoke.CParser.Visualizer.Model.nproj">
+      <Name>Nemerle.Pinvoke.CParser.Visualizer.Model</Name>
+      <Project>{1e7b9658-801f-46a9-b897-97b7d7316fb6}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <!--

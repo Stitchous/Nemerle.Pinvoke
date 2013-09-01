@@ -12,8 +12,8 @@ namespace Nemerle.Pinvoke.CParser.Visualizer
     {
         private ApplicationStarting(_sender : object, _e : StartupEventArgs) : void
         {
-            def view = View.AstViewer();
-            //view.DataContext = new MainWindowViewModel();
+            def view = MainWindow();
+            view.DataContext = MainWindowViewModel();
             view.Show();
         }
     }

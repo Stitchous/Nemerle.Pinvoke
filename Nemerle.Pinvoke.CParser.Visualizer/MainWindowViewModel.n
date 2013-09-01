@@ -1,0 +1,101 @@
+﻿using System;
+using System.IO;
+using System.IO.Path;
+using System.IO.File;
+using System.Collections.Generic;
+using System.Xml;
+using System.Linq;
+using System.Xml.Linq;
+using System.Reactive.Linq;
+using System.Windows;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Reflection.Assembly;
+using System.Collections.ObjectModel;
+
+using Nemerle.Extensions;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Linq;
+using Nemerle.Xml;
+
+using Nemerle.Pinvoke.CParser.Visualizer.Commands;
+using Nemerle.Pinvoke.CParser.Visualizer.Macros;
+using Nemerle.Pinvoke.CParser.Visualizer.Model;
+using Nemerle.Pinvoke.CParser.Visualizer.ModelBuilder;
+
+namespace Nemerle.Pinvoke.CParser.Visualizer
+{
+  [ImplementsNotifyPropertyChanged]
+  public class MainWindowViewModel
+  {
+    public this()
+    {
+      def xmlDocument = XmlDocument();
+      xmlDocument.Load(CreateFileSystemXmlTree(Combine(GetDirectoryName(GetExecutingAssembly().Location), "Gallery")).CreateReader());
+      GalleryData = XmlDataProvider() <- Document = xmlDocument;
+      
+      SetHighlighting = RelayCommand.[GrammarNode](grammarNode => 
+      { 
+         HighlightingStart  = grammarNode.Location[0];
+         HighlightingLength = grammarNode.Location[1] - grammarNode.Location[0]; 
+      });
+        
+      OpenGalleryItem = RelayCommand.[XmlAttribute](pathAttribute => { Source = ReadAllText(pathAttribute.Value) });
+      
+      def filteredInput = _parseSource.Throttle(TimeSpan.FromMilliseconds(500));
+
+      def output = filteredInput.SelectMany(_ => Observable.ToAsync(ModelFactory.CreateRoot)(Source).TakeUntil(filteredInput));
+
+      _ = output.Subscribe(ast => { GrammarTreeRoot = ReadOnlyCollection.[GrammarNode](array [ast]); ShouldShowError = false; ShouldShowModel = true},
+                           e   => { ErrorText = e.ToString(); ShouldShowError = true; ShouldShowModel = false });
+    }
+      
+    public GalleryData : XmlDataProvider { get; private set; }
+      
+    public GrammarTreeRoot : IEnumerable[GrammarNode] { get; private set; }
+    
+    public Source    : string { get; set; }
+      
+    public ShouldShowError  : bool   { get; private set; }
+    
+    public ShouldShowModel  : bool   { get; private set; }
+
+    public ErrorText : string { get; private set; }
+      
+    public HighlightingStart  : int { get; set; }
+      
+    public HighlightingLength : int { get; set; }
+    
+    [IgnoreProperty]
+    public OpenGalleryItem : ICommand { get; private set; }
+
+    [IgnoreProperty]
+    public SetHighlighting : ICommand { get; private set; }
+    
+    [IgnoreProperty]
+    public ParseSource     : ICommand { get { _parseSource; } }
+      
+    static CreateFileSystemXmlTree (path : string) : XElement
+    {
+      def directoryInfo = DirectoryInfo(path);
+            
+      def dirs = linq <# 
+                        from directory in Directory.GetDirectories(path)
+                        select CreateFileSystemXmlTree(directory) #>;
+                        
+      def files = linq <#
+                        from file in directoryInfo.GetFiles()
+                        select xml <# <File Path = $(file.FullName) Name = $(file.Name)/> #> #>;
+
+      xml <#
+            <Directory Name = $(directoryInfo.Name)>
+                    $dirs
+                    $files
+            </Directory> #>
+    }
+    
+    private _parseSource : ObservableCommand[string] = ObservableCommand.[string]();
+  }
+}
