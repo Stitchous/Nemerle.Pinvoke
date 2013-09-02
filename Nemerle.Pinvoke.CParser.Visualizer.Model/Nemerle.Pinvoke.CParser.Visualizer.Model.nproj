@@ -37,10 +37,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
-    <Reference Include="Nemerle.Peg, Version=1.2.0.43, Culture=neutral, PublicKeyToken=null">
-      <Name>Nemerle.Peg</Name>
-      <AssemblyName>Nemerle.Peg.dll</AssemblyName>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Nemerle\net-4.0\Nemerle.Peg.dll</HintPath>
+    <Reference Include="Nemerle.Peg">
+      <HintPath>$(Nemerle)\Nemerle.Peg.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">

@@ -13,7 +13,7 @@ using System.Reflection;
 
 namespace Nemerle.Pinvoke.CParser.Visualizer.Controls
 {
-  /// <summary>
+    /// <summary>
     /// Bugs free TreeView control version, see 
     /// http://social.msdn.microsoft.com/Forums/en-US/wpf/thread/36aec363-9e33-45bd-81f0-1325a735cc45/#611fccf2-737f-4309-a793-4001488b23aa
     /// http://stackoverflow.com/questions/3868786/wpf-sentinel-objects-and-how-to-check-for-an-internal-type

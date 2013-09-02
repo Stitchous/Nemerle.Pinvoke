@@ -36,11 +36,8 @@
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <MacroReference Include="Nemerle.WPF, Version=1.2.0.43, Culture=neutral, PublicKeyToken=null">
-      <Name>Nemerle.WPF</Name>
-      <AssemblyName>Nemerle.WPF.dll</AssemblyName>
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Nemerle\net-4.0\Nemerle.WPF.dll</HintPath>
-      <Private>False</Private>
+    <MacroReference Include="Nemerle.WPF">
+      <HintPath>$(Nemerle)\Nemerle.WPF.dll</HintPath>
     </MacroReference>
     <Reference Include="ICSharpCode.AvalonEdit">
       <HintPath>..\packages\AvalonEdit.4.3.1.9430\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
