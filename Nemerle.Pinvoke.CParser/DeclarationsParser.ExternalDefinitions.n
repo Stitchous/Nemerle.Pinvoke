@@ -1,5 +1,6 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
+using Nemerle.Extensions;
 using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
@@ -25,9 +26,9 @@ namespace Nemerle.Pinvoke.CParser
         ExternalDeclaration.FunctionDefinition()
     }
 
-    translationUnit(externalDeclarationList : List[ExternalDeclaration]) : list[ExternalDeclaration]
+    translationUnit(externalDeclarationList : List[ExternalDeclaration]) : TranslationUnit
     {
-        NList.ToList(externalDeclarationList)
+        TranslationUnit() <- { ExternalDeclarations = NList.ToList(externalDeclarationList); }
     }
   }
 }

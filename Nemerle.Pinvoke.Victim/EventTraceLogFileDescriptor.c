@@ -8,8 +8,23 @@ typedef void * PVOID;
 typedef unsigned long long LARGE_INTEGER;
 typedef LPTSTR LPWSTR;
 
+typedef unsigned char UCHAR;
+
 typedef unsigned short USHORT;
 typedef unsigned long long ULONGLONG;
+
+typedef PVOID PEVENT_TRACE_BUFFER_CALLBACK;
+typedef PVOID PEVENT_RECORD_CALLBACK;
+
+typedef struct _GUID
+{
+	ULONG u1; ULONG u2; ULONG u3; ULONG u4;
+} GUID;
+
+typedef struct _GUIDD
+{
+	ULONG u1; ULONG u2; ULONG u3; ULONG u4;
+} TIME_ZONE_INFORMATION;
 
 typedef struct _EVENT_TRACE_LOGFILE 
 {

@@ -18,7 +18,7 @@ using Nemerle.Pinvoke.CParser.Ast.Identifiers;
 
 namespace Nemerle.Pinvoke.CParser
 {
-  [PegGrammar(Options = EmitDebugSources, declaration,
+  [PegGrammar(Options = EmitDebugSources, translationUnit,
   grammar
   {
       any                 = ['\u0000'..'\uFFFF'];
@@ -535,7 +535,7 @@ namespace Nemerle.Pinvoke.CParser
       
       #region A.2.4 External definitions
       
-      translationUnit           : list[ExternalDeclaration] = externalDeclaration+;
+      translationUnit           : TranslationUnit = externalDeclaration+;
                         
       externalDeclaration       : ExternalDeclaration = functionDefinition / externalDeclarationDeclaration;
       

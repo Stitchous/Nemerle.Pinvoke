@@ -49,7 +49,7 @@ namespace Nemerle.Pinvoke.Macros
   
   module NativeStructImpl
   {
-    public DoTransform(typer : Typer, name : string, content : string, externals : list.[string * string]) : void
+    public DoTransform(typer : Typer, _name : string, content : string, _externals : list.[string * string]) : void
     {
       Macros.DefineCTX(typer);
 
@@ -64,7 +64,7 @@ namespace Nemerle.Pinvoke.Macros
       def str = parser.Parse(content);
       
       def reflectionTree = str.Map(CParser.TreeConverter.Convert);
-      Console.WriteLine(reflectionTree.ToString());
+      //Console.WriteLine(reflectionTree.ToString());
       
       def value = str.Map(s => s.ToString()).WithDefault("");
 
@@ -89,20 +89,20 @@ namespace Nemerle.Pinvoke.Macros
 
     }
 
-    private Generate(entry : TopLevelEntry) : option[ClassMember.TypeDeclaration]
+    private Generate(entry : TopLevelEntry) : list[ClassMember.TypeDeclaration]
     {
-        | TopLevelEntry.Typedef as typedef  => None()
+        | TopLevelEntry.Typedef as typedef  => Generate(typedef.Aliases)
         | TopLevelEntry.Type as type        => Generate(type.Value)
-        | TopLevelEntry.Function            => None()
+        | TopLevelEntry.Function            => []
     }
 
-    private Generate(type : ReflectionTree.Type) : option[ClassMember.TypeDeclaration]
+    private Generate(type : ReflectionTree.Type) : list[ClassMember.TypeDeclaration]
     {
-        | Type.Struct   as value    => Some(GenereateStruct(value)) 
-        | Type.Union    => None()
-        | Type.BuiltIn  => None()
-        | Type.Typedef  => None()
-        | Type.Pointer  => None()
+        | Type.Struct   as value    => [GenereateStruct(value)] 
+        | Type.Union   
+        | Type.BuiltIn 
+        | Type.Typedef 
+        | Type.Pointer  => []
     }
 
     private GenereateStruct(structType : Type.Struct) : ClassMember.TypeDeclaration
@@ -111,7 +111,6 @@ namespace Nemerle.Pinvoke.Macros
         def name = structType.Name.Value;
         def members = Generate(structType.Members);
         <[decl: struct $(name : dyn) { ..$members }]>
-
     }
 
     private Generate(fields : list[Field]) : list[ClassMember]
@@ -123,15 +122,35 @@ namespace Nemerle.Pinvoke.Macros
             <[ decl: public mutable $(name : dyn) : $(type : dyn);]>
         }
         
-        //fields.Map(f => convert(f))
-        []
+        fields.Map(f => convert(f))
+        
+    }
+    
+    private Generate(aliases : list[TypedefAlias]) : list[ClassMember.TypeDeclaration]
+    {
+        def convert(typedef : TypedefAlias)
+        {
+            def typeExpr = <[$(GetReferenceName(typedef.Type) : dyn)]>;
+            def typedefNameSliceable = Splicable.Name(<[$(typedef.Name : usesite)]>);
+        
+            def topDeclaration = TopDeclaration.Alias(typedefNameSliceable,  AttributesAndModifiers(), Typarms.Empty, typeExpr);
+            ClassMember.TypeDeclaration(typedefNameSliceable, topDeclaration);
+        }
+        
+        aliases.Map(a => convert(a))
     }
     
     private GetReferenceName(type : ReflectionTree.Type) : string
     {
         | Type.Struct as value    => value.Name.WithDefault(GenerateNameForUnnamed())
         | Type.Union  as value    => value.Name.WithDefault(GenerateNameForUnnamed())
-        | Type.BuiltIn as value   =>  throw NotImplementedException()
+        | Type.BuiltIn as value   => 
+            match(value.Type)
+            {               
+            | BuiltInType.LongLong => "ulong"
+            | BuiltInType.Short    => "int"
+            | _                    => "int"
+            }
         | Type.Typedef as value   => value.Name
         | Type.Pointer as value   => GetReferenceName(value.Pointee)
     }
