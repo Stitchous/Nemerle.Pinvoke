@@ -37,8 +37,8 @@ namespace Nemerle.Pinvoke.CParser.Visualizer
 
             SetHighlighting = RelayCommand.[GrammarNode](grammarNode => 
     { 
-                                                         HighlightingStart  = grammarNode.Location[0];
-                                                         HighlightingLength = grammarNode.Location[1] - grammarNode.Location[0]; 
+                                                         HighlightingStart  = grammarNode?.Location[0];
+                                                         HighlightingLength = grammarNode?.Location[1] - HighlightingStart; 
     });
 
             OpenGalleryItem = RelayCommand.[XmlAttribute](pathAttribute => { Source = ReadAllText(pathAttribute.Value) });
