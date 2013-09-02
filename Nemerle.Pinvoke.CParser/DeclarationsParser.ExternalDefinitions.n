@@ -28,7 +28,7 @@ namespace Nemerle.Pinvoke.CParser
 
     translationUnit(externalDeclarationList : List[ExternalDeclaration]) : TranslationUnit
     {
-        TranslationUnit() <- { ExternalDeclarations = NList.ToList(externalDeclarationList); }
+        TranslationUnit(NList.ToList(externalDeclarationList));
     }
   }
 }
