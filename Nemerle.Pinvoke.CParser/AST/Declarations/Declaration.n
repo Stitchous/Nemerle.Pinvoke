@@ -17,7 +17,7 @@ namespace Nemerle.Pinvoke.CParser.Ast.Declarations
   [StandardNode]
   public variant Declaration : Located
   {
-    | Normal { DeclarationSpecifiers : list[DeclarationSpecifier]; InitDeclarationList : option[list[InitDeclarator]] }
+    | Normal { DeclarationSpecifiers : list[DeclarationSpecifier]; InitDeclarationList : list[InitDeclarator] }
     | StaticAssert
   }
 }

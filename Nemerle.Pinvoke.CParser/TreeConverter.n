@@ -44,7 +44,7 @@ namespace Nemerle.Pinvoke.CParser
             | DeclarationSpecifier.StorageClass as value :: tail 
                 => match(value.Value)
                     {
-                        | StorageClassSpecifier.Typedef => CreateTypedefEntry(tail, normalDeclaration.InitDeclarationList.WithDefault([]));
+                        | StorageClassSpecifier.Typedef => CreateTypedefEntry(tail, normalDeclaration.InitDeclarationList);
                         | _ => throw NotImplementedException()
                     }
             | _ => throw NotImplementedException()

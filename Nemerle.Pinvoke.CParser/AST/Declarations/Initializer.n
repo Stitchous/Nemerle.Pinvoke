@@ -7,8 +7,11 @@ using Nemerle.Utility;
 using System;
 using System.Collections.Generic;
 
+using Nemerle.Pinvoke.CParser.Macros;
+
 namespace Nemerle.Pinvoke.CParser.Ast.Declarations
 {
+  [StandardNode]
   public variant Initializer : Located
   {
     | AssignmentExpression { Value : Expressions.AssignmentExpression }

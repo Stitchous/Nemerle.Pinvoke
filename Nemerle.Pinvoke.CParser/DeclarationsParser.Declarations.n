@@ -23,7 +23,7 @@ namespace Nemerle.Pinvoke.CParser
      // declarationSpecifiers initDeclaratorList? s ';'s
      normalDeclaration(declarationSpecifiers : list[DeclarationSpecifier], initDeclarationList : option[list[InitDeclarator]], _ : NToken) : Declaration
      {
-        Declaration.Normal(declarationSpecifiers, initDeclarationList)
+        Declaration.Normal(declarationSpecifiers, initDeclarationList.WithDefault([]))
      }
 
      // "_Static_assert"s '('s constantExpression ','s stringLiteral ')'s
