@@ -168,6 +168,9 @@
     <Compile Include="Ast\ExternalDefinitions\ExternalDeclaration.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Ast\ExternalDefinitions\TranslationUnit.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Ast\Identifiers\Identifier.n">
       <SubType>Code</SubType>
     </Compile>

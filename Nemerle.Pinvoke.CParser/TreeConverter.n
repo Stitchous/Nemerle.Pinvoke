@@ -20,9 +20,9 @@ namespace Nemerle.Pinvoke.CParser
 {
   public module TreeConverter
   {
-    public Convert(externalDeclarations : list[ExternalDeclaration]) : list[TopLevelEntry]
+    public Convert(translationUnit : TranslationUnit) : list[TopLevelEntry]
     {
-        externalDeclarations.Map(x =>
+        translationUnit.ExternalDeclarations.Map(x =>
             match(x)
             {
                 | ExternalDeclaration.Declaration as declaration => CreateTopLevelEntry(declaration.Value)
@@ -53,7 +53,6 @@ namespace Nemerle.Pinvoke.CParser
 
     CreateTypedefEntry(declarationSpecifiers : list[DeclarationSpecifier], initDeclarators : list[InitDeclarator]) :  list[TopLevelEntry]
     {
-        
         def typeDeclaration = CreateTypeDeclaration(declarationSpecifiers);
 
         def aliases = 
@@ -68,11 +67,9 @@ namespace Nemerle.Pinvoke.CParser
                 }) 
         .Map(TypedefAlias);
 
-
         def newTypeDeclarations = if(typeDeclaration is Type.Struct || typeDeclaration is Type.Union)  [TopLevelEntry.Type(typeDeclaration)] else [];
         
         TopLevelEntry.Typedef(aliases) :: newTypeDeclarations;
-            
     }
 
     ParseDeclarator(declarator : Declarator) : string * option[Pointer]
@@ -205,6 +202,5 @@ namespace Nemerle.Pinvoke.CParser
             }
         }
     }
-
   }
 }

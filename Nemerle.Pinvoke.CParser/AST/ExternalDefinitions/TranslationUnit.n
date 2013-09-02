@@ -8,15 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.CParser.Ast.Declarations;
-using Nemerle.Pinvoke.CParser.Macros;
-
 namespace Nemerle.Pinvoke.CParser.Ast.ExternalDefinitions
 {
-  [StandardNode]
-  public variant ExternalDeclaration : Located
+  
+  public class TranslationUnit : Located
   {
-    | Declaration { Value : Declarations.Declaration }
-    | FunctionDefinition
+    [Accessor(flags = WantSetter)] mutable externalDeclarations : list[ExternalDeclaration];
   }
 }

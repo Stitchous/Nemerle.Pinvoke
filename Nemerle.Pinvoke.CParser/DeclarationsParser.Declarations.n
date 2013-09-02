@@ -233,11 +233,6 @@ namespace Nemerle.Pinvoke.CParser
         StructDeclaration(declarationSpecifierList, structDeclaratorList.WithDefault([]))
      } 
      
-     typeSpecifierSpecifierQualifierList(head : TypeSpecifier, tail : option[list[DeclarationSpecifier]]) : list[DeclarationSpecifier]
-     {
-        DeclarationSpecifier.TypeSpecifier(head) :: tail.WithDefault([])
-     }
-
      typeQualifierSpecifierQualifierList(head : TypeQualifier, tail : list[DeclarationSpecifier]) : list[DeclarationSpecifier]
      {
         DeclarationSpecifier.TypeQualifier(head) :: tail
@@ -365,7 +360,7 @@ namespace Nemerle.Pinvoke.CParser
         DirectDeclaratorTailElement.Asterik(typeQualifiers.WithDefault([]))
      }
 
-     FunctionWithParametersDirectDeclaratorTailElement(_ : NToken, parameters : (list[ParameterDeclaration] * bool), _ : NToken) : DirectDeclaratorTailElement
+     FunctionWithParametersDirectDeclaratorTailElement(_ : NToken, _parameters : (list[ParameterDeclaration] * bool), _ : NToken) : DirectDeclaratorTailElement
      {
         DirectDeclaratorTailElement.FunctionWithParameters()
      }
