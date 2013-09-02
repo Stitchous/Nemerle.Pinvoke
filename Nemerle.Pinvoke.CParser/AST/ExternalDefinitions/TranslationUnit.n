@@ -11,8 +11,9 @@ using System.Linq;
 namespace Nemerle.Pinvoke.CParser.Ast.ExternalDefinitions
 {
   
+  [Record]
   public class TranslationUnit : Located
   {
-    [Accessor(flags = WantSetter)] mutable externalDeclarations : list[ExternalDeclaration];
+    public ExternalDeclarations : list[ExternalDeclaration];
   }
 }
