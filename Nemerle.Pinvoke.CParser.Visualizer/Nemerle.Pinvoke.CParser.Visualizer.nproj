@@ -114,6 +114,7 @@
   <ItemGroup>
     <Folder Include="Gallery" />
     <Folder Include="Gallery\Demo" />
+    <Folder Include="Gallery\Bugs" />
     <Folder Include="Resources\" />
     <Folder Include="Properties\" />
   </ItemGroup>
@@ -195,6 +196,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Gallery\Bugs\test1.c">
+      <SubType>Content</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="packages.config">
       <SubType>Content</SubType>
     </Content>
