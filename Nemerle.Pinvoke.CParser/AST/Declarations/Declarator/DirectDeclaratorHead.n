@@ -14,8 +14,8 @@ using Nemerle.Pinvoke.CParser.Macros;
 namespace Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator
 {
      [Record]
-     [StandardNode("direct-declarator-head ")]
-     public variant DirectDeclaratorHead : Located      
+     [StandardNode]
+     public variant DirectDeclaratorHead : Located
      {
         | Simple { Name : Identifier} 
         | Recurrent { innerDeclarator : Declarator }

@@ -19,7 +19,7 @@ using Nemerle.Pinvoke.CParser.Visualizer.Model;
 
 namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
 {
- module GrammarNodeBuilder
+    module GrammarNodeBuilder
     {
         [Record (Include = [name])]
         class NodeGenerator
@@ -27,27 +27,27 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
             [Accessor] name : string;
             [Accessor (Body, flags = WantSetter)] mutable body : PT.PExpr;
         }
-        
+
         internal CreateRoot(parent : PT.PExpr, t : FixedType): PT.PExpr
         {
-            NodeGenerators.Clear();
+            NodeGenerators = SCG.Dictionary.[TypeInfo, NodeGenerator]();
             def rootGenerator = CreateNodes(parent, t);
-            
+
             def generators = NodeGenerators.Keys.Map(typeInfo => 
             <[def $(NodeGenerators[typeInfo].Name : usesite)(val : $(GetTypeExpression(typeInfo.FullName))) 
             $(NodeGenerators[typeInfo].Body)]>);
-            
+
             def joinedGenerators = PT.PExpr.DefFunctions(generators.Map(generator => 
-            PT.Function_decl(generator.funs.Head.header, generator.funs.Head.body)));
-            
+                                                                        PT.Function_decl(generator.funs.Head.header, generator.funs.Head.body)));
+
             PT.PExpr.Sequence([joinedGenerators, rootGenerator]);
         }
-        
+
         private CreateNodes(parent : PT.PExpr, t : FixedType): PT.PExpr
         {
-          match(t)
-          {
-            | Class(typeInfo, args) when typeInfo.SystemType.Equals(typeof(option[_])) => 
+            match(t)
+            {
+                | Class(typeInfo, args) when typeInfo.SystemType.Equals(typeof(option[_])) => 
                 def valueExpr = <[($parent).Value]>;
                 <[
                 if (($parent).IsNone)
@@ -55,48 +55,48 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
                 else
                     $(CreateNodes(valueExpr, args.Head.Fix()))    
                 ]>
-            | Class(typeInfo, args) when typeInfo.SystemType.Equals(typeof(list[_])) => 
+                | Class(typeInfo, args) when typeInfo.SystemType.Equals(typeof(list[_])) => 
                 <[
                 if ($parent == null)
                     []
                 else
                     ($parent).Map(fun(_e){ $(CreateNodes(<[_e]>, args.Head.Fix()))}).Flatten();
                 ]>
-            | Class(typeInfo, _) when typeInfo.SystemType.IsSubclassOf(typeof(Nemerle.Peg.Located)) => 
+                | Class(typeInfo, _) when typeInfo.SystemType.IsSubclassOf(typeof(Nemerle.Peg.Located)) => 
                 unless (NodeGenerators.ContainsKey(typeInfo))
                     AddNodeGenerator(typeInfo);
-                
+
                 <[$(NodeGenerators[typeInfo].Name : usesite)($parent)]>
-                
-            | _ => <[[]]> //e.g. object list of types other than Located
-          }     
+
+                | _ => <[[]]> //e.g. object list of types other than Located
+            }     
         }
-        
+
         private AddNodeGenerator(typeInfo : TypeInfo) : void
         {
             NodeGenerators[typeInfo] = NodeGenerator($<#"Create nodes from $(typeInfo.FullName)"#>); 
             NodeGenerators[typeInfo].Body =
-            if(SurrogateNodeTypes.Contains(typeInfo.SystemType))
+                                               if(SurrogateNodeTypes.Contains(typeInfo.SystemType))
             <[
-                 if (val == null)
+                if (val == null)
                     []
-                 else
+                else
                     $(BuildChildrenGetter(<[val]>, typeInfo))
             ]>
-            else
+                                               else
             <[
             {
-                 if (val == null)
+                if (val == null)
                     []
-                 else
-                 {
+                else
+                {
                     def node = LocatedNode.[$(GetTypeExpression(typeInfo.FullName))](val);
                     node.AddChildren($(BuildChildrenGetter(<[val]>, typeInfo)));
                     [node]
-                 }
-             }]>;
+                }
+            }]>;
         }
-        
+
         private BuildChildrenGetter(valueExpression : PT.PExpr, typeInfo : TypeInfo): PT.PExpr
         {
             match(typeInfo.GetTydecl())
@@ -105,7 +105,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
                 | _                  => ExpandVariantOptionOrClass(valueExpression, typeInfo)
             }
         }
-        
+
         private ExpandVariant(parent : PT.PExpr, opts : list[TypeInfo]): PT.PExpr
         {
             def cases = opts.FoldRight([<[ case: | _ => throw Exception() ]>], 
@@ -114,14 +114,14 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
                 <[ case: | $(variantOption.Name : usesite) as $($"_$(variantOption.Name)" : usesite) => 
                 $(ExpandVariantOptionOrClass(<[$($"_$(variantOption.Name)" : usesite)]>, variantOption)) ]> :: cases
             });
-            
+
             <[match($parent)  { ..$cases }]>
         }
-        
+
         private ExpandVariantOptionOrClass(valueExpression : PT.PExpr, typeInfo : TypeInfo): PT.PExpr
         {
             def members = GetMembers(typeInfo);
-            
+
             if (members.IsEmpty() && (typeInfo.GetTydecl() is TT.TypeDeclaration.VariantOption))
             {
                 <[[LeafNode(typeof($(GetTypeExpression(typeInfo.FullName))))]]>
@@ -132,55 +132,49 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
                     <[($acc + $(CreateNodes(<[$valueExpression.$(next.Name : usesite)]>, next.GetMemType())))]>)
             }
         }
-        
+
         private GetMembers(typeInfo : TypeInfo) : list[IMember]
         {
             typeInfo.GetMembers(BindingFlags.Instance %| BindingFlags.Public).Filter(
-                m => 
-                match(typeInfo.GetTydecl())
-                {
-                    | VariantOption => m is IField || m is IProperty
-                    | _             => m is IProperty
-                } && IsListOrOptionOrLocated(m.GetMemType()))
+                m => (m is IField || m is IProperty) && IsListOrOptionOrLocated(m.GetMemType()))
         }
-        
+
         private IsListOrOptionOrLocated(fixedType : FixedType) : bool
         {
             fixedType is FixedType.Class && 
             { 
-                def systemType = fixedType.TypeInfo.SystemType;
-                    
+            def systemType = fixedType.TypeInfo.SystemType;
+
                 systemType.Equals(typeof(option[_])) ||
                 systemType.Equals(typeof(list[_]))   ||
                 systemType.IsSubclassOf(typeof(Nemerle.Peg.Located))
             }
         }
-        
+
         [DebuggerStepThrough]
         private GetTypeExpression(qualifiedTypeName: string): PT.PExpr
         {
-          PT.PExpr.FromQualifiedIdentifier(ManagerClass.Instance, qualifiedTypeName)
+            PT.PExpr.FromQualifiedIdentifier(ManagerClass.Instance, qualifiedTypeName)
         }
-        
-        private NodeGenerators : SCG.Dictionary[TypeInfo, NodeGenerator] = SCG.Dictionary.[TypeInfo, NodeGenerator]();
+
+        private mutable NodeGenerators : SCG.Dictionary[TypeInfo, NodeGenerator] = SCG.Dictionary.[TypeInfo, NodeGenerator]();
         private SurrogateNodeTypes : list[Type] = [/*typeof(Declarators.DirectDeclarator.Tail)*/];
     }
- 
-    
-  macro BuildGrammarNode(expression : expr)
-  {
-    def makeResult(p, t)
+
+    macro BuildGrammarNode(expression : expr)
     {
-        //_ = Debugger.Launch();
-        def expr = GrammarNodeBuilder.CreateRoot(p, t.Type.Fix());
-        expr
-    }
-    
-    def typer = ImplicitCTX();
-    
-    if (Manager().IsIntelliSenseMode)
+        def makeResult(p, t)
+        {
+            _ = Debugger.Launch();
+            def expr = GrammarNodeBuilder.CreateRoot(p, t.Type.Fix());
+            expr
+        }
+
+        def typer = ImplicitCTX();
+
+        if (Manager().IsIntelliSenseMode)
         <[[]:list[VirtualNode]]>
-    else
-        typer.TransformWhenAllTypesWouldBeInfered(makeResult, typer.TypeExpr(expression), expression)
-  }
+        else
+            typer.TransformWhenAllTypesWouldBeInfered(makeResult, typer.TypeExpr(expression), expression)
+    }
 }
