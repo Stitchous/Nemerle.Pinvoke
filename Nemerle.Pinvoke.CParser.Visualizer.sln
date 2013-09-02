@@ -13,17 +13,11 @@ Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Pinvoke.CParser.Vis
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Pinvoke.CParser.Visualizer.Commands", "Nemerle.Pinvoke.CParser.Visualizer.Commands\Nemerle.Pinvoke.CParser.Visualizer.Commands.nproj", "{B0EDE838-9A89-418B-BF6D-E1C454709CAF}"
 EndProject
-Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Pinvoke.CParser.Visualizer.ModelBuilder", "Nemerle.Pinvoke.CParser.Visualizer.ModelBuilder\Nemerle.Pinvoke.CParser.Visualizer.ModelBuilder.nproj", "{6F75E878-A751-4134-9113-685078A43DF7}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Parser", "Parser", "{E46C0F98-DDCE-4D92-BBEB-9EA57D4682B7}"
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Pinvoke.CParser", "Nemerle.Pinvoke.CParser\Nemerle.Pinvoke.CParser.nproj", "{5997A485-1B4B-4844-B751-7D960CD66EF0}"
 EndProject
 Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Pinvoke.CParser.Macros", "Nemerle.Pinvoke.CParser.Macros\Nemerle.Pinvoke.CParser.Macros.nproj", "{6B7E8233-98D5-4F40-9053-3338007993BC}"
-EndProject
-Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Pinvoke.Macros", "Nemerle.Pinvoke.Macros\Nemerle.Pinvoke.Macros.nproj", "{FA2E9448-79B6-49B0-8116-534A52374D61}"
-EndProject
-Project("{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}") = "Nemerle.Pinvoke.Victim", "Nemerle.Pinvoke.Victim\Nemerle.Pinvoke.Victim.nproj", "{84B5F8BB-57A2-45DC-ADE5-2BC51E51FAED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,10 +45,6 @@ Global
 		{B0EDE838-9A89-418B-BF6D-E1C454709CAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0EDE838-9A89-418B-BF6D-E1C454709CAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0EDE838-9A89-418B-BF6D-E1C454709CAF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6F75E878-A751-4134-9113-685078A43DF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6F75E878-A751-4134-9113-685078A43DF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6F75E878-A751-4134-9113-685078A43DF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6F75E878-A751-4134-9113-685078A43DF7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5997A485-1B4B-4844-B751-7D960CD66EF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5997A485-1B4B-4844-B751-7D960CD66EF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5997A485-1B4B-4844-B751-7D960CD66EF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -63,14 +53,6 @@ Global
 		{6B7E8233-98D5-4F40-9053-3338007993BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B7E8233-98D5-4F40-9053-3338007993BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B7E8233-98D5-4F40-9053-3338007993BC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FA2E9448-79B6-49B0-8116-534A52374D61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FA2E9448-79B6-49B0-8116-534A52374D61}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FA2E9448-79B6-49B0-8116-534A52374D61}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FA2E9448-79B6-49B0-8116-534A52374D61}.Release|Any CPU.Build.0 = Release|Any CPU
-		{84B5F8BB-57A2-45DC-ADE5-2BC51E51FAED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84B5F8BB-57A2-45DC-ADE5-2BC51E51FAED}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84B5F8BB-57A2-45DC-ADE5-2BC51E51FAED}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84B5F8BB-57A2-45DC-ADE5-2BC51E51FAED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,7 +63,6 @@ Global
 		{0EBEADE8-9B2A-4559-83F8-5F74AC2B04EA} = {ABF21964-F2A8-4972-9E8C-1330E031A3B2}
 		{1E7B9658-801F-46A9-B897-97B7D7316FB6} = {ABF21964-F2A8-4972-9E8C-1330E031A3B2}
 		{B0EDE838-9A89-418B-BF6D-E1C454709CAF} = {ABF21964-F2A8-4972-9E8C-1330E031A3B2}
-		{6F75E878-A751-4134-9113-685078A43DF7} = {ABF21964-F2A8-4972-9E8C-1330E031A3B2}
 		{5997A485-1B4B-4844-B751-7D960CD66EF0} = {E46C0F98-DDCE-4D92-BBEB-9EA57D4682B7}
 		{6B7E8233-98D5-4F40-9053-3338007993BC} = {E46C0F98-DDCE-4D92-BBEB-9EA57D4682B7}
 	EndGlobalSection

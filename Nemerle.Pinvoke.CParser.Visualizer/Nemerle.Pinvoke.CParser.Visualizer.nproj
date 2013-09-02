@@ -106,6 +106,9 @@
     <Compile Include="MainWindowViewModel.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ModelBuilder.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
   <ItemGroup>
@@ -180,14 +183,14 @@
       <Project>{a2ecc929-d0c1-4da2-847e-621865266192}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Nemerle.Pinvoke.CParser.Visualizer.ModelBuilder\Nemerle.Pinvoke.CParser.Visualizer.ModelBuilder.nproj">
-      <Name>Nemerle.Pinvoke.CParser.Visualizer.ModelBuilder</Name>
-      <Project>{6f75e878-a751-4134-9113-685078a43df7}</Project>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\Nemerle.Pinvoke.CParser.Visualizer.Model\Nemerle.Pinvoke.CParser.Visualizer.Model.nproj">
       <Name>Nemerle.Pinvoke.CParser.Visualizer.Model</Name>
       <Project>{1e7b9658-801f-46a9-b897-97b7d7316fb6}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nemerle.Pinvoke.CParser\Nemerle.Pinvoke.CParser.nproj">
+      <Name>Nemerle.Pinvoke.CParser</Name>
+      <Project>{5997a485-1b4b-4844-b751-7d960cd66ef0}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
