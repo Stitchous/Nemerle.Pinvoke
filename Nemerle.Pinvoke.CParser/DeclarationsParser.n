@@ -301,9 +301,9 @@ namespace Nemerle.Pinvoke.CParser
       
       logicalAndExpression              : LogicalAndExpression      = inclusiveOrExpression ("&&"s inclusiveOrExpression)*;
 
-      conditionalExpression       = logicalOrExpression ('?'s expression ':'s conditionalExpression)?;
+      logicalOrExpression               : LogicalOrExpression       = logicalAndExpression ("||"s logicalAndExpression)*;
       
-      conditionalExpression             : ConditionalExpression     = logicalOrExpression ("?"s expression ":"s conditionalExpression)?;
+      conditionalExpression             : ConditionalExpression     = logicalOrExpression ('?'s expression ':'s conditionalExpression)?;
       
       assignmentExpression              : AssignmentExpression      = conditionalAssignmentExpression /
                                                                       operatorAssignmentExpression;
