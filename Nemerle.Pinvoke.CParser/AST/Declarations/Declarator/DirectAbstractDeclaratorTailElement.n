@@ -14,7 +14,7 @@ namespace Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator
 {
   public variant DirectAbstractDeclaratorTailElement
   {
-    | AssignmentExpression { TypeQualifiers : list[TypeQualifier]; expression : Expressions.AssignmentExpression }
+    | AssignmentExpression { TypeQualifiers : list[TypeQualifier]; expression : option[Expressions.AssignmentExpression] }
     | StaticAssignmentExpression1 { TypeQualifiers : list[TypeQualifier]; expression : Expressions.AssignmentExpression } 
     | StaticAssignmentExpression2 { TypeQualifiers : list[TypeQualifier]; expression : Expressions.AssignmentExpression } 
     | Asterik {  }

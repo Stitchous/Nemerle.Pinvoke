@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Nemerle.Pinvoke.CParser.Ast.Constants;
 using Nemerle.Pinvoke.CParser.Ast.Constraints;
 using Nemerle.Pinvoke.CParser.Ast.Declarations;
 using Nemerle.Pinvoke.CParser.Ast.Declarations.DeclarationSpecifiers;
@@ -162,14 +163,20 @@ namespace Nemerle.Pinvoke.CParser
         head.Cons(tail)
      }
 
-     normalEnumerator(name  : Identifier) : Enumerator
+     normalEnumerator(name  : Constant) : Enumerator
      {
-        Enumerator(name, None())
+        match(name)
+        {
+            | Constant.Enumeration as value => Enumerator(value.Value, None())
+        }
      }
 
-     enumeratorWithExplicitValue(name : Identifier, _ : NToken, initializer : ConstantExpression) : Enumerator
+     enumeratorWithExplicitValue(name : Constant, _ : NToken, initializer : ConstantExpression) : Enumerator
      {
-        Enumerator(name, Some(initializer))
+        match(name)
+        {
+            | Constant.Enumeration as value => Enumerator(value.Value, Some(initializer))
+        }
      }
 
      // structOrUnion S identifier
@@ -340,19 +347,19 @@ namespace Nemerle.Pinvoke.CParser
         DirectDeclaratorHead.Recurrent(declarator)
      }
 
-     assignmentExpressionDirectDeclaratorTailElement(_ : NToken, typeQualifiers : option[list[TypeQualifier]], _ : NToken, _ : NToken) : DirectDeclaratorTailElement
+     assignmentExpressionDirectDeclaratorTailElement(_ : NToken, typeQualifiers : option[list[TypeQualifier]], assignmentExpression : option[AssignmentExpression], _ : NToken) : DirectDeclaratorTailElement
      {
-        DirectDeclaratorTailElement.AssignmentExpression(typeQualifiers.WithDefault([]), AssignmentExpression())
+        DirectDeclaratorTailElement.AssignmentExpression(typeQualifiers.WithDefault([]), assignmentExpression)
      }
 
-     static1AssignmentExpressionDirectDeclaratorTailElement(_ : NToken, _ : NToken, typeQualifiers : option[list[TypeQualifier]], _ : NToken, _ : NToken) : DirectDeclaratorTailElement
+     static1AssignmentExpressionDirectDeclaratorTailElement(_ : NToken, _ : NToken, typeQualifiers : option[list[TypeQualifier]], assignmentExpression : AssignmentExpression, _ : NToken) : DirectDeclaratorTailElement
      {
-        DirectDeclaratorTailElement.StaticAssignmentExpression1(typeQualifiers.WithDefault([]), AssignmentExpression())
+        DirectDeclaratorTailElement.StaticAssignmentExpression1(typeQualifiers.WithDefault([]), assignmentExpression)
      }
 
-     static2AssignmentExpressionDirectDeclaratorTailElement(_ : NToken, typeQualifiers : list[TypeQualifier], _ : NToken, _ : NToken, _ : NToken) : DirectDeclaratorTailElement
+     static2AssignmentExpressionDirectDeclaratorTailElement(_ : NToken, typeQualifiers : list[TypeQualifier], _ : NToken, assignmentExpression : AssignmentExpression, _ : NToken) : DirectDeclaratorTailElement
      {
-             DirectDeclaratorTailElement.StaticAssignmentExpression2(typeQualifiers, AssignmentExpression())
+        DirectDeclaratorTailElement.StaticAssignmentExpression2(typeQualifiers, assignmentExpression)
      }
 
      asterikDirectDeclaratorTailElement(_ : NToken, typeQualifiers : option[list[TypeQualifier]], _ : NToken, _ : NToken) : DirectDeclaratorTailElement
@@ -416,19 +423,19 @@ namespace Nemerle.Pinvoke.CParser
         AbstractDeclarator(pointer, Some(directAbstractDeclarator));
      }
 
-     assignmentExpressionDirectAbstractDeclaratorTailElement(_ : NToken, typeQualifierList : option[list[DeclarationSpecifiers.TypeQualifier]], _ : NToken, _ : NToken) : Declarator.DirectAbstractDeclaratorTailElement
+     assignmentExpressionDirectAbstractDeclaratorTailElement(_ : NToken, typeQualifierList : option[list[DeclarationSpecifiers.TypeQualifier]], assignmentExpression : option[AssignmentExpression], _ : NToken) : Declarator.DirectAbstractDeclaratorTailElement
      {
-        DirectAbstractDeclaratorTailElement.AssignmentExpression(typeQualifierList.WithDefault([]), AssignmentExpression())
+        DirectAbstractDeclaratorTailElement.AssignmentExpression(typeQualifierList.WithDefault([]), assignmentExpression)
      }
      
-     static1AssignmentExpressionDirectAbstractDeclaratorTailElement(_ : NToken, _ : NToken, typeQualifierList : option[list[DeclarationSpecifiers.TypeQualifier]], _ : NToken, _ : NToken) : Declarator.DirectAbstractDeclaratorTailElement
+     static1AssignmentExpressionDirectAbstractDeclaratorTailElement(_ : NToken, _ : NToken, typeQualifierList : option[list[DeclarationSpecifiers.TypeQualifier]], assignmentExpression : AssignmentExpression, _ : NToken) : Declarator.DirectAbstractDeclaratorTailElement
      {
-        DirectAbstractDeclaratorTailElement.StaticAssignmentExpression1(typeQualifierList.WithDefault([]), AssignmentExpression())
+        DirectAbstractDeclaratorTailElement.StaticAssignmentExpression1(typeQualifierList.WithDefault([]), assignmentExpression)
      }
 
-     static2AssignmentExpressionDirectAbstractDeclaratorTailElement(_ : NToken, typeQualifierList : list[DeclarationSpecifiers.TypeQualifier], _ : NToken, _ : NToken, _ : NToken) : DirectAbstractDeclaratorTailElement
+     static2AssignmentExpressionDirectAbstractDeclaratorTailElement(_ : NToken, typeQualifierList : list[DeclarationSpecifiers.TypeQualifier], _ : NToken, assignmentExpression : AssignmentExpression, _ : NToken) : DirectAbstractDeclaratorTailElement
      {
-        DirectAbstractDeclaratorTailElement.StaticAssignmentExpression2(typeQualifierList, AssignmentExpression())
+        DirectAbstractDeclaratorTailElement.StaticAssignmentExpression2(typeQualifierList, assignmentExpression)
      }
 
      asterikDirectAbstractDeclaratorTailElement(_ : NToken, _ : NToken, _ : NToken) : DirectAbstractDeclaratorTailElement
@@ -451,9 +458,9 @@ namespace Nemerle.Pinvoke.CParser
         DirectAbstractDeclarator(None(), NList.ToList(tail))
      }
 
-     assignmentExpressionInitializer(_ : NToken) : Initializer
+     assignmentExpressionInitializer(assignmentExpression : AssignmentExpression) : Initializer
      {
-        Initializer.AssignmentExpression(AssignmentExpression())
+        Initializer.AssignmentExpression(assignmentExpression)
      }
 
      InitializerListInitializer(_ : NToken, initializerList : list[InitializerListElement], _ : NToken) : Initializer

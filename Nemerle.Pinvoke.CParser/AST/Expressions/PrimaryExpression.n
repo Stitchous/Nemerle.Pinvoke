@@ -1,0 +1,24 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Peg;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.CParser.Ast.Identifiers;
+using Nemerle.Pinvoke.CParser.Ast.Constants;
+
+namespace Nemerle.Pinvoke.CParser.Ast.Expressions
+{
+  public variant PrimaryExpression : Located
+  {
+    | Identifier    { Value : Identifiers.Identifier}    
+    | Constant      { Value : Constants.Constant }
+    | StringLiteral 
+    | Expression 
+    | GenericSelection
+  }
+}

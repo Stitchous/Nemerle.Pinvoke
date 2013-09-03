@@ -1,5 +1,6 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
+using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -8,13 +9,15 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Nemerle.Pinvoke.CParser.Ast.Declarations.DeclarationSpecifiers;
+using Nemerle.Pinvoke.CParser.Macros;
 
 namespace Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator
 {
   
-  public variant DirectDeclaratorTailElement
+  [StandardNode]
+  public variant DirectDeclaratorTailElement : Located
   {
-    | AssignmentExpression { TypeQualifiers : list[TypeQualifier]; expression : Expressions.AssignmentExpression }
+    | AssignmentExpression { TypeQualifiers : list[TypeQualifier]; expression : option[Expressions.AssignmentExpression] }
     ///  [ static type-qualiﬁer-listopt assignment-expression ]
     | StaticAssignmentExpression1 { TypeQualifiers : list[TypeQualifier]; expression : Expressions.AssignmentExpression } 
     /// [ type-qualiﬁer-list static assignment-expression ]

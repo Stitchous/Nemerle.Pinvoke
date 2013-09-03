@@ -9,14 +9,175 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Nemerle.Pinvoke.CParser.Ast.Expressions;
+using Nemerle.Pinvoke.CParser.Ast.Declarations;
 
 namespace Nemerle.Pinvoke.CParser
 {
   public partial class DeclarationsParser
   {
-    constantExpression(_ : Nemerle.Peg.NToken) : ConstantExpression
+    primaryExpressionIdentifier(identifier : Nemerle.Pinvoke.CParser.Ast.Identifiers.Identifier) : PrimaryExpression
+    {
+        PrimaryExpression.Identifier(identifier)
+    }
+    primaryExpressionConstant(constant : Nemerle.Pinvoke.CParser.Ast.Constants.Constant) : PrimaryExpression
+    {
+        PrimaryExpression.Constant(constant)
+    }
+
+    primaryExpressionStringLiteral(_ : NToken) : PrimaryExpression
+    {
+        throw NotImplementedException()
+    }
+
+    primaryExpressionExpression(_ : NToken, _ : list[AssignmentExpression], _ : NToken) : PrimaryExpression
+    {
+        throw NotImplementedException()
+    }
+
+    primaryExpressionGenericSelection(_ : NToken) : PrimaryExpression
+    {
+        throw NotImplementedException()
+    }
+
+    primaryExpressionPostfixExpressionHead(primaryExpression : PrimaryExpression) : PostfixExpressionHead
+    {
+        PostfixExpressionHead.PrimaryExpression(primaryExpression)
+    }
+
+    typeInitializerPostfixExpressionHead(_ : NToken, _ : Nemerle.Pinvoke.CParser.Ast.Declarations.TypeName, _ : NToken, _ : NToken, _ : list[Nemerle.Pinvoke.CParser.Ast.Declarations.InitializerListElement], _ : NToken, _ : NToken) : PostfixExpressionHead
+    {
+        throw NotImplementedException()
+    }
+
+
+    alignOfTypenameUnaryExpression(_alignOf : NToken, _leftParenthesis : NToken, typename : TypeName, _rightParenthesis : NToken) : UnaryExpression
+    {
+        UnaryExpression.AlignofTypname(typename)
+    }
+
+
+    additiveExpression(multiplicativeExpression : MultiplicativeExpression, _tail : NToken) : AdditiveExpression
+    {
+        AdditiveExpression(multiplicativeExpression)
+    }
+    
+    andExpression(head : EqualityExpression, tail : List[(NToken * EqualityExpression)]) : AndExpression
+    {
+        AndExpression(head.Cons(tail))
+    }
+
+    conditionalExpression(logicalOrExpression : LogicalOrExpression, tail : option[(NToken * list[AssignmentExpression] * NToken * ConditionalExpression)]) : ConditionalExpression
+    {
+        match(tail)
+        {
+            | Some(value)   => ConditionalExpression.TernaryOperator(logicalOrExpression, value[1], value[3])
+            | None          => ConditionalExpression.LogicalOrExpression(logicalOrExpression)
+        }
+    }
+
+    conditionalAssignmentExpression(conditionalExpression : ConditionalExpression) : AssignmentExpression
+    {
+        AssignmentExpression.ConditionalExpression(conditionalExpression)
+    }
+
+    operatorAssignmentExpression(unaryExpression : UnaryExpression, _assignmentOperator : NToken, assignmentExpression : AssignmentExpression) : AssignmentExpression
+    {
+        AssignmentExpression.Operator(unaryExpression, assignmentExpression)
+    }
+
+    expression(head : AssignmentExpression, tail : List[(NToken * AssignmentExpression)]) : list[AssignmentExpression]
+    {
+        head.Cons(tail)
+    }
+
+    constantExpression(_ : ConditionalExpression) : ConstantExpression
     {
         ConstantExpression()
+    }
+    
+    decrementUnaryExpression(_decrementSign : NToken, unaryExpression : UnaryExpression) : UnaryExpression
+    {
+       UnaryExpression.Decrement(unaryExpression)
+    }
+  
+    equalityExpression(relationalExpression : RelationalExpression, _ : NToken) : EqualityExpression
+    {
+       EqualityExpression(relationalExpression)
+    }
+
+    exclusiveOrExpression(head : AndExpression, tail : List[(NToken * AndExpression)]) : ExclusiveOrExpression
+    {
+       ExclusiveOrExpression(head.Cons(tail))
+    }
+
+    inclusiveOrExpression(head : ExclusiveOrExpression, tail : List[(NToken * ExclusiveOrExpression)]) : InclusiveOrExpression
+    {
+       InclusiveOrExpression(head.Cons(tail))
+    }
+  
+    incrementUnaryExpression(_ : NToken, unaryExpression : UnaryExpression) : UnaryExpression
+    {
+       UnaryExpression.Increment(unaryExpression)
+    }
+  
+    logicalAndExpression(head : InclusiveOrExpression, tail : List[(NToken * InclusiveOrExpression)]) : LogicalAndExpression
+    {
+       LogicalAndExpression(head.Cons(tail))
+    }
+  
+    logicalOrExpression(head : LogicalAndExpression, tail : List[(NToken * LogicalAndExpression)]) : LogicalOrExpression
+    {
+       LogicalOrExpression(head.Cons(tail))
+    }
+  
+    multiplicativeExpression(castExpression : CastExpression, _ : NToken) : MultiplicativeExpression
+    {
+       MultiplicativeExpression(castExpression)
+    }
+  
+    postfixExpression(head : PostfixExpressionHead, _ : NToken) : PostfixExpression
+    {
+       PostfixExpression(head)
+    }
+  
+    postfixUnaryExpression(postfixExpression : PostfixExpression) : UnaryExpression
+    {
+       UnaryExpression.PostfixExpression(postfixExpression)
+    }
+  
+    relationalExpression(shiftExpression : ShiftExpression, _ : NToken) : RelationalExpression
+    {
+       RelationalExpression(shiftExpression)
+    }
+  
+    shiftExpression(additiveExpression : AdditiveExpression, _ : NToken) : ShiftExpression
+    {
+       ShiftExpression(additiveExpression)
+    }
+  
+    sizeofTypenameUnaryExpression(_ : NToken, _ : NToken, typename : TypeName, _ : NToken) : UnaryExpression
+    {
+       UnaryExpression.SizeofTypename(typename)
+    }
+  
+    sizeofUnaryExpression(_ : NToken, unaryExpression : UnaryExpression) : UnaryExpression
+    {
+       UnaryExpression.Sizeof(unaryExpression)
+    }
+  
+    typedCastExpression(_ : NToken, typename : TypeName, _ : NToken, castExpression : CastExpression) : CastExpression
+    {
+       CastExpression.TypedCastExpression(typename, castExpression)
+    }
+  
+    unaryExpressionCastExpression(unaryExpression : UnaryExpression) : CastExpression
+    {
+       CastExpression.UnaryExpression(unaryExpression)
+    }
+  
+    unaryOperatorCastUnaryExpression(_ : NToken, _castExpression : CastExpression) : UnaryExpression
+    {
+       UnaryExpression.UnaryOperator()
     }
   }
 }

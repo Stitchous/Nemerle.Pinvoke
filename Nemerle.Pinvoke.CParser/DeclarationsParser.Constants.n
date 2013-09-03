@@ -1,5 +1,6 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
+using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -7,9 +8,52 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Nemerle.Pinvoke.CParser.Ast.Constants;
+using Nemerle.Pinvoke.CParser.Ast.Identifiers;
+
 namespace Nemerle.Pinvoke.CParser
 {
   public partial class DeclarationsParser
   {
+    integerConstant(constant : Constant, _suffix : NToken) : Constant
+    {
+        constant
+    }
+    
+    decimalConstant(head : NToken, tail : NToken) : Constant
+    {
+        def value = ulong.Parse(GetText(head) + GetText(tail));
+        Constant.Integer(value)
+    }
+
+    hexadecimalConstant(_ : NToken, _ : NToken) : Constant
+    {
+        throw NotImplementedException()
+    }
+
+    octalConstant(_ : NToken, _ : NToken) : Constant
+    {
+        throw NotImplementedException()
+    }
+
+    characterConstant(_ : NToken, _ : NToken, _ : NToken) : Constant
+    {
+        throw NotImplementedException()
+    }
+
+    decimalFloatingConstant(_ : NToken, _ : NToken, _ : NToken, _ : NToken, _ : NToken, _ : NToken) : Constant
+    {
+        throw NotImplementedException()
+    }
+
+    enumerationConstant(_ : Identifier) : Constant
+    {
+        throw NotImplementedException()
+    }
+
+    hexadecimalFloatingConstant(_ : NToken, _ : NToken, _ : NToken, _ : NToken) : Constant
+    {
+        throw NotImplementedException()
+    }
   }
 }

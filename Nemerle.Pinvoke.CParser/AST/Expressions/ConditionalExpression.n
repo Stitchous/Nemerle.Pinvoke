@@ -1,0 +1,23 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Peg;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Nemerle.Pinvoke.CParser.Ast.Expressions
+{
+  public variant ConditionalExpression : Located
+  {
+    | LogicalOrExpression   { Value : Expressions.LogicalOrExpression }
+    | TernaryOperator       
+        { 
+            Condition   : Expressions.LogicalOrExpression; 
+            TrueCase    : list[AssignmentExpression]; 
+            FalseCase   : Expressions.ConditionalExpression; 
+        }
+  }
+}

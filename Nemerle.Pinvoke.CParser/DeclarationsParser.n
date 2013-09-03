@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Nemerle.Pinvoke.CParser.Ast.Constants;
 using Nemerle.Pinvoke.CParser.Ast.Declarations;
 using Nemerle.Pinvoke.CParser.Ast.Declarations.DeclarationSpecifiers;
 using Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator;
@@ -18,6 +19,8 @@ using Nemerle.Pinvoke.CParser.Ast.Identifiers;
 
 namespace Nemerle.Pinvoke.CParser
 {
+  type Expression = list[AssignmentExpression];
+
   [PegGrammar(Options = EmitDebugSources, translationUnit,
   grammar
   {
@@ -90,20 +93,22 @@ namespace Nemerle.Pinvoke.CParser
 
       #region A.1.5 Constants
       
-      constant        = integerConstant     /
+      constant : Constant   
+                      = integerConstant     /
                         floatingConstant    /
                         enumerationConstant /
                         characterConstant;
                         
-      integerConstant = decimalConstant integerSuffix? /
+      integerConstant : Constant = 
+                        decimalConstant integerSuffix? /
                         octalConstant integerSuffix?   /
                         hexadecimalConstant integerSuffix?;
                         
-      decimalConstant = nonzeroDigit digit+;
+      decimalConstant : Constant = nonzeroDigit digit*;
                         
-      octalConstant   = '0' octalDigit+;
+      octalConstant   : Constant = '0' octalDigit+;
                         
-      hexadecimalConstant = hexadecimalPrefix hexadecimalDigit+;
+      hexadecimalConstant : Constant = hexadecimalPrefix hexadecimalDigit+;
       
       hexadecimalPrefix   = "0x" / "0X";
       
@@ -124,13 +129,15 @@ namespace Nemerle.Pinvoke.CParser
       
       longLongSuffix = "ll" / "LL";
       
-      floatingConstant = decimalFloatingConstant /
-                         hexadecimalFloatingConstant;
+      floatingConstant : Constant =
+                                decimalFloatingConstant /
+                                hexadecimalFloatingConstant;
                          
-      decimalFloatingConstant = fractionalConstant exponentPart? floatingSuffix?
-                                digitSequence exponentPart floatingSuffix?;
+      decimalFloatingConstant : Constant  = fractionalConstant exponentPart? floatingSuffix?
+                                            digitSequence exponentPart floatingSuffix?;
                                 
-      hexadecimalFloatingConstant = hexadecimalPrefix hexadecimalFractionalConstant binaryExponentPart floatingSuffix? /
+      hexadecimalFloatingConstant : Constant  = 
+                                    hexadecimalPrefix hexadecimalFractionalConstant binaryExponentPart floatingSuffix? /
                                     hexadecimalPrefix hexadecimalDigitSequence binaryExponentPart floatingSuffix?;
                                     
       fractionalConstant         = digitSequence? '.' digitSequence / 
@@ -154,12 +161,14 @@ namespace Nemerle.Pinvoke.CParser
       
       floatingSuffix = 'f' / 'l' / 'F' / 'L';
       
-      enumerationConstant : Identifier = identifier;
+      enumerationConstant : Constant = identifier;
       
-      characterConstant     = "'" cCharSequence "'"  /
+      characterConstant : Constant = 
+                               "'" cCharSequence "'"  /
                               "L'" cCharSequence "'" /
                               "u'" cCharSequence "'" /
                               "U'" cCharSequence "'";
+         
                               
       cCharSequence = cChar+;
       
@@ -195,11 +204,18 @@ namespace Nemerle.Pinvoke.CParser
       
       #region A.2.1 Expressions
       
-      primaryExpression = identifier           /
-                          constant             /
-                          stringLiteral        /
-                          '('s expression ')'s /
-                          genericSelection;
+      primaryExpression : PrimaryExpression = 
+                          primaryExpressionIdentifier       /
+                          primaryExpressionConstant         /
+                          primaryExpressionStringLiteral    /
+                          primaryExpressionExpression       /
+                          primaryExpressionGenericSelection;
+
+      primaryExpressionIdentifier       : PrimaryExpression = identifier;          
+      primaryExpressionConstant         : PrimaryExpression = constant;            
+      primaryExpressionStringLiteral    : PrimaryExpression = stringLiteral;       
+      primaryExpressionExpression       : PrimaryExpression = '('s expression ')'s;
+      primaryExpressionGenericSelection : PrimaryExpression = genericSelection;
                           
       genericSelection = "_Generic"s '('s assignmentExpression ','s genericAssocList ')'s;
       
@@ -209,69 +225,95 @@ namespace Nemerle.Pinvoke.CParser
                            "default"s ':'s assignmentExpression;
       
       postfixExpressionTail = '['s expression ']'s  /
-                              argumentExpressionList? /
+                              '(' argumentExpressionList? ')'/
                               '.'s identifier        /
                               "->"s identifier       /
                               "++"                    /
                               "--"; 
-      postfixExpression = primaryExpression / ('('s typeName ')'s '{'s initializerList (','s)? '}'s) postfixExpressionTail*;
+
+      postfixExpression                      : PostfixExpression =  postfixExpressionHead postfixExpressionTail*;
+      postfixExpressionHead                  : PostfixExpressionHead = primaryExpressionPostfixExpressionHead / typeInitializerPostfixExpressionHead;
+      primaryExpressionPostfixExpressionHead : PostfixExpressionHead = primaryExpression;
+      typeInitializerPostfixExpressionHead   : PostfixExpressionHead = '('s typeName ')'s '{'s initializerList (','s)? '}'s;
+
                          
       argumentExpressionList = assignmentExpression (','s assignmentExpression)*;
       
-      unaryExpression = postfixExpression               /
-                        "++"s unaryExpression          /
-                        "--"s unaryExpression          /
-                        unaryOperator castExpression    /
-                        "sizeof"s unaryExpression      /
-                        "sizeof"s '('s typeName ')'s /
-                        "_Alignof"s '('s typeName ')'s;
+      unaryExpression : UnaryExpression =   
+                                           postfixUnaryExpression             / 
+                                           incrementUnaryExpression           /
+                                           decrementUnaryExpression           /
+                                           unaryOperatorCastUnaryExpression   /
+                                           sizeofUnaryExpression              /
+                                           sizeofTypenameUnaryExpression      /
+                                           alignOfTypenameUnaryExpression;
+
+
+      postfixUnaryExpression            : UnaryExpression =     postfixExpression;
+      incrementUnaryExpression          : UnaryExpression =     "++"s unaryExpression;
+      decrementUnaryExpression          : UnaryExpression =     "--"s unaryExpression;
+      unaryOperatorCastUnaryExpression  : UnaryExpression =     unaryOperator castExpression;
+      sizeofUnaryExpression             : UnaryExpression =     "sizeof"s unaryExpression;
+      sizeofTypenameUnaryExpression     : UnaryExpression =     "sizeof"s '('s typeName ')'s;
+      alignOfTypenameUnaryExpression    : UnaryExpression =     "_Alignof"s '('s typeName ')'s;
+
                         
       unaryOperator = '&' / '*' / '+' / '-' / '~' / '!';
       
-      castExpression = unaryExpression /
-                       '('s typeName ')'s castExpression;
+      castExpression                    : CastExpression            = unaryExpressionCastExpression /
+                                                                      typedCastExpression;
+
+      unaryExpressionCastExpression     : CastExpression            = unaryExpression;
+      typedCastExpression               : CastExpression            = '('s typeName ')'s castExpression;
+
       
       multiplicativeExpressionTail = '*'s castExpression /
                                      '/'s castExpression /
                                      '%'s castExpression;
-      multiplicativeExpression     = castExpression multiplicativeExpressionTail*;
+      
+      multiplicativeExpression          : MultiplicativeExpression  = castExpression multiplicativeExpressionTail*;
       
       additiveExpressionTail       = '+'s multiplicativeExpression /
                                      '-'s multiplicativeExpression;
-      additiveExpression           = multiplicativeExpression additiveExpressionTail*;
+      additiveExpression                : AdditiveExpression        = multiplicativeExpression additiveExpressionTail*;
       
       shiftExpressionTail          = "<<"s additiveExpression /
                                      ">>"s additiveExpression;
-      shiftExpression              = additiveExpression shiftExpressionTail*;
+      shiftExpression                   : ShiftExpression           = additiveExpression shiftExpressionTail*;
       
       relationalExpressionTail     = '<'s shiftExpression  /
                                      '>'s shiftExpression  /
                                      "<="s shiftExpression /
                                      ">="s shiftExpression;
-      relationalExpression        = shiftExpression relationalExpressionTail*;
+      
+      relationalExpression              : RelationalExpression      = shiftExpression relationalExpressionTail*;
       
       equalityExpressionTail      = "=="s relationalExpression /
                                     "!="s relationalExpression;
-      equalityExpression          = relationalExpression equalityExpressionTail*;
-      
-      andExpression               = equalityExpression ('&'s equalityExpression)*;
-      
-      exclusiveOrExpression       = andExpression ('^'s andExpression)*;
-      
-      inclusiveOrExpression       = exclusiveOrExpression ('|'s exclusiveOrExpression)*;
-      
-      logicalAndExpression        = inclusiveOrExpression ("&&"s inclusiveOrExpression)*;
 
-      logicalOrExpression         = logicalAndExpression ("||"s logicalAndExpression)*;
+      equalityExpression                : EqualityExpression        = relationalExpression equalityExpressionTail*;
       
-      conditionalExpression       = logicalOrExpression ("?"s expression ":"s conditionalExpression)*;
+      andExpression                     : AndExpression             = equalityExpression ('&'s equalityExpression)*;
       
-      assignmentExpression        = conditionalExpression /
-                                    unaryExpression assignmentOperator assignmentExpression;
-                                 
+      exclusiveOrExpression             : ExclusiveOrExpression     = andExpression ('^'s andExpression)*;
+      
+      inclusiveOrExpression             : InclusiveOrExpression     = exclusiveOrExpression ('|'s exclusiveOrExpression)*;
+      
+      logicalAndExpression              : LogicalAndExpression      = inclusiveOrExpression ("&&"s inclusiveOrExpression)*;
+
+      logicalOrExpression               : LogicalOrExpression       = logicalAndExpression ("||"s logicalAndExpression)*;
+      
+      conditionalExpression             : ConditionalExpression     = logicalOrExpression ("?"s expression ":"s conditionalExpression)?;
+      
+      assignmentExpression              : AssignmentExpression      = conditionalAssignmentExpression /
+                                                                      operatorAssignmentExpression;
+
+      conditionalAssignmentExpression   : AssignmentExpression      = conditionalExpression;
+      operatorAssignmentExpression      : AssignmentExpression      = unaryExpression assignmentOperator assignmentExpression;
+
       assignmentOperator = "=" / "*=" / "/=" / "%=" / "+=" / "-=" / "<<=" / ">>=" / "&=" / "^=" / "|=";
       
-      expression = assignmentExpression (','s assignmentExpression)*;
+      expression : Expression   = assignmentExpression (','s assignmentExpression)*;
       
       constantExpression : ConstantExpression = conditionalExpression;
             
@@ -304,8 +346,7 @@ namespace Nemerle.Pinvoke.CParser
       normalInitDeclarator : InitDeclarator = declarator;
       initDeclaratorWithInitializer : InitDeclarator= declarator '='s initializer;
       
-      initDeclarator : InitDeclarator         = normalInitDeclarator /
-                                                initDeclaratorWithInitializer;
+      initDeclarator : InitDeclarator         = initDeclaratorWithInitializer / normalInitDeclarator;
                               
       storageClassSpecifier : DeclarationSpecifier = 
                                                 ("typedef"       /

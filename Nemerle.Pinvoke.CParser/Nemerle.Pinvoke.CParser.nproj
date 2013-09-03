@@ -75,6 +75,9 @@
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ast\Constants\Constant.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Ast\Constraints\DeclarationSpecifierListConstraint.n">
       <SubType>Code</SubType>
     </Compile>
@@ -159,10 +162,58 @@
     <Compile Include="Ast\Declarations\TypeName.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Ast\Expressions\AdditiveExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\AndExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Ast\Expressions\AssignmentExpression.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Ast\Expressions\CastExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\ConditionalExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Ast\Expressions\ConstantExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\EqualityExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\ExclusiveOrExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\InclusiveOrExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\LogicalAndExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\LogicalOrExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\MultiplicativeExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\PostfixExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\PostfixExpressionHead.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\PrimaryExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\RelationalExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\ShiftExpression.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Ast\Expressions\UnaryExpression.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Ast\ExternalDefinitions\ExternalDeclaration.n">
@@ -232,6 +283,7 @@
     <Folder Include="Ast\Declarations" />
     <Folder Include="Ast\Constraints" />
     <Folder Include="Ast\ExternalDefinitions" />
+    <Folder Include="Ast\Constants" />
     <Folder Include="ReflectionTree" />
     <Folder Include="Properties\" />
   </ItemGroup>

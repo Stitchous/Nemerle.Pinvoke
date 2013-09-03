@@ -1,0 +1,22 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Peg;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.CParser.Ast.Identifiers;
+
+namespace Nemerle.Pinvoke.CParser.Ast.Constants
+{
+  public variant Constant : Located
+  {
+    | Integer { Value : ulong }
+    | Floating { Value : double }
+    | Enumeration { Value : Identifier }
+    | Character { Value : char }
+  }
+}

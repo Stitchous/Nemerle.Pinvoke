@@ -1,0 +1,20 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Peg;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Nemerle.Pinvoke.CParser.Ast.Declarations;
+
+namespace Nemerle.Pinvoke.CParser.Ast.Expressions
+{
+  public variant CastExpression : Located
+  {
+    | UnaryExpression       { Value : Expressions.UnaryExpression }
+    | TypedCastExpression   { typename : TypeName; castExpression : CastExpression }
+  }
+}

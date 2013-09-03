@@ -10,9 +10,9 @@ using System.Linq;
 
 namespace Nemerle.Pinvoke.CParser.Ast.Expressions
 {
-  public variant AssignmentExpression : Located
+  [Record]
+  public class ShiftExpression : Located
   {
-    | ConditionalExpression { Value : Expressions.ConditionalExpression }
-    | Operator { UnaryExpression : UnaryExpression; AssignmentExpression : AssignmentExpression }
+    public AdditiveExpression : AdditiveExpression;
   }
 }
