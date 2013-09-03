@@ -301,7 +301,7 @@ namespace Nemerle.Pinvoke.CParser
       
       logicalAndExpression              : LogicalAndExpression      = inclusiveOrExpression ("&&"s inclusiveOrExpression)*;
 
-      logicalOrExpression               : LogicalOrExpression       = logicalAndExpression ("||"s logicalAndExpression)*;
+      conditionalExpression       = logicalOrExpression ('?'s expression ':'s conditionalExpression)?;
       
       conditionalExpression             : ConditionalExpression     = logicalOrExpression ("?"s expression ":"s conditionalExpression)?;
       
@@ -346,7 +346,8 @@ namespace Nemerle.Pinvoke.CParser
       normalInitDeclarator : InitDeclarator = declarator;
       initDeclaratorWithInitializer : InitDeclarator= declarator '='s initializer;
       
-      initDeclarator : InitDeclarator         = initDeclaratorWithInitializer / normalInitDeclarator;
+      initDeclarator : InitDeclarator         = initDeclaratorWithInitializer / 
+                                                normalInitDeclarator;
                               
       storageClassSpecifier : DeclarationSpecifier = 
                                                 ("typedef"       /

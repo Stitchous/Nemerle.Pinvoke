@@ -1,1 +1,1 @@
-﻿volatile i const i;
+﻿int a = 1;
