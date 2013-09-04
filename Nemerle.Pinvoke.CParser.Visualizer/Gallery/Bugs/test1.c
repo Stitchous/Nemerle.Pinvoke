@@ -1,1 +1,1 @@
-﻿int a = 1;
+﻿enum A { a };
