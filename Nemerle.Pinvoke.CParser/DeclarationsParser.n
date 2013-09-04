@@ -408,7 +408,8 @@ namespace Nemerle.Pinvoke.CParser
 
       declarationSpecifierTypeSpecifierList : list[DeclarationSpecifier]  = typeSpecifier;
 
-      specifierQualifierList : list[DeclarationSpecifier] = typeQualifier* (declarationSpecifierBuiltInTypeSpecifierList / declarationSpecifierTypeSpecifierList) typeQualifier*;
+      
+      specifierQualifierList : list[DeclarationSpecifier] = declarationSpecifierQualifier* (declarationSpecifierBuiltInTypeSpecifierList / declarationSpecifierTypeSpecifierList) declarationSpecifierQualifier*;
 
       structDeclaratorList   : list[StructDeclarator] = structDeclarator (','s structDeclarator)*;
       

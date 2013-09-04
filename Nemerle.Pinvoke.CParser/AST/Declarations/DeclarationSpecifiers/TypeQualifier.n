@@ -1,5 +1,6 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
+using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -11,10 +12,9 @@ using Nemerle.Pinvoke.CParser.Macros;
 
 namespace Nemerle.Pinvoke.CParser.Ast.Declarations.DeclarationSpecifiers
 {
-  [StandardNode("type-qualifier")]
-  public variant TypeQualifier
+  [StandardNode]
+  public variant TypeQualifier : Located
   {
-    [StandardName("const")]
     | Const
     | Restrict
     | Volatile

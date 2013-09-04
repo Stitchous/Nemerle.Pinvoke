@@ -6,10 +6,11 @@ using Nemerle.Utility;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nemerle.Pinvoke.CParser.Ast.ExternalDefinitions;
 using Nemerle.Pinvoke.CParser.Ast.Declarations;
 using Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator;
 using Nemerle.Pinvoke.CParser.Ast.Declarations.DeclarationSpecifiers;
+using Nemerle.Pinvoke.CParser.Ast.ExternalDefinitions;
+using Nemerle.Pinvoke.CParser.Ast.Expressions;
 
 using Nemerle.Pinvoke.CParser.ReflectionTree;
 
@@ -53,7 +54,7 @@ namespace Nemerle.Pinvoke.CParser
 
     CreateTypedefEntry(declarationSpecifiers : list[DeclarationSpecifier], initDeclarators : list[InitDeclarator]) :  list[TopLevelEntry]
     {
-        def typeDeclaration = CreateTypeDeclaration(declarationSpecifiers);
+        def typeDeclaration = CreateType(declarationSpecifiers);
 
         def aliases = 
         initDeclarators.Map(
@@ -113,28 +114,8 @@ namespace Nemerle.Pinvoke.CParser
         {
             | StructOrUnionSpecifier.Declaration as value => 
                 {
-                    def members = value.declarations.Map(d => 
-                        {
-                            def typeDeclaration =  CreateTypeDeclaration(d.DeclarationSpecifierList);
-                            
-                            match(d.StructDeclaratorsList)
-                            {
-                                | [structDeclarator] =>     
-                                    match(structDeclarator)
-                                    {
-                                        | StructDeclarator.NormalDeclarator as normalDeclarator =>
-                                            {
-                                                def normalized = NormalizePointers(typeDeclaration, ParseDeclarator(normalDeclarator.value));
-                                                ReflectionTree.Field(normalized)
-                                            }
-                                        | _ => throw NotSupportedException()
-                                    }
-                            }
-                            
-                    });
-
+                    def members = value.declarations.Map(CreateFields).Flatten();
                     def optionalName = value.Name.Map(i => i.Id);
-                    
                     match(value.StructOrUnion)
                     {
                         | StructOrUnion.Struct => Type.Struct(optionalName, members)
@@ -145,7 +126,39 @@ namespace Nemerle.Pinvoke.CParser
         }
     }
 
-    CreateTypeDeclaration(declarationSpecifiers : list[DeclarationSpecifier]) : Type
+    GetExpressionValue(_ : AssignmentExpression) : int
+    {
+        1
+    }
+
+    CreateFields(structDeclaration : StructDeclaration) : list[Field]
+    {
+        def typeDeclaration =  CreateType(structDeclaration.DeclarationSpecifierList);
+
+        def GetType(pointer : option[Pointer], directDeclaratorTail : list[DirectDeclaratorTailElement]) : Type
+        {
+            | (_optionalPointer, (AssignmentExpression(_typeQualifiers, Some(a))) :: tail)  => Type.Array(GetExpressionValue(a), GetType(pointer, tail))
+            | (Some(p),          declaratorTail)                                            => Type.Pointer(GetType(p.InnerPointer, declaratorTail))
+            | (None,             [])                                                        => typeDeclaration
+            | _                                                                             => throw NotSupportedException()
+        }
+
+        def CreateField(structDeclarator : StructDeclarator) : Field
+        {
+            | StructDeclarator.NormalDeclarator(Declarator(_, DirectDeclarator(DirectDeclaratorHead.Simple(name), _))) as normalDeclarator=>
+                {
+                    def pointer = normalDeclarator.Value.Pointer;
+                    def directDeclaratorTail = normalDeclarator.Value.DirectDeclarator.Tail;
+                    
+                    Field(name.Id, GetType(pointer, directDeclaratorTail))
+                }
+            | _ => throw NotSupportedException()
+        }
+
+        structDeclaration.StructDeclaratorsList.Map(CreateField)
+    }
+
+    CreateType(declarationSpecifiers : list[DeclarationSpecifier]) : Type
     {
         match(declarationSpecifiers.OfType.[DeclarationSpecifier.TypeSpecifier]().Map(x => x.Value))
         {

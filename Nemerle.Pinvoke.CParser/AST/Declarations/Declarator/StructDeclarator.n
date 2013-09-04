@@ -14,10 +14,10 @@ using Nemerle.Pinvoke.CParser.Macros;
 namespace Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator
 {
   [Record]
-  [StandardNode("struct-declarator")]  
+  [StandardNode]  
   public variant StructDeclarator : Located
   {
-    | NormalDeclarator { value : Declarator }
-    | BitFieldDeclarator { value : option[Declarator]; bits : ConstantExpression }
+    | NormalDeclarator { Value : Declarator }
+    | BitFieldDeclarator { Value : option[Declarator]; Bits : ConstantExpression }
   }
 }

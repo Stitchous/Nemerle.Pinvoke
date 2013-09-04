@@ -1,5 +1,4 @@
 ﻿
-
 typedef long long LONGLONG;
 typedef short wchar_t;
 typedef wchar_t * LPTSTR;
@@ -132,7 +131,7 @@ typedef struct _EVENT_HEADER_EXTENDED_DATA_ITEM {
 } EVENT_HEADER_EXTENDED_DATA_ITEM, *PEVENT_HEADER_EXTENDED_DATA_ITEM;
 
 typedef struct _EVENT_DESCRIPTOR {
-  USHORT    Id;
+  USHORT    Id[1];
   UCHAR     Version;
   UCHAR     Channel;
   UCHAR     Level;

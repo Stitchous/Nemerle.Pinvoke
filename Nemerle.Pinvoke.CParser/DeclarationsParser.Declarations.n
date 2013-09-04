@@ -222,11 +222,9 @@ namespace Nemerle.Pinvoke.CParser
         [DeclarationSpecifier.TypeSpecifier(s)]
      }
 
-     specifierQualifierList(headQualifiers : List[TypeQualifier], specifiers : list[DeclarationSpecifier], tailQualifiers : List[TypeQualifier]) : list[DeclarationSpecifier]
+     specifierQualifierList(headQualifiers : List[DeclarationSpecifier], specifiers : list[DeclarationSpecifier], tailQualifiers : List[DeclarationSpecifier]) : list[DeclarationSpecifier]
      {
-        NList.ToList(headQualifiers).Map(x => DeclarationSpecifier.TypeQualifier(x)) 
-            + specifiers 
-            + NList.ToList(tailQualifiers).Map(x => DeclarationSpecifier.TypeQualifier(x))
+        NList.ToList(NList.ToList(headQualifiers) + specifiers + NList.ToList(tailQualifiers))
      }
 
      structDeclarationList(lst : List[StructDeclaration]) : list[StructDeclaration]
