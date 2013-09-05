@@ -47,26 +47,18 @@ namespace Nemerle.Pinvoke.CParser.Visualizer
 
             def filteredInput = _parseSource.Throttle(TimeSpan.FromMilliseconds(500));
 
-            def output = filteredInput.SelectMany(_ => Observable.ToAsync(ReflectionTreeVisualModelBuilder().CreateRoot)(Source).TakeUntil(filteredInput));
+            def output = filteredInput.
+            SelectMany(_ => Observable.
+                            ToAsync(AstVisualModelBuilder().CreateRoot)(Source).
+                            Catch(e => { SetError(e); Observable.Empty() }).
+                            TakeUntil(filteredInput));
 
-            _ = output.Subscribe(
-                          (ast, parseErrors) => 
-                                { 
-                                   GrammarTreeRoot = ast;
-                                   match(parseErrors)
-                                   {
-                                       | Some((rollbackPos, ruleNames)) =>  ErrorText = $"Parse error at $rollbackPos.";
-                                                                            when(ruleNames.Any())
-                                                                                ErrorText += $<#Expected rule(s): $(Environment.NewLine)..$(ruleNames;"\n")#>;
-                                                                            ShouldShowError = true; 
-                                       | _ => ShouldShowError = false;
-                                   }
-                                },
-                           e   => 
-                                { 
-                                   ErrorText = e.ToString(); 
-                                   ShouldShowError = true; 
-                                });
+            _ = output.Subscribe((ast, parseErrors) => 
+                                    match(parseErrors)
+                                    {
+                                       | Some((rollbackPos, ruleNames)) =>  SetError(rollbackPos, ruleNames)
+                                       | _ => GrammarTreeRoot = ast; ShouldShowError = false;
+                                    });
         }
 
         public GalleryData : XmlDataProvider { get; private set; }
@@ -102,6 +94,28 @@ namespace Nemerle.Pinvoke.CParser.Visualizer
         public SetHighlighting : ICommand { get; private set; }
 
         public ParseSource     : ICommand { get { _parseSource; } }
+        
+        private SetError(exception : Exception) : void
+        {
+            SetError(exception.ToString());
+        }
+        
+        private SetError(rollbackPos : int, ruleNames : IEnumerable[string]) : void
+        {
+            def errorText = $"Parse error at $rollbackPos." + 
+                            if (ruleNames.Any()) 
+                                $<#Expected rule(s): $(Environment.NewLine)..$(ruleNames;"\n")#> 
+                            else
+                                string.Empty;
+            
+            SetError(errorText);
+        }
+        
+        private SetError(errorText : string) : void
+        {
+            ErrorText       = errorText; 
+            ShouldShowError = true;
+        }
 
         static CreateFileSystemXmlTree (path : string) : XElement
         {

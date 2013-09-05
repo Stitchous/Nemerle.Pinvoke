@@ -14,7 +14,7 @@ using Nemerle.Pinvoke.CParser.Visualizer.Model;
 
 namespace Nemerle.Pinvoke.CParser.Visualizer.Model
 {
-  internal class AstVisaulModelBuilder : VisualModelBuilder
+  internal class AstVisualModelBuilder : VisualModelBuilder
   {
       protected override BuildModel(root: TranslationUnit) : IEnumerable[GrammarNode]
       {
