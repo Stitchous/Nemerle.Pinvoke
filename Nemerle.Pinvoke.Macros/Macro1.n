@@ -4,12 +4,14 @@ using Nemerle.Compiler;
 using Nemerle.Compiler.Parsetree;
 using Nemerle.Text;
 using Nemerle.Utility;
+using Nemerle.Extensions;
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 using Nemerle.Pinvoke.CParser;
 using Nemerle.Pinvoke.CParser.ReflectionTree;
@@ -106,7 +108,6 @@ namespace Nemerle.Pinvoke.Macros
 
     private GenereateStruct(structType : Type.Struct) : ClassMember.TypeDeclaration
     {
-        
         def name = structType.Name.Value;
         def members = Generate(structType.Members);
         <[decl: struct $(name : dyn) { ..$members }]>
@@ -118,11 +119,14 @@ namespace Nemerle.Pinvoke.Macros
         {
             def name = field.Name;
             def type = GetReferenceName(field.Type);
+            def classMember = <[ decl: public mutable $(name : dyn) : $(type);]>;
+            
             match(field.Type)
             {
-                | Type.Array => <[ decl: public mutable $(name : dyn) : array[$(type : dyn)];]>
-                | _          => <[ decl: public mutable $(name : dyn) : $(type : dyn);]>
+                | Type.Array as arr => classMember.AddCustomAttribute(<[MarshalAs(UnmanagedType.ByValArray, SizeConst = $(arr.Size))]>);
+                | _                 => {}
             }
+            classMember
         }
         
         fields.Map(f => convert(f))
@@ -132,7 +136,7 @@ namespace Nemerle.Pinvoke.Macros
     {
         def convert(typedef : TypedefAlias)
         {
-            def typeExpr = <[$(GetReferenceName(typedef.Type) : usesite)]>;
+            def typeExpr = GetReferenceName(typedef.Type);
             def typedefNameSliceable = Splicable.Name(<[$(typedef.Name : usesite)]>);
         
             def topDeclaration = TopDeclaration.Alias(typedefNameSliceable,  AttributesAndModifiers(), Typarms.Empty, typeExpr);
@@ -142,25 +146,43 @@ namespace Nemerle.Pinvoke.Macros
         aliases.Map(a => convert(a))
     }
     
-    private GetReferenceName(type : ReflectionTree.Type) : string
+    private GetReferenceName(type : ReflectionTree.Type) : PExpr
     {
-        | Type.Struct as value    => value.Name.WithDefault(GenerateNameForUnnamed())
-        | Type.Union  as value    => value.Name.WithDefault(GenerateNameForUnnamed())
+        | Type.Struct as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(GenerateNameForUnnamed())
+        | Type.Union  as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(GenerateNameForUnnamed())
         | Type.BuiltIn as value   => 
             match(value.Type)
-            {               
-            | BuiltInType.LongLong => "ulong"
-            | BuiltInType.Short    => "int"
-            | _                    => "int"
+            {       
+            | BuiltInType.Char
+            | BuiltInType.SignedChar
+            | BuiltInType.UnsignedChar           => <[char  ]>
+            | BuiltInType.Short                  => <[short ]>
+            | BuiltInType.UnsignedShort          => <[ushort]>
+            | BuiltInType.Int                    => <[int   ]>
+            | BuiltInType.UnsignedInt            => <[uint  ]>
+            | BuiltInType.Long                   => <[int   ]>
+            | BuiltInType.UnsignedLong           => <[uint  ]>
+            | BuiltInType.LongLong               => <[long  ]>
+            | BuiltInType.UnsignedLongLong       => <[ulong ]>
+            | BuiltInType.Float                  => <[float ]>
+            | BuiltInType.Double                 => <[double]>
+            | BuiltInType.Bool                   => <[bool  ]>
+            | BuiltInType.LongDouble             => <[double]>
+            | BuiltInType.Void                   => <[IntPtr]>
+            | BuiltInType.LongDoubleComplex
+            | BuiltInType.Complex
+            | BuiltInType.FloatComplex
+            | BuiltInType.DoubleComplex
+            | _                                  => throw NotSupportedException()
             }
-        | Type.Typedef as value   => value.Name
+        | Type.Typedef as value   => <[ $(value.Name : dyn)]>
         | Type.Pointer as value   => GetReferenceName(value.Pointee)
-        | Type.Array as value     => GetReferenceName(value.ElementType);//$"array[$(GetReferenceName(value.ElementType))]";//
+        | Type.Array as value     => <[array[$(GetReferenceName(value.ElementType))]]>
     }
   
-    GenerateNameForUnnamed() : string
+    GenerateNameForUnnamed() : PExpr.Ref
     {
-        "unnamed"
+        <[ unnamed ]>
     }
 }
 }

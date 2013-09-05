@@ -25,22 +25,29 @@ typedef struct _GUIDD
 	ULONG u1; ULONG u2; ULONG u3; ULONG u4;
 } TIME_ZONE_INFORMATION;
 
-typedef struct _EVENT_TRACE_LOGFILE 
-{
+
+
+typedef struct _EVENT_TRACE_LOGFILE {
   LPTSTR                       LogFileName;
   LPTSTR                       LoggerName;
   LONGLONG                     CurrentTime;
   ULONG                        BuffersRead;
-  ULONG						   LogFileMode;
+  union {
+    ULONG LogFileMode;
+    ULONG ProcessTraceMode;
+  };
   EVENT_TRACE                  CurrentEvent;
   TRACE_LOGFILE_HEADER         LogfileHeader;
   PEVENT_TRACE_BUFFER_CALLBACK BufferCallback;
   ULONG                        BufferSize;
   ULONG                        Filled;
   ULONG                        EventsLost;
-  PEVENT_RECORD_CALLBACK       EventCallback;
+  union {
+    PEVENT_CALLBACK        EventCallback;
+    PEVENT_RECORD_CALLBACK EventRecordCallback;
+  };
   ULONG                        IsKernelTrace;
-  PVOID                        Context;
+  PVOID                        Context1;
 } EVENT_TRACE_LOGFILE, *PEVENT_TRACE_LOGFILE;
 
 typedef struct _TRACE_LOGFILE_HEADER
