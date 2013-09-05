@@ -20,11 +20,13 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
             Name    : option[string];
             Members : list[Field];
         }   
+
     | Union
         {
             Name    : option[string];
             Members : list[Field];
         }
+
     | BuiltIn
         {
             Type : BuiltInType;
@@ -40,5 +42,10 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
             Pointee : Type
         }
 
+    | Array
+        {
+            Size : int;
+            ElementType : Type;
+        }
   }
 }

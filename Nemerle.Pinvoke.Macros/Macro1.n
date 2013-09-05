@@ -64,8 +64,7 @@ namespace Nemerle.Pinvoke.Macros
       def str = parser.Parse(content);
       
       def reflectionTree = str.Map(CParser.TreeConverter.Convert);
-      //Console.WriteLine(reflectionTree.ToString());
-      
+
       def value = str.Map(s => s.ToString()).WithDefault("");
 
       def builder = typer.Env.Define(
@@ -119,18 +118,21 @@ namespace Nemerle.Pinvoke.Macros
         {
             def name = field.Name;
             def type = GetReferenceName(field.Type);
-            <[ decl: public mutable $(name : dyn) : $(type : dyn);]>
+            match(field.Type)
+            {
+                | Type.Array => <[ decl: public mutable $(name : dyn) : array[$(type : dyn)];]>
+                | _          => <[ decl: public mutable $(name : dyn) : $(type : dyn);]>
+            }
         }
         
         fields.Map(f => convert(f))
-        
     }
     
     private Generate(aliases : list[TypedefAlias]) : list[ClassMember.TypeDeclaration]
     {
         def convert(typedef : TypedefAlias)
         {
-            def typeExpr = <[$(GetReferenceName(typedef.Type) : dyn)]>;
+            def typeExpr = <[$(GetReferenceName(typedef.Type) : usesite)]>;
             def typedefNameSliceable = Splicable.Name(<[$(typedef.Name : usesite)]>);
         
             def topDeclaration = TopDeclaration.Alias(typedefNameSliceable,  AttributesAndModifiers(), Typarms.Empty, typeExpr);
@@ -153,14 +155,12 @@ namespace Nemerle.Pinvoke.Macros
             }
         | Type.Typedef as value   => value.Name
         | Type.Pointer as value   => GetReferenceName(value.Pointee)
+        | Type.Array as value     => GetReferenceName(value.ElementType);//$"array[$(GetReferenceName(value.ElementType))]";//
     }
   
     GenerateNameForUnnamed() : string
     {
         "unnamed"
     }
-
 }
-  
-  
 }

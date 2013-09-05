@@ -61,41 +61,20 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
         public ImplementInterface(tb : TypeBuilder) : void
         {
             def handlerFieldName = Macros.NewSymbol("PropertyChanged");
-            def fieldDecl = <[ decl:
-                private mutable $(handlerFieldName.Id : usesite) : PropertyChangedEventHandler;
-            ]>;          
- 
-            def modifyEvent(modifier)
-            {
-                <[
-                mutable tempHandler;
-                mutable handler = $(handlerFieldName.Id : usesite);
-                do
-                {
-                    tempHandler = handler;
-                    def newHandler = $(modifier)(tempHandler, value) :> PropertyChangedEventHandler;
-                    handler = System.Threading.Interlocked.CompareExchange(ref $(handlerFieldName.Id : usesite), newHandler, tempHandler);
-                } while(handler != tempHandler);
-                ]>
-            }
+            
             def eventDecl = <[decl:
-                public event PropertyChanged : PropertyChangedEventHandler 
-                {
-                    add { $(modifyEvent(<[ Delegate.Combine ]>)); }
-                    remove { $(modifyEvent(<[ Delegate.Remove ]>)); }
-                }
+                public event PropertyChanged : PropertyChangedEventHandler;
                 ]>;
  
             def raisePropertyChangedMethodDecl = <[ decl:
                 protected RaisePropertyChanged(propertyName: string) : void
                 {
-                    def handler = $(handlerFieldName.Id : usesite);
+                    def handler = PropertyChanged;
                     when (handler != null)
                         handler(this, PropertyChangedEventArgs(propertyName));
                 }
                 ]>;
            
-            tb.Define(fieldDecl);
             tb.Define(eventDecl);
             tb.Define(raisePropertyChangedMethodDecl);
             tb.AddImplementedInterface(<[INotifyPropertyChanged]>);

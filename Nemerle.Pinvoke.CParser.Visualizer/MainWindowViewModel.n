@@ -32,39 +32,41 @@ namespace Nemerle.Pinvoke.CParser.Visualizer
         public this()
         {
             def xmlDocument = XmlDocument();
-            xmlDocument.Load(CreateFileSystemXmlTree(Combine(GetDirectoryName(GetExecutingAssembly().Location), "Gallery")).CreateReader());
+            xmlDocument.Load <| 
+                CreateFileSystemXmlTree(Combine(GetExecutingAssembly().Location |> GetDirectoryName, "Gallery")).CreateReader();
+            
             GalleryData = XmlDataProvider() <- Document = xmlDocument;
 
             SetHighlighting = RelayCommand.[GrammarNode](grammarNode => 
-    { 
-                                                         HighlightingStart  = grammarNode?.Location[0];
-                                                         HighlightingLength = grammarNode?.Location[1] - HighlightingStart; 
-    });
+                                                        { 
+                                                            HighlightingStart  = grammarNode?.Location[0];
+                                                            HighlightingLength = grammarNode?.Location[1] - HighlightingStart; 
+                                                        });
 
             OpenGalleryItem = RelayCommand.[XmlAttribute](pathAttribute => { Source = ReadAllText(pathAttribute.Value) });
 
             def filteredInput = _parseSource.Throttle(TimeSpan.FromMilliseconds(500));
 
-            def output = filteredInput.SelectMany(_ => Observable.ToAsync(ModelBuilder.CreateRoot)(Source).TakeUntil(filteredInput));
+            def output = filteredInput.SelectMany(_ => Observable.ToAsync(ReflectionTreeVisualModelBuilder().CreateRoot)(Source).TakeUntil(filteredInput));
 
             _ = output.Subscribe(
-                           (ast, parseErrors) => 
-                        { 
-                           GrammarTreeRoot = ast;
-                           match(parseErrors)
-                           {
-                               | Some((rollbackPos, ruleNames)) =>  ErrorText = $"Parse error at $rollbackPos.";
-                                                                    when(ruleNames.Any())
-                                                                        ErrorText += $<#Expected rule(s): $(Environment.NewLine)..$(ruleNames;"\n")#>;
-                                                                    ShouldShowError = true; 
-                               | _ => ShouldShowError = false;
-                           }
-                        },
+                          (ast, parseErrors) => 
+                                { 
+                                   GrammarTreeRoot = ast;
+                                   match(parseErrors)
+                                   {
+                                       | Some((rollbackPos, ruleNames)) =>  ErrorText = $"Parse error at $rollbackPos.";
+                                                                            when(ruleNames.Any())
+                                                                                ErrorText += $<#Expected rule(s): $(Environment.NewLine)..$(ruleNames;"\n")#>;
+                                                                            ShouldShowError = true; 
+                                       | _ => ShouldShowError = false;
+                                   }
+                                },
                            e   => 
-                        { 
-                           ErrorText = e.ToString(); 
-                           ShouldShowError = true; 
-                        });
+                                { 
+                                   ErrorText = e.ToString(); 
+                                   ShouldShowError = true; 
+                                });
         }
 
         public GalleryData : XmlDataProvider { get; private set; }
@@ -95,13 +97,10 @@ namespace Nemerle.Pinvoke.CParser.Visualizer
 
         public HighlightingLength : int { get; set; }
 
-        [IgnoreProperty]
         public OpenGalleryItem : ICommand { get; private set; }
 
-        [IgnoreProperty]
         public SetHighlighting : ICommand { get; private set; }
 
-        [IgnoreProperty]
         public ParseSource     : ICommand { get { _parseSource; } }
 
         static CreateFileSystemXmlTree (path : string) : XElement
@@ -119,6 +118,6 @@ namespace Nemerle.Pinvoke.CParser.Visualizer
             </Directory> #>
         }
 
-        private _parseSource : ObservableCommand[string] = ObservableCommand.[string]();
+        private _parseSource = ObservableCommand.[string]();
     }
 }
