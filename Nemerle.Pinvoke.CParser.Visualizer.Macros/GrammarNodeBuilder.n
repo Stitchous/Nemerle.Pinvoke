@@ -34,8 +34,8 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
             def rootGenerator = CreateNodes(parent, t);
 
             def generators = NodeGenerators.Keys.Map(typeInfo => 
-            <[def $(NodeGenerators[typeInfo].Name : usesite)(val : $(GetTypeExpression(typeInfo.FullName))) 
-            $(NodeGenerators[typeInfo].Body)]>);
+                <[def $(NodeGenerators[typeInfo].Name : usesite)(val : $(GetTypeExpression(typeInfo.FullName))) 
+                $(NodeGenerators[typeInfo].Body)]>);
 
             def joinedGenerators = PT.PExpr.DefFunctions(generators.Map(generator => 
                                                                         PT.Function_decl(generator.funs.Head.header, generator.funs.Head.body)));
@@ -48,26 +48,22 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
             match(t)
             {
                 | Class(typeInfo, args) when typeInfo.SystemType.Equals(typeof(option[_])) => 
-                def valueExpr = <[($parent).Value]>;
-                <[
-                if (($parent).IsNone)
-                    []   
-                else
-                    $(CreateNodes(valueExpr, args.Head.Fix()))    
-                ]>
+                    def valueExpr = <[($parent).Value]>;
+                    <[
+                    if (($parent).IsNone)
+                        []   
+                    else
+                        $(CreateNodes(valueExpr, args.Head.Fix()))    
+                    ]>
                 | Class(typeInfo, args) when typeInfo.SystemType.Equals(typeof(list[_])) => 
-                <[
-                if ($parent == null)
-                    []
-                else
-                    ($parent).Map(fun(_e){ $(CreateNodes(<[_e]>, args.Head.Fix()))}).Flatten();
-                ]>
+                    <[
+                    ($parent)?.Map(fun(_e){ $(CreateNodes(<[_e]>, args.Head.Fix()))}).Flatten();
+                    ]>
                 | Class(typeInfo, _) when typeInfo.SystemType.IsSubclassOf(typeof(Nemerle.Peg.Located)) => 
-                unless (NodeGenerators.ContainsKey(typeInfo))
-                    AddNodeGenerator(typeInfo);
+                    unless (NodeGenerators.ContainsKey(typeInfo))
+                        AddNodeGenerator(typeInfo);
 
-                <[$(NodeGenerators[typeInfo].Name : usesite)($parent)]>
-
+                    <[$(NodeGenerators[typeInfo].Name : usesite)($parent)]>
                 | _ => <[[]]> //e.g. object list of types other than Located
             }     
         }
@@ -76,25 +72,25 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
         {
             NodeGenerators[typeInfo] = NodeGenerator($<#"Create nodes from $(typeInfo.FullName)"#>); 
             NodeGenerators[typeInfo].Body =
-                                               if(SurrogateNodeTypes.Contains(typeInfo.SystemType))
-            <[
-                if (val == null)
-                    []
-                else
-                    $(BuildChildrenGetter(<[val]>, typeInfo))
-            ]>
-                                               else
-            <[
-            {
-                if (val == null)
-                    []
-                else
+            if(SurrogateNodeTypes.Contains(typeInfo.SystemType))
+                <[
+                    if (val == null)
+                        []
+                    else
+                        $(BuildChildrenGetter(<[val]>, typeInfo))
+                ]>
+            else
+                <[
                 {
-                    def node = LocatedNode.[$(GetTypeExpression(typeInfo.FullName))](val);
-                    node.AddChildren($(BuildChildrenGetter(<[val]>, typeInfo)));
-                    [node]
-                }
-            }]>;
+                    if (val == null)
+                        []
+                    else
+                    {
+                        def node = LocatedNode.[$(GetTypeExpression(typeInfo.FullName))](val);
+                        node.AddChildren($(BuildChildrenGetter(<[val]>, typeInfo)));
+                        [node]
+                    }
+                }]>;
         }
 
         private BuildChildrenGetter(valueExpression : PT.PExpr, typeInfo : TypeInfo): PT.PExpr
@@ -143,7 +139,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
         {
             fixedType is FixedType.Class && 
             { 
-            def systemType = fixedType.TypeInfo.SystemType;
+                def systemType = fixedType.TypeInfo.SystemType;
 
                 systemType.Equals(typeof(option[_])) ||
                 systemType.Equals(typeof(list[_]))   ||
@@ -157,7 +153,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
             PT.PExpr.FromQualifiedIdentifier(ManagerClass.Instance, qualifiedTypeName)
         }
 
-        private mutable NodeGenerators : SCG.Dictionary[TypeInfo, NodeGenerator] = SCG.Dictionary.[TypeInfo, NodeGenerator]();
+        private mutable NodeGenerators = SCG.Dictionary.[TypeInfo, NodeGenerator]();
         private SurrogateNodeTypes : list[Type] = [/*typeof(Declarators.DirectDeclarator.Tail)*/];
     }
 

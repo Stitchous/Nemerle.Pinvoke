@@ -11,7 +11,7 @@ using Nemerle.Pinvoke.CParser.Macros;
 
 namespace Nemerle.Pinvoke.CParser.Ast.Declarations.DeclarationSpecifiers
 {
-  [StandardNode("storage-class-specifier")]
+  [StandardNode]
   public variant StorageClassSpecifier
   {
     | Typedef 

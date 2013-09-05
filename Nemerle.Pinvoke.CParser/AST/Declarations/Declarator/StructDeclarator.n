@@ -14,7 +14,7 @@ using Nemerle.Pinvoke.CParser.Macros;
 namespace Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator
 {
   [Record]
-  [StandardNode]  
+  [StandardNode]
   public variant StructDeclarator : Located
   {
     | NormalDeclarator { Value : Declarator }

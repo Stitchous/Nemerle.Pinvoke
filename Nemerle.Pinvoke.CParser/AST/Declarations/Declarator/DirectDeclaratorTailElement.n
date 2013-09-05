@@ -13,7 +13,6 @@ using Nemerle.Pinvoke.CParser.Macros;
 
 namespace Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator
 {
-  
   [StandardNode]
   public variant DirectDeclaratorTailElement : Located
   {

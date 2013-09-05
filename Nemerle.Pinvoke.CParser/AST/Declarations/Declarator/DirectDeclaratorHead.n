@@ -17,7 +17,7 @@ namespace Nemerle.Pinvoke.CParser.Ast.Declarations.Declarator
      [StandardNode]
      public variant DirectDeclaratorHead : Located
      {
-        | Simple { Name : Identifier} 
+        | Simple    { Name : Identifier } 
         | Recurrent { innerDeclarator : Declarator }
      }
 }
