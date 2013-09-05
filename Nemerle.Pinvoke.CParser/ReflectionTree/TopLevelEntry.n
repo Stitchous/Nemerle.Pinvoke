@@ -1,5 +1,6 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
+using Nemerle.Peg;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -13,7 +14,7 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
 {
 
   [StandardNode]
-  public variant TopLevelEntry
+  public variant TopLevelEntry : Located
   {
     | Typedef 
         {
@@ -24,11 +25,13 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
         {
             Value : ReflectionTree.Type
         }
+
     | Function
         {
             Name : string;
             ReturnValue : Type;
             Parameters : list[ParameterDeclaration];
         }
+
   }
 }

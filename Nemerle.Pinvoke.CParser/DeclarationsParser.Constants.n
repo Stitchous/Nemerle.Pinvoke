@@ -26,14 +26,14 @@ namespace Nemerle.Pinvoke.CParser
         Constant.Integer(value)
     }
 
-    hexadecimalConstant(_ : NToken, _ : NToken) : Constant
+    hexadecimalConstant(_hexPrefix : NToken, tail : NToken) : Constant
     {
-        throw NotImplementedException()
+        Constant.Integer(Convert.ToUInt64(GetText(tail), 16));
     }
 
-    octalConstant(_ : NToken, _ : NToken) : Constant
+    octalConstant(_octalPrefix : NToken, tail : NToken) : Constant
     {
-        throw NotImplementedException()
+        Constant.Integer(Convert.ToUInt64(GetText(tail), 8));
     }
 
     characterConstant(_ : NToken, _ : NToken, _ : NToken) : Constant
