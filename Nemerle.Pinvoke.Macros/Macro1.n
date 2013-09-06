@@ -64,11 +64,17 @@ namespace Nemerle.Pinvoke.Macros
       
 
       def str = parser.Parse(content);
-      
+
       def reflectionTree = str.Map(CParser.TreeConverter.Convert).WithDefault([]);
-      
+
+      def aliases = reflectionTree
+        .OfType.[TopLevelEntry.Typedef]()
+        .SelectMany(typedef => typedef.Aliases)
+        .ToDictionary(alias => alias.Name, alias => alias.Type);
+
       reflectionTree.Map(entry => Generate(entry).Map(e => typer.Env.Define(e))).Flatten().Iter(b =>b.Compile());
     }
+
 
     private Generate(entry : TopLevelEntry) : list[ClassMember.TypeDeclaration]
     {
@@ -77,6 +83,7 @@ namespace Nemerle.Pinvoke.Macros
         | TopLevelEntry.Function            => []
     }
 
+    [Memoize]
     private GetSize(type : ReflectionTree.Type, GetRealType : string -> ReflectionTree.Type) : int
     {
         def DoGetSize(type)
@@ -98,16 +105,14 @@ namespace Nemerle.Pinvoke.Macros
 
     private Generate(type : ReflectionTree.Type) : list[ClassMember.TypeDeclaration]
     {
-        | Type.Struct   as value    => [GenereateStruct(value)] 
+        | Type.Struct   as value    => [GenerateStruct(value)] 
         | Type.Union   
         | Type.BuiltIn 
         | Type.Typedef 
         | Type.Pointer  => []
     }
 
-    
-
-    private GenereateStruct(structType : Type.Struct) : ClassMember.TypeDeclaration
+    private GenerateStruct(structType : Type.Struct) : ClassMember.TypeDeclaration
     {
         def name = structType.Name.Value;
         def members = Generate(structType.Members);
