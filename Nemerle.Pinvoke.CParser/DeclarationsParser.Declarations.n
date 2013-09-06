@@ -165,10 +165,7 @@ namespace Nemerle.Pinvoke.CParser
 
      normalEnumerator(name  : Constant) : Enumerator
      {
-        match(name)
-        {
-            | Constant.Enumeration as value => Enumerator(value.Value, None())
-        }
+        | Constant.Enumeration as value => Enumerator(value.Value, None())
      }
 
      enumeratorWithExplicitValue(name : Constant, _ : NToken, initializer : ConstantExpression) : Enumerator
@@ -365,12 +362,12 @@ namespace Nemerle.Pinvoke.CParser
         DirectDeclaratorTailElement.Asterik(typeQualifiers.WithDefault([]))
      }
 
-     FunctionWithParametersDirectDeclaratorTailElement(_ : NToken, _parameters : (list[ParameterDeclaration] * bool), _ : NToken) : DirectDeclaratorTailElement
+     functionWithParametersDirectDeclaratorTailElement(_ : NToken, _parameters : (list[ParameterDeclaration] * bool), _ : NToken) : DirectDeclaratorTailElement
      {
         DirectDeclaratorTailElement.FunctionWithParameters()
      }
 
-     FunctionWithIdentifiersDirectDeclaratorTailElement(_ : NToken, _ : option[list[Identifier]], _ : NToken) : DirectDeclaratorTailElement
+     functionWithIdentifiersDirectDeclaratorTailElement(_ : NToken, _ : option[list[Identifier]], _ : NToken) : DirectDeclaratorTailElement
      {
         DirectDeclaratorTailElement.FunctionWithIdentifiers()
      }
@@ -441,7 +438,7 @@ namespace Nemerle.Pinvoke.CParser
         DirectAbstractDeclaratorTailElement.Asterik()
      }
 
-     FunctionWithParametersDirectAbstractDeclaratorTailElement(_ : NToken, _ : option[(list[ParameterDeclaration] * bool)], _ : NToken) : DirectAbstractDeclaratorTailElement
+     functionWithParametersDirectAbstractDeclaratorTailElement(_ : NToken, _ : option[(list[ParameterDeclaration] * bool)], _ : NToken) : DirectAbstractDeclaratorTailElement
      {
         DirectAbstractDeclaratorTailElement.FunctionWithParameters()
      }
@@ -461,12 +458,12 @@ namespace Nemerle.Pinvoke.CParser
         Initializer.AssignmentExpression(assignmentExpression)
      }
 
-     InitializerListInitializer(_ : NToken, initializerList : list[InitializerListElement], _ : NToken) : Initializer
+     initializerListInitializer(_ : NToken, initializerList : list[InitializerListElement], _ : NToken) : Initializer
      {
         Initializer.InitializerList(initializerList)
      }
 
-     ColonTermiatedInitializerListInitializer(_ : NToken, initializerList : list[InitializerListElement], _ : NToken, _ : NToken) : Initializer
+     colonTermiatedInitializerListInitializer(_ : NToken, initializerList : list[InitializerListElement], _ : NToken, _ : NToken) : Initializer
      {
         Initializer.InitializerList(initializerList)
      }

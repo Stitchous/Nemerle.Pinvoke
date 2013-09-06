@@ -18,6 +18,6 @@ namespace Nemerle.Pinvoke.CParser.Ast.Declarations.DeclarationSpecifiers
     | Const
     | Restrict
     | Volatile
-    | Atomic 
+    | Atomic
   }
 }
