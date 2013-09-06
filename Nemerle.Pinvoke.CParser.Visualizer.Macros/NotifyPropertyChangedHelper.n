@@ -60,8 +60,6 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
        
         public ImplementInterface(tb : TypeBuilder) : void
         {
-            def handlerFieldName = Macros.NewSymbol("PropertyChanged");
-            
             def eventDecl = <[decl:
                 public event PropertyChanged : PropertyChangedEventHandler;
                 ]>;
