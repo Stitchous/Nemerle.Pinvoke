@@ -128,7 +128,7 @@ namespace Nemerle.Pinvoke.CParser
 
     GetExpressionValue(_ : AssignmentExpression) : int
     {
-        1
+        5
     }
 
     CreateFields(structDeclaration : StructDeclaration) : list[Field]

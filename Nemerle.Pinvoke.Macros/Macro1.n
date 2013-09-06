@@ -65,29 +65,9 @@ namespace Nemerle.Pinvoke.Macros
 
       def str = parser.Parse(content);
       
-      def reflectionTree = str.Map(CParser.TreeConverter.Convert);
-
-      def value = str.Map(s => s.ToString()).WithDefault("");
-
-      def builder = typer.Env.Define(
-        <[
-            decl:
-            public class Test
-            {
-                public override ToString() : string
-                {
-                    $value
-                }
-            }
-        ]>);
-        
-      builder.Compile();
-
-      foreach(entry in reflectionTree.WithDefault([]))
-      {
-        Generate(entry).Map(e => typer.Env.Define(e)).Iter(builder => builder.Compile());
-      }
-
+      def reflectionTree = str.Map(CParser.TreeConverter.Convert).WithDefault([]);
+      
+      reflectionTree.Map(entry => Generate(entry).Map(e => typer.Env.Define(e))).Flatten().Iter(b =>b.Compile());
     }
 
     private Generate(entry : TopLevelEntry) : list[ClassMember.TypeDeclaration]
@@ -96,6 +76,25 @@ namespace Nemerle.Pinvoke.Macros
         | TopLevelEntry.Type as type        => Generate(type.Value)
         | TopLevelEntry.Function            => []
     }
+
+    private GetSize(type : ReflectionTree.Type, GetRealType : string -> ReflectionTree.Type) : int
+    {
+        def DoGetSize(type)
+        {        
+        | Type.BuiltIn as value => 
+            {
+                def (_, size) = GetBuiltInTypeInfo(value.Type);
+                size
+            }
+        | Type.Struct  as value => value.Members.Map(f => DoGetSize(f.Type)).Sum()
+        | Type.Union   as value => value.Members.Map(f => DoGetSize(f.Type)).Max()
+        | Type.Typedef as value => DoGetSize(GetRealType(value.Name))
+        | Type.Array   as value => DoGetSize(value.ElementType) * value.Size
+        }
+
+        DoGetSize(type)
+    }    
+    
 
     private Generate(type : ReflectionTree.Type) : list[ClassMember.TypeDeclaration]
     {
@@ -106,16 +105,19 @@ namespace Nemerle.Pinvoke.Macros
         | Type.Pointer  => []
     }
 
+    
+
     private GenereateStruct(structType : Type.Struct) : ClassMember.TypeDeclaration
     {
         def name = structType.Name.Value;
         def members = Generate(structType.Members);
+        
         <[decl: struct $(name : dyn) { ..$members }]>
     }
 
     private Generate(fields : list[Field]) : list[ClassMember]
     {
-        def convert(field : Field)
+        def convert(field : Field) 
         {
             def name = field.Name;
             def type = GetReferenceName(field.Type);
@@ -126,6 +128,7 @@ namespace Nemerle.Pinvoke.Macros
                 | Type.Array as arr => classMember.AddCustomAttribute(<[MarshalAs(UnmanagedType.ByValArray, SizeConst = $(arr.Size))]>);
                 | _                 => {}
             }
+            
             classMember
         }
         
@@ -150,36 +153,38 @@ namespace Nemerle.Pinvoke.Macros
     {
         | Type.Struct as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(GenerateNameForUnnamed())
         | Type.Union  as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(GenerateNameForUnnamed())
-        | Type.BuiltIn as value   => 
-            match(value.Type)
-            {       
-            | BuiltInType.Char
-            | BuiltInType.SignedChar
-            | BuiltInType.UnsignedChar           => <[char  ]>
-            | BuiltInType.Short                  => <[short ]>
-            | BuiltInType.UnsignedShort          => <[ushort]>
-            | BuiltInType.Int                    => <[int   ]>
-            | BuiltInType.UnsignedInt            => <[uint  ]>
-            | BuiltInType.Long                   => <[int   ]>
-            | BuiltInType.UnsignedLong           => <[uint  ]>
-            | BuiltInType.LongLong               => <[long  ]>
-            | BuiltInType.UnsignedLongLong       => <[ulong ]>
-            | BuiltInType.Float                  => <[float ]>
-            | BuiltInType.Double                 => <[double]>
-            | BuiltInType.Bool                   => <[bool  ]>
-            | BuiltInType.LongDouble             => <[double]>
-            | BuiltInType.Void                   => <[IntPtr]>
-            | BuiltInType.LongDoubleComplex
-            | BuiltInType.Complex
-            | BuiltInType.FloatComplex
-            | BuiltInType.DoubleComplex
-            | _                                  => throw NotSupportedException()
-            }
+        | Type.BuiltIn as value   => GetBuiltInTypeInfo(value.Type)[0]
         | Type.Typedef as value   => <[ $(value.Name : dyn)]>
         | Type.Pointer as value   => GetReferenceName(value.Pointee)
         | Type.Array as value     => <[array[$(GetReferenceName(value.ElementType))]]>
     }
   
+    private GetBuiltInTypeInfo(b: BuiltInType) : PExpr * int
+    {
+        | BuiltInType.Char
+        | BuiltInType.SignedChar
+        | BuiltInType.UnsignedChar           => (<[byte  ]>, 1)
+        | BuiltInType.Short                  => (<[short ]>, 2)
+        | BuiltInType.UnsignedShort          => (<[ushort]>, 2)
+        | BuiltInType.Int                    => (<[int   ]>, 4)
+        | BuiltInType.UnsignedInt            => (<[uint  ]>, 4)
+        | BuiltInType.Long                   => (<[int   ]>, 4)
+        | BuiltInType.UnsignedLong           => (<[uint  ]>, 4)
+        | BuiltInType.LongLong               => (<[long  ]>, 8)
+        | BuiltInType.UnsignedLongLong       => (<[ulong ]>, 8)
+        | BuiltInType.Float                  => (<[float ]>, 4)
+        | BuiltInType.Double                 => (<[double]>, 8)
+        | BuiltInType.Bool                   => (<[bool  ]>, 1)
+        | BuiltInType.LongDouble             => (<[double]>, 8)
+        | BuiltInType.Void                   => (<[IntPtr]>, 4)
+        | BuiltInType.LongDoubleComplex
+        | BuiltInType.Complex
+        | BuiltInType.FloatComplex
+        | BuiltInType.DoubleComplex
+        | _                                  => throw NotSupportedException()        
+    }
+    
+    
     GenerateNameForUnnamed() : PExpr.Ref
     {
         <[ unnamed ]>
