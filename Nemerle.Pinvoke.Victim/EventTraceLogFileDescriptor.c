@@ -1,4 +1,29 @@
 ﻿
+
+typedef struct _EVENT_TRACE_LOGFILE {
+  LPTSTR                       LogFileName;
+  LPTSTR                       LoggerName;
+  LONGLONG                     CurrentTime;
+  ULONG                        BuffersRead;
+  union {
+    ULONG LogFileMode;
+    ULONG ProcessTraceMode;
+  };
+  EVENT_TRACE                  CurrentEvent;
+  TRACE_LOGFILE_HEADER         LogfileHeader;
+  PEVENT_TRACE_BUFFER_CALLBACK BufferCallback;
+  ULONG                        BufferSize;
+  ULONG                        Filled;
+  ULONG                        EventsLost;
+  union {
+    PEVENT_CALLBACK        EventCallback;
+    PEVENT_RECORD_CALLBACK EventRecordCallback;
+  };
+  ULONG                        IsKernelTrace;
+  PVOID                        Context1;
+} EVENT_TRACE_LOGFILE, *PEVENT_TRACE_LOGFILE;
+
+
 typedef long long LONGLONG;
 typedef short wchar_t;
 typedef wchar_t * LPTSTR;
@@ -26,29 +51,6 @@ typedef struct _GUIDD
 } TIME_ZONE_INFORMATION;
 
 
-
-typedef struct _EVENT_TRACE_LOGFILE {
-  LPTSTR                       LogFileName;
-  LPTSTR                       LoggerName;
-  LONGLONG                     CurrentTime;
-  ULONG                        BuffersRead;
-  union {
-    ULONG LogFileMode;
-    ULONG ProcessTraceMode;
-  };
-  EVENT_TRACE                  CurrentEvent;
-  TRACE_LOGFILE_HEADER         LogfileHeader;
-  PEVENT_TRACE_BUFFER_CALLBACK BufferCallback;
-  ULONG                        BufferSize;
-  ULONG                        Filled;
-  ULONG                        EventsLost;
-  union {
-    PEVENT_CALLBACK        EventCallback;
-    PEVENT_RECORD_CALLBACK EventRecordCallback;
-  };
-  ULONG                        IsKernelTrace;
-  PVOID                        Context1;
-} EVENT_TRACE_LOGFILE, *PEVENT_TRACE_LOGFILE;
 
 typedef struct _TRACE_LOGFILE_HEADER
 {

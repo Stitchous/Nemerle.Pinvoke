@@ -1,0 +1,158 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Compiler;
+using Nemerle.Compiler.Parsetree;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Extensions;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+
+using Nemerle.Pinvoke.CParser;
+using Nemerle.Pinvoke.CParser.ReflectionTree;
+
+namespace Nemerle.Pinvoke.Macros
+{
+  module CodeGenerator
+  {
+    public Generate(reflectionTree : list[TopLevelEntry], typer : Typer)  : void
+    {
+
+        def aliases = reflectionTree
+            .OfType.[TopLevelEntry.Typedef]()
+            .SelectMany(typedef => typedef.Aliases)
+            .ToDictionary(alias => alias.Name, alias => alias.Type);
+
+        def GetSize = CodeGenerator.GetSize(_, name => aliases[name]);
+
+
+        def GenerateField(field, offset : int)
+        {
+            def name = field.Name;
+            def type = GetReferenceName(field.Type);
+            def classMember = <[ decl: public mutable $(name : dyn) : $(type);]>;
+
+            match(field.Type)
+            {
+                | Type.Array as arr => classMember.AddCustomAttribute(<[MarshalAs(UnmanagedType.ByValArray, SizeConst = $(arr.Size))]>);
+                | _                 => {}
+            }
+
+            classMember.AddCustomAttribute(<[FieldOffset($offset)]>);
+
+            classMember
+        }
+
+        def GenerateStruct(structType : Type.Struct) : ClassMember.TypeDeclaration
+        {
+            
+            def GenFields(memberList : list[Field], offset : int)
+            {
+                | (head :: tail, sz)  =>  GenerateField(head, sz):: GenFields(tail, offset + GetSize(head.Type))
+                | _ => []
+            }
+                        
+            def name = structType.Name.Value;
+            def members = (structType.Members, 0) |> GenFields;
+                    
+            def structure = <[decl: struct $(name : dyn) { ..$members }]>;
+            structure.AddCustomAttribute(<[StructLayout(LayoutKind.Explicit)]>);
+
+            structure
+
+        }
+
+        def GenerateAlias(typedef)
+        {
+           def typeExpr = GetReferenceName(typedef.Type);
+           def typedefNameSliceable = Splicable.Name(<[$(typedef.Name : usesite)]>);
+        
+           def topDeclaration = TopDeclaration.Alias(typedefNameSliceable,  AttributesAndModifiers(), Typarms.Empty, typeExpr);
+           ClassMember.TypeDeclaration(typedefNameSliceable, topDeclaration);
+        }
+
+        def GenerateType(type)
+        {
+            | Type.Struct   as value    => [GenerateStruct(value)] 
+            | Type.Union
+            | Type.BuiltIn 
+            | Type.Typedef 
+            | Type.Pointer  => []
+        } 
+        
+        def GenerateTopLevelEntry(entry : TopLevelEntry) : list[ClassMember.TypeDeclaration]
+        {
+            | TopLevelEntry.Typedef as typedef  => typedef.Aliases.Map(GenerateAlias)
+            | TopLevelEntry.Type as type        => GenerateType(type.Value)
+            | TopLevelEntry.Function            => []
+        }   
+
+        reflectionTree.Map(entry => GenerateTopLevelEntry(entry).Map(e => typer.Env.Define(e))).Flatten().Iter(b =>b.Compile());
+
+    }
+
+    [Memoize]
+    private GetSize(type : ReflectionTree.Type, GetRealType : string -> ReflectionTree.Type) : int
+    {
+        def DoGetSize(type)
+        {        
+        | Type.BuiltIn as value => 
+            {
+                def (_, size) = GetBuiltInTypeInfo(value.Type);
+                size
+            }
+        | Type.Struct  as value => value.Members.Map(f => DoGetSize(f.Type)).Sum()
+        | Type.Union   as value => value.Members.Map(f => DoGetSize(f.Type)).Max()
+        | Type.Typedef as value => DoGetSize(GetRealType(value.Name))
+        | Type.Array   as value => DoGetSize(value.ElementType) * value.Size
+        | Type.Pointer          => IntPtr.Size
+        }
+
+        DoGetSize(type)
+    }    
+       
+    private GetReferenceName(type : ReflectionTree.Type) : PExpr
+    {
+        | Type.Struct as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(GenerateNameForUnnamed())
+        | Type.Union  as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(GenerateNameForUnnamed())
+        | Type.BuiltIn as value   => GetBuiltInTypeInfo(value.Type)[0]
+        | Type.Typedef as value   => <[ $(value.Name : dyn)]>
+        | Type.Pointer as value   => GetReferenceName(value.Pointee)
+        | Type.Array as value     => <[array[$(GetReferenceName(value.ElementType))]]>
+    }
+  
+    private GetBuiltInTypeInfo(b: BuiltInType) : PExpr * int
+    {
+        | BuiltInType.Char
+        | BuiltInType.SignedChar
+        | BuiltInType.UnsignedChar           => (<[byte  ]>, 1)
+        | BuiltInType.Short                  => (<[short ]>, 2)
+        | BuiltInType.UnsignedShort          => (<[ushort]>, 2)
+        | BuiltInType.Int                    => (<[int   ]>, 4)
+        | BuiltInType.UnsignedInt            => (<[uint  ]>, 4)
+        | BuiltInType.Long                   => (<[int   ]>, 4)
+        | BuiltInType.UnsignedLong           => (<[uint  ]>, 4)
+        | BuiltInType.LongLong               => (<[long  ]>, 8)
+        | BuiltInType.UnsignedLongLong       => (<[ulong ]>, 8)
+        | BuiltInType.Float                  => (<[float ]>, 4)
+        | BuiltInType.Double                 => (<[double]>, 8)
+        | BuiltInType.Bool                   => (<[bool  ]>, 1)
+        | BuiltInType.LongDouble             => (<[double]>, 8)
+        | BuiltInType.Void                   => (<[IntPtr]>, 4)
+        | BuiltInType.LongDoubleComplex
+        | BuiltInType.Complex
+        | BuiltInType.FloatComplex
+        | BuiltInType.DoubleComplex
+        | _                                  => throw NotSupportedException()        
+    }
+        
+    GenerateNameForUnnamed() : PExpr
+    {
+        def unnamed = Macros.NewSymbol("unnamed");
+        <[ $(unnamed.Id : usesite) ]>
+    }
+  }
+}

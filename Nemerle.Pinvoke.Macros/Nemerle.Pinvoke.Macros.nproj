@@ -62,6 +62,9 @@
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CodeGenerator.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Macro1.n" />
     <Compile Include="Properties\AssemblyInfo.n" />
   </ItemGroup>
