@@ -134,7 +134,7 @@ namespace Nemerle.Pinvoke.CParser
     CreateFields(structDeclaration : StructDeclaration) : list[Field]
     {
         def typeDeclaration =  CreateType(structDeclaration.DeclarationSpecifierList);
-
+        
         def GetType(pointer : option[Pointer], directDeclaratorTail : list[DirectDeclaratorTailElement]) : Type
         {
             | (_optionalPointer, (AssignmentExpression(_typeQualifiers, Some(a))) :: tail)  => Type.Array(GetExpressionValue(a), GetType(pointer, tail))
@@ -150,12 +150,17 @@ namespace Nemerle.Pinvoke.CParser
                     def pointer = normalDeclarator.Value.Pointer;
                     def directDeclaratorTail = normalDeclarator.Value.DirectDeclarator.Tail;
                     
-                    Field(name.Id, GetType(pointer, directDeclaratorTail))
+                    Field.Normal(name.Id, GetType(pointer, directDeclaratorTail))
                 }
             | _ => throw NotSupportedException()
         }
 
-        structDeclaration.StructDeclaratorsList.Map(CreateField)
+        
+        match((structDeclaration.StructDeclaratorsList, typeDeclaration))
+        {
+            | ([],  Type.Union(None, fields)) => [Field.UnnamedUnion(fields)]
+            | (_,   _                       ) => structDeclaration.StructDeclaratorsList.Map(CreateField)
+        }
     }
 
     CreateType(declarationSpecifiers : list[DeclarationSpecifier]) : Type

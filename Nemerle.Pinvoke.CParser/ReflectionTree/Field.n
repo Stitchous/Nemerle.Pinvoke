@@ -14,9 +14,9 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
 {
   [Record]
   [StandardNode]
-  public class Field : Located
+  public variant Field : Located
   {
-    public Name : string;  
-    public Type : ReflectionTree.Type;
+    | Normal        { Name : string;  Type : ReflectionTree.Type; }
+    | UnnamedUnion  { Fields : list[Field];}
   }
 }

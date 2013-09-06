@@ -26,10 +26,12 @@ namespace Nemerle.Pinvoke.Macros
             .SelectMany(typedef => typedef.Aliases)
             .ToDictionary(alias => alias.Name, alias => alias.Type);
 
+
+        Console.WriteLine($"..$aliases");
+
         def GetSize = CodeGenerator.GetSize(_, name => aliases[name]);
 
-
-        def GenerateField(field, offset : int)
+        def GenerateField(field , offset : int)
         {
             def name = field.Name;
             def type = GetReferenceName(field.Type);
@@ -51,7 +53,16 @@ namespace Nemerle.Pinvoke.Macros
             
             def GenFields(memberList : list[Field], offset : int)
             {
-                | (head :: tail, sz)  =>  GenerateField(head, sz):: GenFields(tail, offset + GetSize(head.Type))
+                | (Field.Normal as head :: tail,       _)  =>  GenerateField(head, offset):: GenFields(tail, offset + GetSize(head))
+                | (Field.UnnamedUnion as head :: tail, _) =>   
+                    {
+                        def size = head.Fields.Map(f => GetSize(f)).Max();
+                        def unionFields = head.Fields;
+                        def resultFields = unionFields.Map(field => GenFields([field], offset)).Flatten();
+
+                        resultFields + GenFields(tail, offset + size)
+                        
+                    }
                 | _ => []
             }
                         
@@ -94,24 +105,32 @@ namespace Nemerle.Pinvoke.Macros
 
     }
 
-    [Memoize]
-    private GetSize(type : ReflectionTree.Type, GetRealType : string -> ReflectionTree.Type) : int
+
+    GetSizeForType(t : ReflectionTree.Type, GetRealType : string -> ReflectionTree.Type) : int
     {
-        def DoGetSize(type)
-        {        
+        match(t)
+        {
         | Type.BuiltIn as value => 
             {
                 def (_, size) = GetBuiltInTypeInfo(value.Type);
                 size
             }
-        | Type.Struct  as value => value.Members.Map(f => DoGetSize(f.Type)).Sum()
-        | Type.Union   as value => value.Members.Map(f => DoGetSize(f.Type)).Max()
-        | Type.Typedef as value => DoGetSize(GetRealType(value.Name))
-        | Type.Array   as value => DoGetSize(value.ElementType) * value.Size
+        | Type.Struct  as value => value.Members.Map(GetSize(_, GetRealType)).Sum()
+        | Type.Union   as value => value.Members.Map(GetSize(_, GetRealType)).Max()
+        | Type.Typedef as value => GetSizeForType(GetRealType(value.Name), GetRealType)
+        | Type.Array   as value => GetSizeForType(value.ElementType, GetRealType) * value.Size
         | Type.Pointer          => IntPtr.Size
-        }
+        };
+    }
 
-        DoGetSize(type)
+    [Memoize]
+    private GetSize(field : ReflectionTree.Field, GetRealType : string -> ReflectionTree.Type) : int
+    {
+        match(field)
+        {
+            | Field.Normal as       f => GetSizeForType(f.Type, GetRealType)
+            | Field.UnnamedUnion as u => u.Fields.Map(GetSize(_, GetRealType)).Max()
+        }
     }    
        
     private GetReferenceName(type : ReflectionTree.Type) : PExpr
