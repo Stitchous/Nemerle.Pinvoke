@@ -25,7 +25,7 @@ namespace Nemerle.Pinvoke.Macros
     def manager = Macros.Manager();
     def projectDir = Path.GetDirectoryName(manager.Options.ProjectPath);
     
-    def parseExternals(externalsList)
+    def ParseExternals(externalsList)
     {
         def parse(pExpr)
         {
@@ -39,13 +39,13 @@ namespace Nemerle.Pinvoke.Macros
 
     foreach(item in options)
     {
-        | <[ Externals = [..$externalsList]]> => externals = parseExternals(externalsList)
+        | <[ Externals = [..$externalsList]]> => externals = ParseExternals(externalsList)
         | _ => Message.Error("err")
     }
        
     foreach(fileName in Directory.GetFiles(projectDir, files))
     {
-        NativeStructImpl.DoTransform(Macros.ImplicitCTX(), fileName, string.Concat(File.ReadAllLines(fileName)), externals )
+        NativeStructImpl.DoTransform(Macros.ImplicitCTX(), fileName, string.Concat(File.ReadAllLines(fileName)), externals)
     }
   }
   
@@ -62,12 +62,11 @@ namespace Nemerle.Pinvoke.Macros
           _ = Debugger.Launch();
       }
       
-
       def str = parser.Parse(content);
       
       def reflectionTree = str.Map(CParser.TreeConverter.Convert).WithDefault([]);
       
-      reflectionTree.Map(entry => Generate(entry).Map(e => typer.Env.Define(e))).Flatten().Iter(b =>b.Compile());
+      reflectionTree.Map(entry => Generate(entry).Map(typer.Env.Define)).Flatten().Iter(b => b.Compile());
     }
 
     private Generate(entry : TopLevelEntry) : list[ClassMember.TypeDeclaration]
@@ -95,7 +94,6 @@ namespace Nemerle.Pinvoke.Macros
         DoGetSize(type)
     }    
     
-
     private Generate(type : ReflectionTree.Type) : list[ClassMember.TypeDeclaration]
     {
         | Type.Struct   as value    => [GenereateStruct(value)] 
@@ -104,8 +102,6 @@ namespace Nemerle.Pinvoke.Macros
         | Type.Typedef 
         | Type.Pointer  => []
     }
-
-    
 
     private GenereateStruct(structType : Type.Struct) : ClassMember.TypeDeclaration
     {
@@ -117,7 +113,7 @@ namespace Nemerle.Pinvoke.Macros
 
     private Generate(fields : list[Field]) : list[ClassMember]
     {
-        def convert(field : Field) 
+        def ConvertFieldToClassMember(field) 
         {
             def name = field.Name;
             def type = GetReferenceName(field.Type);
@@ -132,12 +128,12 @@ namespace Nemerle.Pinvoke.Macros
             classMember
         }
         
-        fields.Map(f => convert(f))
+        fields.Map(ConvertFieldToClassMember)
     }
     
     private Generate(aliases : list[TypedefAlias]) : list[ClassMember.TypeDeclaration]
     {
-        def convert(typedef : TypedefAlias)
+        def ConvertTypedefToAlias(typedef)
         {
             def typeExpr = GetReferenceName(typedef.Type);
             def typedefNameSliceable = Splicable.Name(<[$(typedef.Name : usesite)]>);
@@ -146,7 +142,7 @@ namespace Nemerle.Pinvoke.Macros
             ClassMember.TypeDeclaration(typedefNameSliceable, topDeclaration);
         }
         
-        aliases.Map(a => convert(a))
+        aliases.Map(ConvertTypedefToAlias)
     }
     
     private GetReferenceName(type : ReflectionTree.Type) : PExpr
@@ -183,11 +179,11 @@ namespace Nemerle.Pinvoke.Macros
         | BuiltInType.DoubleComplex
         | _                                  => throw NotSupportedException()        
     }
-    
-    
-    GenerateNameForUnnamed() : PExpr.Ref
+        
+    GenerateNameForUnnamed() : PExpr
     {
-        <[ unnamed ]>
+        def unnamed = Macros.NewSymbol("unnamed");
+        <[ $(unnamed.Id : usesite) ]>
     }
 }
 }
