@@ -4,6 +4,7 @@
         xmlns:attachedCommand="clr-namespace:Nemerle.Pinvoke.CParser.Visualizer.Commands;assembly=Nemerle.Pinvoke.CParser.Visualizer.Commands"
         xmlns:avalonDock="http://schemas.xceed.com/wpf/xaml/avalondock"
         xmlns:controls="clr-namespace:Nemerle.Pinvoke.CParser.Visualizer.Controls;assembly=Nemerle.Pinvoke.CParser.Visualizer.Controls"
+        xmlns:locals="clr-namespace:Nemerle.Pinvoke.CParser.Visualizer;assembly=Nemerle.Pinvoke.CParser.Visualizer"
         Title="CParser AST Viewer"
         Width="800"
         Height="600"
@@ -12,6 +13,7 @@
         WindowStyle="SingleBorderWindow">
     <Grid>
         <Grid.Resources>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <HierarchicalDataTemplate x:Key="NodeTemplate" ItemsSource="{Binding Path=Children}">
                 <StackPanel>
                     <TextBlock Margin="0 0 0 -5"
@@ -22,6 +24,38 @@
                     <TextBlock x:Name="NodeName" Text="{Binding Path=Name}" />
                 </StackPanel>
             </HierarchicalDataTemplate>
+            <DataTemplate x:Key="AstTreeParseResult">
+                <Grid>
+                    <controls:TreeViewWithoutSentinels x:Name="AstTree"
+                                                       BorderThickness="0"
+                                                       ItemTemplate="{StaticResource NodeTemplate}"
+                                                       ItemsSource="{Binding Path=AstTreeRoot,
+                                                                             Mode=OneWay}"
+                                                       Visibility="{Binding ShouldShowModel,
+                                                                            Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                       attachedCommand:CommandBehavior.Command="{Binding Path=SetHighlighting}"
+                                                       attachedCommand:CommandBehavior.CommandParameter="{Binding ElementName=AstTree,
+                                                                                                                  Path=SelectedItem}"
+                                                       attachedCommand:CommandBehavior.EventName="SelectedItemChanged" />
+                    <TextBlock Text="{Binding Path=ErrorText}" Visibility="{Binding ShouldShowError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </Grid>
+            </DataTemplate>
+            <DataTemplate x:Key="ReflectionTreeParseResult">
+                <Grid>
+                    <controls:TreeViewWithoutSentinels x:Name="AstTree"
+                                                       BorderThickness="0"
+                                                       ItemTemplate="{StaticResource NodeTemplate}"
+                                                       ItemsSource="{Binding Path=ReflectionTreeRoot,
+                                                                             Mode=OneWay}"
+                                                       Visibility="{Binding ShouldShowModel,
+                                                                            Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                       attachedCommand:CommandBehavior.Command="{Binding Path=SetHighlighting}"
+                                                       attachedCommand:CommandBehavior.CommandParameter="{Binding ElementName=ReflectionTreeRoot,
+                                                                                                                  Path=SelectedItem}"
+                                                       attachedCommand:CommandBehavior.EventName="SelectedItemChanged" />
+                    <TextBlock Text="{Binding Path=ErrorText}" Visibility="{Binding ShouldShowError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </Grid>
+            </DataTemplate>
         </Grid.Resources>
         <avalonDock:DockingManager x:Name="dockingManager">
             <avalonDock:LayoutRoot>
@@ -55,7 +89,7 @@
                                                                                                                                                             AncestorType={x:Type Window}},
                                                                                                                              Path=DataContext.OpenGalleryItem}"
                                                                            attachedCommand:CommandBehavior.CommandParameter="{Binding XPath=@Path}"
-                                                                           attachedCommand:CommandBehavior.EventName="MouseLeftButtonUp" />
+                                                                           attachedCommand:CommandBehavior.EventName="MouseLeftButtonDown" />
                                                             </StackPanel>
                                                         </DataTemplate>
                                                     </ListBox.ItemTemplate>
@@ -67,7 +101,7 @@
                             </ScrollViewer>
                         </avalonDock:LayoutAnchorable>
                     </avalonDock:LayoutAnchorablePane>
-                    <avalonDock:LayoutDocumentPane>
+                    <avalonDock:LayoutDocumentPane DockWidth="400">
                         <avalonDock:LayoutDocument Title="Source">
                             <controls:CodeEditorWithBindings x:Name="SourceEditor"
                                                              DocumentText="{Binding Path=Source,
@@ -86,263 +120,23 @@
                                                              attachedCommand:CommandBehavior.EventName="TextChanged" />
                         </avalonDock:LayoutDocument>
                     </avalonDock:LayoutDocumentPane>
-                    <avalonDock:LayoutAnchorablePaneGroup DockWidth="150" Orientation="Vertical">
+                    <avalonDock:LayoutAnchorablePaneGroup DockWidth="300" Orientation="Vertical">
 
                         <avalonDock:LayoutAnchorablePane>
-
-                            <avalonDock:LayoutAnchorable Title="Tool 1">
-
-                                <controls:TreeViewWithoutSentinels x:Name="AstTree"
-                                                                   BorderThickness="0"
-                                                                   ItemTemplate="{StaticResource NodeTemplate}"
-                                                                   ItemsSource="{Binding Path=GrammarTreeRoot,
-                                                                                         Mode=OneWay}"
-                                                                   attachedCommand:CommandBehavior.Command="{Binding ElementName=MainGrid,
-                                                                                                                     Path=DataContext.SetHighlighting}"
-                                                                   attachedCommand:CommandBehavior.CommandParameter="{Binding ElementName=AstTree,
-                                                                                                                              Path=SelectedItem}"
-                                                                   attachedCommand:CommandBehavior.EventName="SelectedItemChanged" />
-                            </avalonDock:LayoutAnchorable>
-                            <avalonDock:LayoutAnchorable Title="Tool 2">
-                                <TextBox />
+                            <avalonDock:LayoutAnchorable Title="Ast">
+                                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource AstTreeParseResult}" />
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                         <avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Tool 3">
-                                <TextBox />
-                            </avalonDock:LayoutAnchorable>
-                            <avalonDock:LayoutAnchorable Title="Tool 4">
-                                <TextBox />
+                            <avalonDock:LayoutAnchorable Title="Reflection">
+                                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ReflectionTreeParseResult}" />
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                     </avalonDock:LayoutAnchorablePaneGroup>
                 </avalonDock:LayoutPanel>
-                <!--
-                    <avalonDock:LayoutRoot.LeftSide>
-                    <avalonDock:LayoutAnchorSide>
-                    <avalonDock:LayoutAnchorGroup>
-                    <avalonDock:LayoutAnchorable Title="Samples">
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                    <ItemsControl x:Name="TopLevelListBox"
-                    DataContext="{Binding Path=GalleryData}"
-                    ItemsSource="{Binding XPath=Directory[@Name \= \'Gallery\']/*}">
-                    <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical" />
-                    </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                    <Expander ExpandDirection="Down">
-                    <Expander.Header>
-                    <TextBlock Margin="0,0,5,0" Text="{Binding XPath=@Name}" />
-                    </Expander.Header>
-                    <ListBox x:Name="SubListBox"
-                    Margin="4"
-                    ItemsSource="{Binding XPath=*}">
-                    <ListBox.ItemTemplate>
-                    <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                    <TextBlock FontSize="{StaticResource ResourceKey=FontSizeSmall}"
-                    Text="{Binding XPath=@Name}"
-                    attachedCommand:CommandBehavior.Command="{Binding RelativeSource={RelativeSource FindAncestor,
-                    AncestorType={x:Type Window}},
-                    Path=DataContext.OpenGalleryItem}"
-                    attachedCommand:CommandBehavior.CommandParameter="{Binding XPath=@Path}"
-                    attachedCommand:CommandBehavior.EventName="MouseLeftButtonUp" />
-                    </StackPanel>
-                    </DataTemplate>
-                    </ListBox.ItemTemplate>
-                    </ListBox>
-                    </Expander>
-                    </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    </ScrollViewer>
-                    </avalonDock:LayoutAnchorable>
-                    </avalonDock:LayoutAnchorGroup>
-                    </avalonDock:LayoutAnchorSide>
-                    </avalonDock:LayoutRoot.LeftSide>
-                -->
+
             </avalonDock:LayoutRoot>
         </avalonDock:DockingManager>
 
     </Grid>
-
-    <!--
-        <Grid>
-        <avalonDock:DockingManager x:Name="dockingManager">
-        <avalonDock:LayoutRoot>
-        <avalonDock:LayoutPanel Orientation="Horizontal">
-        <avalonDock:LayoutDocumentPane/>
-        <avalonDock:LayoutAnchorablePane DockWidth="150">
-        <avalonDock:LayoutAnchorable Title="Sample Tool Pane">
-        <TextBox/>
-        </avalonDock:LayoutAnchorable>
-        </avalonDock:LayoutAnchorablePane>
-        </avalonDock:LayoutPanel>
-        <avalonDock:LayoutRoot.LeftSide>
-        <avalonDock:LayoutAnchorSide>
-        <avalonDock:LayoutAnchorGroup>
-        <avalonDock:LayoutAnchorable Title="Gallery">
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" DataContext="{Binding Path=GalleryData}">
-        <ItemsControl x:Name="TopLevelListBox" ItemsSource="{Binding XPath=Directory[@Name \= \'Gallery\']/*}">
-        <ItemsControl.ItemsPanel>
-        <ItemsPanelTemplate>
-        <StackPanel Orientation="Vertical" />
-        </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-        <DataTemplate>
-        <Expander ExpandDirection="Down">
-        <Expander.Header>
-        <TextBlock Margin="0,0,5,0" Text="{Binding XPath=@Name}" />
-        </Expander.Header>
-        <ListBox x:Name="SubListBox"
-        Margin="4"
-        ItemsSource="{Binding XPath=*}">
-        <ListBox.ItemTemplate>
-        <DataTemplate>
-        <StackPanel Orientation="Horizontal">
-        <TextBlock FontSize="{StaticResource ResourceKey=FontSizeSmall}"
-        Text="{Binding XPath=@Name}"
-        attachedCommand:CommandBehavior.Command="{Binding ElementName=MainGrid,
-        Path=DataContext.OpenGalleryItem}"
-        attachedCommand:CommandBehavior.CommandParameter="{Binding XPath=@Path}"
-        attachedCommand:CommandBehavior.EventName="MouseLeftButtonUp" />
-        </StackPanel>
-        </DataTemplate>
-        </ListBox.ItemTemplate>
-        </ListBox>
-        </Expander>
-        </DataTemplate>
-        </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        </ScrollViewer>
-        </avalonDock:LayoutAnchorable>
-        </avalonDock:LayoutAnchorGroup>
-        </avalonDock:LayoutAnchorSide>
-        </avalonDock:LayoutRoot.LeftSide>
-        </avalonDock:LayoutRoot>
-        </avalonDock:DockingManager>
-        </Grid>
-    -->
-
-    <!--
-        <DockPanel>
-        <DockPanel.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        </DockPanel.Resources>
-        <Grid x:Name="MainGrid">
-        <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <Border x:Name="GalleryBorder" Margin="5, 5, 0, 5">
-        <HeaderedContentControl DataContext="{Binding Path=GalleryData}"
-        Header="Gallery"
-        Style="{StaticResource HeaderedContentControlStyle}">
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-        <ItemsControl x:Name="TopLevelListBox" ItemsSource="{Binding XPath=Directory[@Name \= \'Gallery\']/*}">
-        <ItemsControl.ItemsPanel>
-        <ItemsPanelTemplate>
-        <StackPanel Orientation="Vertical" />
-        </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-        <DataTemplate>
-        <Expander ExpandDirection="Down">
-        <Expander.Header>
-        <TextBlock Margin="0,0,5,0" Text="{Binding XPath=@Name}" />
-        </Expander.Header>
-        <ListBox x:Name="SubListBox"
-        Margin="4"
-        ItemsSource="{Binding XPath=*}">
-        <ListBox.ItemTemplate>
-        <DataTemplate>
-        <StackPanel Orientation="Horizontal">
-        <TextBlock FontSize="{StaticResource ResourceKey=FontSizeSmall}"
-        Text="{Binding XPath=@Name}"
-        attachedCommand:CommandBehavior.Command="{Binding ElementName=MainGrid,
-        Path=DataContext.OpenGalleryItem}"
-        attachedCommand:CommandBehavior.CommandParameter="{Binding XPath=@Path}"
-        attachedCommand:CommandBehavior.EventName="MouseLeftButtonUp" />
-        </StackPanel>
-        </DataTemplate>
-        </ListBox.ItemTemplate>
-        </ListBox>
-        </Expander>
-        </DataTemplate>
-        </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        </ScrollViewer>
-        </HeaderedContentControl>
-        </Border>
-        <controls:GridExpander Grid.Column="1"
-        Width="7"
-        VerticalAlignment="Stretch"
-        Background="Transparent"
-        Direction="Previous"
-        ResizeBehavior="PreviousAndNext"
-        ResizeDirection="Columns"
-        ShowsPreview="True" />
-        <Grid x:Name="SourceAndTreeGrid" Grid.Column="2">
-        <Grid.Resources>
-        <HierarchicalDataTemplate x:Key="NodeTemplate" ItemsSource="{Binding Path=Children}">
-        <StackPanel>
-        <TextBlock Margin="0 0 0 -5"
-        FontSize="12"
-        FontStyle="Italic"
-        Foreground="Gray"
-        Text="{Binding Path=NodeInfo}" />
-        <TextBlock x:Name="NodeName" Text="{Binding Path=Name}" />
-        </StackPanel>
-        </HierarchicalDataTemplate>
-        </Grid.Resources>
-        
-        <Grid.RowDefinitions>
-        <RowDefinition Height="2*" />
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="1*" />
-        </Grid.RowDefinitions>
-        <Border Grid.Row="0"
-        Margin="0, 5, 5, 0"
-        Visibility="{Binding Path=ShouldShowModel,
-        Converter={StaticResource BooleanToVisibilityConverter}}">
-        <controls:TreeViewWithoutSentinels x:Name="AstTree"
-        BorderThickness="0"
-        ItemTemplate="{StaticResource NodeTemplate}"
-        ItemsSource="{Binding Path=GrammarTreeRoot,
-        Mode=OneWay}"
-        attachedCommand:CommandBehavior.Command="{Binding ElementName=MainGrid,
-        Path=DataContext.SetHighlighting}"
-        attachedCommand:CommandBehavior.CommandParameter="{Binding ElementName=AstTree,
-        Path=SelectedItem}"
-        attachedCommand:CommandBehavior.EventName="SelectedItemChanged" />
-        </Border>
-        <Border Name="ErrorContainer"
-        Grid.Row="0"
-        Margin="0, 5, 5, 0"
-        Visibility="{Binding Path=ShouldShowError,
-        Converter={StaticResource BooleanToVisibilityConverter}}">
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-        <TextBlock Text="{Binding Path=ErrorText}" />
-        </ScrollViewer>
-        </Border>
-        
-        <GridSplitter Grid.Row="1"
-        Height="12"
-        HorizontalAlignment="Stretch"
-        Background="Transparent"
-        ResizeBehavior="PreviousAndNext" />
-        
-        <Border Grid.Row="2" Margin="0, 0, 5, 5">
-        
-        </Border>
-        
-        </Grid>
-        </Grid>
-        </DockPanel>
-    -->
 </Window>
