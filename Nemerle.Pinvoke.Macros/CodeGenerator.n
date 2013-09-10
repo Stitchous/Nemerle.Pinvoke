@@ -18,7 +18,15 @@ namespace Nemerle.Pinvoke.Macros
 {
   module CodeGenerator
   {
-    public Generate(reflectionTree : list[TopLevelEntry], typer : Typer)  : void
+    delegate TryGetFunc[T1, TResult](arg1 : T1 , value : out TResult ) : bool;
+    
+    FromTryGet[U, T](f : TryGetFunc[U,T], u : U) : option[T] 
+    {
+        mutable t : T;
+        if(f(u, out t)) Some(t) else None()
+    }
+
+    public Generate(reflectionTree : list[TopLevelEntry], typer : Typer, annotations : Dictionary[string, TypeAnnotation])  : void
     {
 
         def aliases = reflectionTree
@@ -34,7 +42,19 @@ namespace Nemerle.Pinvoke.Macros
         def GenerateField(field , offset : int)
         {
             def name = field.Name;
-            def type = GetReferenceName(field.Type);
+                       
+            def typeReference = GetReferenceName(field.Type);
+            def typeReferenceName = typeReference.ToString();
+
+            def annotation = FromTryGet(annotations.TryGetValue, typeReferenceName);// if (annotations.ContainsKey(typeReferenceName)) Some(annotations[typeReferenceName]) else None();
+            
+            def type = 
+                match(annotation)
+                {
+                    | Some(TypeAnnotation(Some(typeOverride), _))   => typeOverride
+                    | _                                             => typeReference
+                }
+            
             def classMember = <[ decl: public mutable $(name : dyn) : $(type);]>;
 
             match(field.Type)
@@ -44,6 +64,12 @@ namespace Nemerle.Pinvoke.Macros
             }
 
             classMember.AddCustomAttribute(<[FieldOffset($offset)]>);
+
+            foreach(attribute in annotation.Map(ann => ann.Attributes).WithDefault([]))
+            {
+                classMember.AddCustomAttribute(attribute);
+            }
+
 
             classMember
         }

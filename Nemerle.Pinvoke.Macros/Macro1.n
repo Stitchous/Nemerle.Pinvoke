@@ -35,23 +35,40 @@ namespace Nemerle.Pinvoke.Macros
         externalsList.Map(p => parse(p))
     }
 
+    def ParseAnnotations(annotationList)
+    {
+        def parse(pExpr)
+        {
+            | <[$typename : ($type, $attr)]> => (typename.ToString(), TypeAnnotation(Some(type), [attr]))
+        }
+
+        annotationList.Map(parse).ToDictionary(t => t[0], t => t[1])
+    }
+
     mutable externals;
+    mutable annotations = Dictionary.[string, TypeAnnotation]();
+
+    unless (Nemerle.Macros.ImplicitCTX().Manager.IsIntelliSenseMode)
+    {
+        _ = Debugger.Launch();
+    }
 
     foreach(item in options)
     {
         | <[ Externals = [..$externalsList]]> => externals = ParseExternals(externalsList)
+        | <[ TypeAnnotations = [..$annotationList]]> => annotations = ParseAnnotations(annotationList)
         | _ => Message.Error("err")
     }
        
     foreach(fileName in Directory.GetFiles(projectDir, files))
     {
-        NativeStructImpl.DoTransform(Macros.ImplicitCTX(), fileName, string.Concat(File.ReadAllLines(fileName)), externals)
+        NativeStructImpl.DoTransform(Macros.ImplicitCTX(), fileName, string.Concat(File.ReadAllLines(fileName)), externals, annotations)
     }
   }
   
   module NativeStructImpl
   {
-    public DoTransform(typer : Typer, _name : string, content : string, _externals : list.[string * string]) : void
+    public DoTransform(typer : Typer, _name : string, content : string, _externals : list.[string * string], annotations : Dictionary[string, TypeAnnotation]) : void
     {
       Macros.DefineCTX(typer);
 
@@ -66,7 +83,7 @@ namespace Nemerle.Pinvoke.Macros
 
       def reflectionTree = str.Map(CParser.TreeConverter.Convert).WithDefault([]);
 
-      CodeGenerator.Generate(reflectionTree, typer)
+      CodeGenerator.Generate(reflectionTree, typer, annotations)
     }
 
 
