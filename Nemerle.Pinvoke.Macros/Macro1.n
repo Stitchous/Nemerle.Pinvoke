@@ -62,7 +62,7 @@ namespace Nemerle.Pinvoke.Macros
        
     foreach(fileName in Directory.GetFiles(projectDir, files))
     {
-        NativeStructImpl.DoTransform(Macros.ImplicitCTX(), fileName, string.Concat(File.ReadAllLines(fileName)), externals, annotations)
+        NativeStructImpl.DoTransform(Macros.ImplicitCTX(), fileName, File.ReadAllText(fileName), externals, annotations)
     }
   }
   

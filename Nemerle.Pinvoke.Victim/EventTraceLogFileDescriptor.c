@@ -1,6 +1,4 @@
-﻿
-
-typedef struct _EVENT_TRACE_LOGFILE {
+﻿typedef struct _EVENT_TRACE_LOGFILE {
   LPTSTR                       LogFileName;
   LPTSTR                       LoggerName;
   LONGLONG                     CurrentTime;
@@ -167,7 +165,7 @@ typedef struct _EVENT_FILTER_DESCRIPTOR {
 typedef struct _EVENT_FILTER_HEADER {
   USHORT    Id;
   UCHAR     Version;
-  UCHAR     Reserved[5];
+  //UCHAR     Reserved[5];
   ULONGLONG InstanceId;
   ULONG     Size;
   ULONG     NextOffset;
