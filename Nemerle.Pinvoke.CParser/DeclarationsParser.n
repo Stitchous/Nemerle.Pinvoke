@@ -37,6 +37,10 @@ namespace Nemerle.Pinvoke.CParser
       #endregion
 
       #region White space
+      
+      singleLineComment           = "//" (!('\n' / '\r') [Any])* newLine?;
+      delimitedComment            = "/*" (!"*/" [Any])* "*/";
+      comment                     = singleLineComment / delimitedComment;
 
       whitespace = [Zs]
                 / '\t'
@@ -47,7 +51,7 @@ namespace Nemerle.Pinvoke.CParser
 
       #region Spacer
 
-      space = whitespace / newLine;
+      space = whitespace / newLine / comment;
       
       [InlineAllSubrules]
       s : void = space*;                      /* optional spacer          */

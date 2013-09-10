@@ -45,25 +45,34 @@ namespace Nemerle.Pinvoke.CParser.Visualizer
 
             OpenGalleryItem = RelayCommand.[XmlAttribute](pathAttribute => { Source = ReadAllText(pathAttribute.Value) });
 
-            def filteredInput = _parseSource.Throttle(TimeSpan.FromMilliseconds(500));
+            def filteredInput = _parseSource.
+                                Throttle(TimeSpan.FromMilliseconds(500));
 
-            def output = filteredInput.
-            SelectMany(_ => Observable.
+            _ = filteredInput.
+                            SelectMany(_ => Observable.
                             ToAsync(AstVisualModelBuilder().CreateRoot)(Source).
                             Catch(e => { SetError(e); Observable.Empty() }).
-                            TakeUntil(filteredInput));
-
-            _ = output.Subscribe((ast, parseErrors) => 
+                            TakeUntil(filteredInput)).
+                            Subscribe((root, parseErrors) => 
                                     match(parseErrors)
                                     {
-                                       | Some((rollbackPos, ruleNames)) =>  SetError(rollbackPos, ruleNames)
-                                       | _ => GrammarTreeRoot = ast; ShouldShowError = false;
+                                       | Some((rollbackPos, ruleNames)) => SetError(rollbackPos, ruleNames)
+                                       | _ => AstTreeRoot = root; ShouldShowError = false;
                                     });
+                                    
+           _ = filteredInput.
+                            SelectMany(_ => Observable.
+                            ToAsync(ReflectionTreeVisualModelBuilder().CreateRoot)(Source).
+                            Catch(e => { SetError(e); Observable.Empty() }).
+                            TakeUntil(filteredInput)).
+                            Subscribe((root, _) => ReflectionTreeRoot = root);
         }
 
         public GalleryData : XmlDataProvider { get; private set; }
 
-        public GrammarTreeRoot : IEnumerable[GrammarNode] { get; private set; }
+        public AstTreeRoot : IEnumerable[GrammarNode] { get; private set; }
+        
+        public ReflectionTreeRoot : IEnumerable[GrammarNode] { get; private set; }
 
         public Source    : string { get; set; }
 
