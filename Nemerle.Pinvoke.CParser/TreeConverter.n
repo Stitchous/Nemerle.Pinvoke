@@ -131,7 +131,7 @@ namespace Nemerle.Pinvoke.CParser
         5
     }
 
-    CreateFields(structDeclaration : StructDeclaration) : list[Field]
+    CreateFields(structDeclaration : StructDeclaration) : list[Member]
     {
         def typeDeclaration =  CreateType(structDeclaration.DeclarationSpecifierList);
         
@@ -143,14 +143,14 @@ namespace Nemerle.Pinvoke.CParser
             | _                                                                             => throw NotSupportedException()
         }
 
-        def CreateField(structDeclarator : StructDeclarator) : Field
+        def CreateField(structDeclarator : StructDeclarator) : Member
         {
             | StructDeclarator.NormalDeclarator(Declarator(_, DirectDeclarator(DirectDeclaratorHead.Simple(name), _))) as normalDeclarator=>
                 {
                     def pointer = normalDeclarator.Value.Pointer;
                     def directDeclaratorTail = normalDeclarator.Value.DirectDeclarator.Tail;
                     
-                    Field.Normal(name.Id, GetType(pointer, directDeclaratorTail))
+                    Member.Field(name.Id, GetType(pointer, directDeclaratorTail))
                 }
             | _ => throw NotSupportedException()
         }
@@ -158,8 +158,9 @@ namespace Nemerle.Pinvoke.CParser
         
         match((structDeclaration.StructDeclaratorsList, typeDeclaration))
         {
-            | ([],  Type.Union(None, fields)) => [Field.UnnamedUnion(fields)]
-            | (_,   _                       ) => structDeclaration.StructDeclaratorsList.Map(CreateField)
+            | ([],  Type.Union(None, fields))   => [Member.UnnamedUnion(fields)]
+            | ([],  Type.Struct(None, fields))  => [Member.UnnamedStruct(fields)]
+            | (_,   _                       )   => structDeclaration.StructDeclaratorsList.Map(CreateField)
         }
     }
 

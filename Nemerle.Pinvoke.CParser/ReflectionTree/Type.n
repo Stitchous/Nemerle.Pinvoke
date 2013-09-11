@@ -19,13 +19,13 @@ namespace Nemerle.Pinvoke.CParser.ReflectionTree
     | Struct
         {
             Name    : option[string];
-            Members : list[Field];
+            Members : list[Member];
         }   
 
     | Union
         {
             Name    : option[string];
-            Members : list[Field];
+            Members : list[Member];
         }
 
     | BuiltIn
