@@ -77,25 +77,25 @@ namespace Nemerle.Pinvoke.Macros
         def GenerateStruct(structType : Type.Struct) : ClassMember.TypeDeclaration
         {
             
-            def GenFields(memberList : list[Field], offset : int)
+            def GenFields(memberList : list[Member], offset : int)
             {
-                | (Field.Normal as head :: tail,       _)  =>  GenerateField(head, offset):: GenFields(tail, offset + GetSize(head))
-                | (Field.UnnamedUnion as head :: tail, _) =>   
+                | (Member.Field as head :: tail,       _)  =>  GenerateField(head, offset):: GenFields(tail, offset + GetSize(head))
+                | (Member.UnnamedStruct as head :: tail, _) => GenFields(head.Members, offset) + GenFields(tail, offset + GetSize(head));
+                | (Member.UnnamedUnion as head :: tail, _) =>   
                     {
-                        def size = head.Fields.Map(f => GetSize(f)).Max();
-                        def unionFields = head.Fields;
+                        def unionFields = head.Members;
                         def resultFields = unionFields.Map(field => GenFields([field], offset)).Flatten();
 
-                        resultFields + GenFields(tail, offset + size)
-                        
+                        resultFields + GenFields(tail, offset + GetSize(head))
                     }
+                    
                 | _ => []
             }
                         
             def name = structType.Name.Value;
             def members = (structType.Members, 0) |> GenFields;
                     
-            def structure = <[decl: struct $(name : dyn) { ..$members }]>;
+            def structure = <[decl: public struct $(name : dyn) { ..$members }]>;
             structure.AddCustomAttribute(<[StructLayout(LayoutKind.Explicit)]>);
 
             structure
@@ -107,7 +107,7 @@ namespace Nemerle.Pinvoke.Macros
            def typeExpr = GetReferenceName(typedef.Type);
            def typedefNameSliceable = Splicable.Name(<[$(typedef.Name : usesite)]>);
         
-           def topDeclaration = TopDeclaration.Alias(typedefNameSliceable,  AttributesAndModifiers(), Typarms.Empty, typeExpr);
+           def topDeclaration = TopDeclaration.Alias(typedefNameSliceable,  AttributesAndModifiers(NemerleModifiers.Public, []), Typarms.Empty, typeExpr);
            ClassMember.TypeDeclaration(typedefNameSliceable, topDeclaration);
         }
 
@@ -128,7 +128,6 @@ namespace Nemerle.Pinvoke.Macros
         }   
 
         reflectionTree.Map(entry => GenerateTopLevelEntry(entry).Map(e => typer.Env.Define(e))).Flatten().Iter(b =>b.Compile());
-
     }
 
 
@@ -150,12 +149,13 @@ namespace Nemerle.Pinvoke.Macros
     }
 
     [Memoize]
-    private GetSize(field : ReflectionTree.Field, GetRealType : string -> ReflectionTree.Type) : int
+    private GetSize(field : ReflectionTree.Member, GetRealType : string -> ReflectionTree.Type) : int
     {
         match(field)
         {
-            | Field.Normal as       f => GetSizeForType(f.Type, GetRealType)
-            | Field.UnnamedUnion as u => u.Fields.Map(GetSize(_, GetRealType)).Max()
+            | Member.Field as       f   => GetSizeForType(f.Type, GetRealType)
+            | Member.UnnamedUnion as u  => u.Members.Map(GetSize(_, GetRealType)).Max()
+            | Member.UnnamedStruct as s => s.Members.Map(GetSize(_, GetRealType)).Sum()
         }
     }    
        

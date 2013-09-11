@@ -255,7 +255,7 @@
     <Compile Include="ReflectionTree\BuiltInType.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ReflectionTree\Field.n">
+    <Compile Include="ReflectionTree\Member.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ReflectionTree\ParameterDeclaration.n">
