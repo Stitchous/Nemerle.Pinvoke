@@ -11,9 +11,11 @@
         FontFamily="{StaticResource FontFamilyNormal}"
         TextOptions.TextFormattingMode="Display"
         WindowStyle="SingleBorderWindow">
+
     <Grid>
         <Grid.Resources>
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
             <HierarchicalDataTemplate x:Key="NodeTemplate" ItemsSource="{Binding Path=Children}">
                 <StackPanel>
                     <TextBlock Margin="0 0 0 -5"
@@ -24,6 +26,17 @@
                     <TextBlock x:Name="NodeName" Text="{Binding Path=Name}" />
                 </StackPanel>
             </HierarchicalDataTemplate>
+
+            <Style x:Key="TreeViewWithoutSentinelsStyle" TargetType="controls:TreeViewWithoutSentinels">
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="{x:Type TreeViewItem}">
+                            <Setter Property="IsExpanded" Value="True"/>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <DataTemplate x:Key="AstTreeParseResult">
                 <Grid>
                     <controls:TreeViewWithoutSentinels x:Name="AstTree"
@@ -36,10 +49,13 @@
                                                        attachedCommand:CommandBehavior.Command="{Binding Path=SetHighlighting}"
                                                        attachedCommand:CommandBehavior.CommandParameter="{Binding ElementName=AstTree,
                                                                                                                   Path=SelectedItem}"
-                                                       attachedCommand:CommandBehavior.EventName="SelectedItemChanged" />
+                                                       attachedCommand:CommandBehavior.EventName="SelectedItemChanged"
+                                                       Style="{StaticResource TreeViewWithoutSentinelsStyle}"/>
+
                     <TextBlock Text="{Binding Path=ErrorText}" Visibility="{Binding ShouldShowError, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </Grid>
             </DataTemplate>
+
             <DataTemplate x:Key="ReflectionTreeParseResult">
                 <Grid>
                     <controls:TreeViewWithoutSentinels x:Name="AstTree"
@@ -52,14 +68,18 @@
                                                        attachedCommand:CommandBehavior.Command="{Binding Path=SetHighlighting}"
                                                        attachedCommand:CommandBehavior.CommandParameter="{Binding ElementName=ReflectionTreeRoot,
                                                                                                                   Path=SelectedItem}"
-                                                       attachedCommand:CommandBehavior.EventName="SelectedItemChanged" />
+                                                       attachedCommand:CommandBehavior.EventName="SelectedItemChanged"
+                                                       Style="{StaticResource TreeViewWithoutSentinelsStyle}"/>
+
                     <TextBlock Text="{Binding Path=ErrorText}" Visibility="{Binding ShouldShowError, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </Grid>
             </DataTemplate>
         </Grid.Resources>
+
         <avalonDock:DockingManager x:Name="dockingManager">
             <avalonDock:LayoutRoot>
                 <avalonDock:LayoutPanel Orientation="Horizontal">
+
                     <avalonDock:LayoutAnchorablePane DockWidth="200">
                         <avalonDock:LayoutAnchorable Title="Samples">
                             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
@@ -101,40 +121,48 @@
                             </ScrollViewer>
                         </avalonDock:LayoutAnchorable>
                     </avalonDock:LayoutAnchorablePane>
-                    <avalonDock:LayoutDocumentPane DockWidth="400">
-                        <avalonDock:LayoutDocument Title="Source">
-                            <controls:CodeEditorWithBindings x:Name="SourceEditor"
-                                                             DocumentText="{Binding Path=Source,
-                                                                                    Mode=TwoWay,
-                                                                                    UpdateSourceTrigger=PropertyChanged}"
-                                                             FontFamily="Consolas"
-                                                             FontSize="10pt"
-                                                             HighlightingLength="{Binding Path=HighlightingLength}"
-                                                             HighlightingStart="{Binding Path=HighlightingStart}"
-                                                             HorizontalScrollBarVisibility="Auto"
-                                                             SyntaxHighlighting="C++"
-                                                             VerticalScrollBarVisibility="Auto"
-                                                             attachedCommand:CommandBehavior.Command="{Binding Path=ParseSource}"
-                                                             attachedCommand:CommandBehavior.CommandParameter="{Binding Path=DocumentText,
-                                                                                                                        ElementName=SourceEditor}"
-                                                             attachedCommand:CommandBehavior.EventName="TextChanged" />
-                        </avalonDock:LayoutDocument>
-                    </avalonDock:LayoutDocumentPane>
-                    <avalonDock:LayoutAnchorablePaneGroup DockWidth="300" Orientation="Vertical">
 
-                        <avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Ast">
-                                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource AstTreeParseResult}" />
+                    <avalonDock:LayoutAnchorablePaneGroup Orientation="Vertical">
+
+                        <avalonDock:LayoutAnchorablePaneGroup DockWidth="300" Orientation="Horizontal">
+
+                            <avalonDock:LayoutAnchorablePane>
+                                <avalonDock:LayoutAnchorable Title="Ast">
+                                    <ContentControl Content="{Binding}" ContentTemplate="{StaticResource AstTreeParseResult}" />
+                                </avalonDock:LayoutAnchorable>
+                            </avalonDock:LayoutAnchorablePane>
+
+                            <avalonDock:LayoutAnchorablePane>
+                                <avalonDock:LayoutAnchorable Title="Reflection">
+                                    <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ReflectionTreeParseResult}" />
+                                </avalonDock:LayoutAnchorable>
+                            </avalonDock:LayoutAnchorablePane>
+
+                       </avalonDock:LayoutAnchorablePaneGroup>
+
+                        <avalonDock:LayoutAnchorablePane DockWidth="400">
+                            <avalonDock:LayoutAnchorable Title="Source">
+                                <controls:CodeEditorWithBindings x:Name="SourceEditor"
+                                                                 DocumentText="{Binding Path=Source,
+                                                                                        Mode=TwoWay,
+                                                                                        UpdateSourceTrigger=PropertyChanged}"
+                                                                 FontFamily="Consolas"
+                                                                 FontSize="10pt"
+                                                                 HighlightingLength="{Binding Path=HighlightingLength}"
+                                                                 HighlightingStart="{Binding Path=HighlightingStart}"
+                                                                 HorizontalScrollBarVisibility="Auto"
+                                                                 SyntaxHighlighting="C++"
+                                                                 VerticalScrollBarVisibility="Auto"
+                                                                 attachedCommand:CommandBehavior.Command="{Binding Path=ParseSource}"
+                                                                 attachedCommand:CommandBehavior.CommandParameter="{Binding Path=DocumentText,
+                                                                                                                            ElementName=SourceEditor}"
+                                                                 attachedCommand:CommandBehavior.EventName="TextChanged" />
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
-                        <avalonDock:LayoutAnchorablePane>
-                            <avalonDock:LayoutAnchorable Title="Reflection">
-                                <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ReflectionTreeParseResult}" />
-                            </avalonDock:LayoutAnchorable>
-                        </avalonDock:LayoutAnchorablePane>
+
                     </avalonDock:LayoutAnchorablePaneGroup>
-                </avalonDock:LayoutPanel>
 
+                </avalonDock:LayoutPanel>
             </avalonDock:LayoutRoot>
         </avalonDock:DockingManager>
 
