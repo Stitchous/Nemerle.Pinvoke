@@ -40,6 +40,7 @@ namespace Nemerle.Pinvoke.Macros
         def parse(pExpr)
         {
             | <[$typename : ($type, $attr)]> => (typename.ToString(), TypeAnnotation(Some(type), [attr]))
+            | <[$typename : ($type)]>        => (typename.ToString(), TypeAnnotation(Some(type), []))
         }
 
         annotationList.Map(parse).ToDictionary(t => t[0], t => t[1])
@@ -47,11 +48,6 @@ namespace Nemerle.Pinvoke.Macros
 
     mutable externals;
     mutable annotations = Dictionary.[string, TypeAnnotation]();
-
-    unless (Nemerle.Macros.ImplicitCTX().Manager.IsIntelliSenseMode)
-    {
-        _ = Debugger.Launch();
-    }
 
     foreach(item in options)
     {
@@ -74,18 +70,11 @@ namespace Nemerle.Pinvoke.Macros
 
       def parser = DeclarationsParser();
       
-      unless (Nemerle.Macros.ImplicitCTX().Manager.IsIntelliSenseMode)
-      {
-          _ = Debugger.Launch();
-      }
-      
       def str = parser.Parse(content);
 
       def reflectionTree = str.Map(CParser.TreeConverter.Convert).WithDefault([]);
 
       CodeGenerator.Generate(reflectionTree, typer, annotations)
     }
-
-
 }
 }

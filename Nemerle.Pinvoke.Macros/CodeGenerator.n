@@ -95,7 +95,7 @@ namespace Nemerle.Pinvoke.Macros
             def name = structType.Name.Value;
             def members = (structType.Members, 0) |> GenFields;
                     
-            def structure = <[decl: struct $(name : dyn) { ..$members }]>;
+            def structure = <[decl: public struct $(name : dyn) { ..$members }]>;
             structure.AddCustomAttribute(<[StructLayout(LayoutKind.Explicit)]>);
 
             structure
@@ -107,7 +107,7 @@ namespace Nemerle.Pinvoke.Macros
            def typeExpr = GetReferenceName(typedef.Type);
            def typedefNameSliceable = Splicable.Name(<[$(typedef.Name : usesite)]>);
         
-           def topDeclaration = TopDeclaration.Alias(typedefNameSliceable,  AttributesAndModifiers(), Typarms.Empty, typeExpr);
+           def topDeclaration = TopDeclaration.Alias(typedefNameSliceable,  AttributesAndModifiers(NemerleModifiers.Public, []), Typarms.Empty, typeExpr);
            ClassMember.TypeDeclaration(typedefNameSliceable, topDeclaration);
         }
 
@@ -128,7 +128,6 @@ namespace Nemerle.Pinvoke.Macros
         }   
 
         reflectionTree.Map(entry => GenerateTopLevelEntry(entry).Map(e => typer.Env.Define(e))).Flatten().Iter(b =>b.Compile());
-
     }
 
 
