@@ -1,0 +1,42 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using System.Runtime.InteropServices;
+
+namespace EtwProvider
+{
+  public module Functions
+  {
+
+    public class ClassicTraceContext
+    {
+        public Session : ulong { get; set; }
+        public IsEnabled : bool { get ; set;}
+    }
+
+    public delegate EtwProc(requestCode : uint, requestContext : Functions.ClassicTraceContext, bufferSize : IntPtr, buffer : IntPtr) : uint;
+
+    [DllImport("advapi32", EntryPoint = "RegisterTraceGuidsW", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    public static extern RegisterTraceGuids(
+        cbFunc      : EtwProc, 
+        context     : ClassicTraceContext, 
+        controlGuid : ref Guid, 
+        guidCount   : uint, 
+        guidReg     : array[TRACE_GUID_REGISTRATION], 
+        mofImagePath : IntPtr, 
+        mofResourceName : IntPtr, 
+        regHandle   : out ulong) : uint;
+
+    [DllImport("advapi32", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    public static extern GetTraceLoggerHandle(buffer : IntPtr) : ulong;
+
+    [DllImport("advapi32", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    public static extern UnregisterTraceGuids(regHandle : ulong) : int;
+  }
+}

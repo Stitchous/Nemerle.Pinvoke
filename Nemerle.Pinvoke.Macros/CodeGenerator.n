@@ -74,11 +74,15 @@ namespace Nemerle.Pinvoke.Macros
             classMember
         }
 
-        def GenerateStruct(structType : Type.Struct) : ClassMember.TypeDeclaration
+        def GenerateStruct(structType : Type.Struct) : list[ClassMember.TypeDeclaration]
         {
-            
             def GenFields(memberList : list[Member], offset : int)
             {
+                def result = 
+                match(memberList, offset)
+                {
+                | (Member.Field(name, Type.Struct(None, _) as fieldType)  :: tail,                _) => throw NotSupportedException()
+                | (Member.Field(name, Type.Union(None, _)  as fieldType)  :: tail,                _) => throw NotSupportedException()
                 | (Member.Field as head :: tail,       _)  =>  GenerateField(head, offset):: GenFields(tail, offset + GetSize(head))
                 | (Member.UnnamedStruct as head :: tail, _) => GenFields(head.Members, offset) + GenFields(tail, offset + GetSize(head));
                 | (Member.UnnamedUnion as head :: tail, _) =>   
@@ -90,15 +94,19 @@ namespace Nemerle.Pinvoke.Macros
                     }
                     
                 | _ => []
+                };
+
+                result
             }
                         
-            def name = structType.Name.Value;
+            def name = structType.Name.Map(n => n).WithDefault(GenerateNameForUnnamed().Id);
+
             def members = (structType.Members, 0) |> GenFields;
                     
-            def structure = <[decl: public struct $(name : dyn) { ..$members }]>;
+            def structure = <[decl: public struct $(name : usesite)  { ..$members }]>;
             structure.AddCustomAttribute(<[StructLayout(LayoutKind.Explicit)]>);
 
-            structure
+            [structure]
 
         }
 
@@ -113,7 +121,7 @@ namespace Nemerle.Pinvoke.Macros
 
         def GenerateType(type)
         {
-            | Type.Struct   as value    => [GenerateStruct(value)] 
+            | Type.Struct   as value    => GenerateStruct(value) 
             | Type.Union
             | Type.BuiltIn 
             | Type.Typedef 
@@ -161,8 +169,8 @@ namespace Nemerle.Pinvoke.Macros
        
     private GetReferenceName(type : ReflectionTree.Type) : PExpr
     {
-        | Type.Struct as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(GenerateNameForUnnamed())
-        | Type.Union  as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(GenerateNameForUnnamed())
+        | Type.Struct as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(<[GenerateNameForUnnamed()]>)
+        | Type.Union  as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(<[GenerateNameForUnnamed()]>)
         | Type.BuiltIn as value   => GetBuiltInTypeInfo(value.Type)[0]
         | Type.Typedef as value   => <[ $(value.Name : dyn)]>
         | Type.Pointer as value   => GetReferenceName(value.Pointee)
@@ -194,10 +202,9 @@ namespace Nemerle.Pinvoke.Macros
         | _                                  => throw NotSupportedException()        
     }
         
-    GenerateNameForUnnamed() : PExpr
+    GenerateNameForUnnamed() : Parsetree.Name
     {
-        def unnamed = Macros.NewSymbol("unnamed");
-        <[ $(unnamed.Id : usesite) ]>
+        Macros.NewSymbol("unnamed");
     }
   }
 }

@@ -5,17 +5,20 @@ using Nemerle.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 
 using Nemerle.Pinvoke.Macros;
 
-[assembly:Include("EventTraceLogFileDescriptor.c", 
-    Externals = [TIME_ZONE_INFORMATION = TimeZoneInformation], 
-    TypeAnnotations = [LPTSTR : (string, MarshalAs(UnmanagedType.LPWStr)), GUID : (System.Guid)])]
-
-namespace Nemerle.Pinvoke.Victim
+namespace EtwProvider
 {
-  public struct Class1
+
+    [assembly:Include("Interop.c", 
+    Externals = [TIME_ZONE_INFORMATION = TimeZoneInformation], 
+    TypeAnnotations = [
+        LPTSTR  : (string,          MarshalAs(UnmanagedType.LPWStr)), 
+        LPCGUID : (System.Object),
+        HANDLE  : (IntPtr)])]
+
+  public class Class1
   {
   }
 }

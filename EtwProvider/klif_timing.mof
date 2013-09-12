@@ -1,0 +1,10 @@
+#pragma namespace("\\\\.\\root\\wmi")
+#pragma classflags("forceupdate")
+#pragma autorecover
+
+[dynamic: ToInstance, Description("KlifTimingProvider"),
+ Guid("{C7319460-4E61-4E59-8CE1-621C9CBA384F}")]
+class KlifTimingProvider : EventTrace
+{
+};
+

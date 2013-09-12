@@ -1,0 +1,45 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using System.Runtime.InteropServices;
+using System.Runtime.ConstrainedExecution;
+
+using Microsoft.Win32.SafeHandles;
+
+namespace EtwProvider
+{
+  public class TraceHandle : CriticalFinalizerObject, IDisposable
+  {
+    public this(handle : ulong) 
+    {
+        _handle = handle;
+    }
+
+    public IsValid() : bool
+    {
+        _handle != 0;
+    }
+
+    public Dispose() : void
+    {
+        when (IsValid())
+        {
+            _ = Functions.UnregisterTraceGuids(_handle);
+            _handle = 0;
+        }
+    }
+
+    protected override Finalize () : void
+    {   
+        Dispose()
+    }        
+
+    private mutable _handle : ulong;
+  }
+}

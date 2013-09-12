@@ -1,0 +1,52 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace EtwProvider
+{
+  
+  public module EtwTracer
+  {
+    //public RegisterProvider()
+
+
+    // public delegate EtwProc(requestCode : uint, requestContext : IntPtr, bufferSize : IntPtr, buffer : IntPtr) : uint;
+    public ControlCallback(requestCode : uint, requestContext : Functions.ClassicTraceContext, bufferSize : IntPtr, buffer : IntPtr) : uint
+    {
+        def newSessionHandle = Functions.GetTraceLoggerHandle(buffer);
+        // WMI_ENABLE_EVENTS = 4
+        // WMI_DISABLE_EVENTS  = 5
+        requestContext.IsEnabled =
+        match((requestCode, requestContext.Session))
+        {
+            | (4u, 0 : ulong) => 
+                {
+                    requestContext.Session = newSessionHandle;
+                    true
+                }
+            | (4u, n) when n == newSessionHandle => true
+            | (5u, n) when n == newSessionHandle =>
+                {
+                    requestContext.Session = 0;
+                    false
+                }
+        }
+
+        0u
+    }
+   
+    
+    static ProviderGuid : Guid = Guid("{0B30783B-B87A-4AFF-AB7D-29376F117D3F}");
+
+    public RegisterProvider(guid : Guid, context : Functions.ClassicTraceContext, handle : IntPtr) : void
+    {
+    }
+
+
+  }
+}
