@@ -122,9 +122,9 @@
                         </avalonDock:LayoutAnchorable>
                     </avalonDock:LayoutAnchorablePane>
 
-                    <avalonDock:LayoutAnchorablePaneGroup Orientation="Vertical">
+                    <avalonDock:LayoutPanel Orientation="Vertical">
 
-                        <avalonDock:LayoutAnchorablePaneGroup DockWidth="300" Orientation="Horizontal">
+                        <avalonDock:LayoutAnchorablePaneGroup DockHeight="325"  Orientation="Horizontal">
 
                             <avalonDock:LayoutAnchorablePane>
                                 <avalonDock:LayoutAnchorable Title="Ast">
@@ -140,9 +140,9 @@
 
                        </avalonDock:LayoutAnchorablePaneGroup>
 
-                        <avalonDock:LayoutAnchorablePane DockWidth="400">
-                            <avalonDock:LayoutAnchorable Title="Source">
-                                <controls:CodeEditorWithBindings x:Name="SourceEditor"
+                        <avalonDock:LayoutDocumentPane>
+                            <avalonDock:LayoutDocument Title="Source">
+                                        <controls:CodeEditorWithBindings x:Name="SourceEditor"
                                                                  DocumentText="{Binding Path=Source,
                                                                                         Mode=TwoWay,
                                                                                         UpdateSourceTrigger=PropertyChanged}"
@@ -157,10 +157,10 @@
                                                                  attachedCommand:CommandBehavior.CommandParameter="{Binding Path=DocumentText,
                                                                                                                             ElementName=SourceEditor}"
                                                                  attachedCommand:CommandBehavior.EventName="TextChanged" />
-                            </avalonDock:LayoutAnchorable>
-                        </avalonDock:LayoutAnchorablePane>
+                            </avalonDock:LayoutDocument>
+                        </avalonDock:LayoutDocumentPane>
 
-                    </avalonDock:LayoutAnchorablePaneGroup>
+                    </avalonDock:LayoutPanel>
 
                 </avalonDock:LayoutPanel>
             </avalonDock:LayoutRoot>
