@@ -1,0 +1,42 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Nemerle.Pinvoke.CParser
+{
+public class AccumulatorBuilder[TItem]
+{
+    [Record]
+    public class Accumulator[TValue]
+    {
+        public value : TValue;
+        public accumulator : list[TItem]; 
+    }
+
+    public ReturnComp[TValue](acc : Accumulator[TValue]) : Accumulator[TValue]
+    {
+        acc
+    }
+
+    public Zero[TValue]() : Accumulator[TValue] 
+    {
+        Accumulator(default(TValue), [])
+    }
+
+    public Return[TValue](t : TValue) : Accumulator[TValue]
+    {
+        Accumulator(t, [])
+    }
+
+    public Bind[TValue, UValue](acc : Accumulator[TValue], f : TValue -> Accumulator[UValue]) : Accumulator[UValue]
+    {
+        def tempAcc = f(acc.value);
+        Accumulator(tempAcc.value, acc.accumulator + tempAcc.accumulator)
+    }
+}
+}

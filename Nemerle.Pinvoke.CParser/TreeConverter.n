@@ -1,5 +1,6 @@
 ﻿using Nemerle;
 using Nemerle.Collections;
+using Nemerle.ComputationExpressions;
 using Nemerle.Text;
 using Nemerle.Utility;
 
@@ -21,6 +22,12 @@ namespace Nemerle.Pinvoke.CParser
 {
   public module TreeConverter
   {
+
+  
+    type Acc[T] = Nemerle.Pinvoke.CParser.AccumulatorBuilder[TopLevelEntry].Accumulator[T];
+    type acc = Nemerle.Pinvoke.CParser.AccumulatorBuilder[TopLevelEntry];
+
+
     public Convert(translationUnit : TranslationUnit) : list[TopLevelEntry]
     {
         translationUnit.ExternalDeclarations.Map(x =>
@@ -54,7 +61,7 @@ namespace Nemerle.Pinvoke.CParser
 
     CreateTypedefEntry(declarationSpecifiers : list[DeclarationSpecifier], initDeclarators : list[InitDeclarator]) :  list[TopLevelEntry]
     {
-        def typeDeclaration = CreateType(declarationSpecifiers);
+        def typeDeclaration = CreateType(declarationSpecifiers).value;
 
         def aliases = 
         initDeclarators.Map(
@@ -108,22 +115,33 @@ namespace Nemerle.Pinvoke.CParser
         }
     }
     
-    CreateStructOrUnionTypeDeclaration(specifier : StructOrUnionSpecifier) : Type
+    CreateStructOrUnionTypeDeclaration(specifier : StructOrUnionSpecifier) : Acc[Type]
     {
+        comp acc()
+        {
         match(specifier)
         {
             | StructOrUnionSpecifier.Declaration as value => 
                 {
-                    def members = value.declarations.Map(CreateFields).Flatten();
+                    def members = value.declarations.Map(CreateFields);
+                    
+                    def tops = members.Map(m => m.accumulator).Flatten();
+                    def fields = members.Map(m => m.value).Flatten();
+
+                    
+                    defcomp fields_ = Acc(fields, tops);
+                    //defcomp r = Acc(tops, field)
+                                      
+                    
                     def optionalName = value.Name.Map(i => i.Id);
                     match(value.StructOrUnion)
                     {
-                        | StructOrUnion.Struct => Type.Struct(optionalName, members)
-                        | StructOrUnion.Union  => Type.Union(optionalName, members)
+                        | StructOrUnion.Struct => return Type.Struct(optionalName, fields_)
+                        | StructOrUnion.Union  => return Type.Union(optionalName, fields_)
                     }
                 }
             | _ => throw NotImplementedException()
-        }
+        }}
     }
 
     GetExpressionValue(_ : AssignmentExpression) : int
@@ -131,7 +149,7 @@ namespace Nemerle.Pinvoke.CParser
         5
     }
 
-    CreateFields(structDeclaration : StructDeclaration) : list[Member]
+    CreateFields(structDeclaration : StructDeclaration) : Acc[list[Member]]
     {
         def typeDeclaration =  CreateType(structDeclaration.DeclarationSpecifierList);
         
@@ -139,7 +157,7 @@ namespace Nemerle.Pinvoke.CParser
         {
             | (_optionalPointer, (AssignmentExpression(_typeQualifiers, Some(a))) :: tail)  => Type.Array(GetExpressionValue(a), GetType(pointer, tail))
             | (Some(p),          declaratorTail)                                            => Type.Pointer(GetType(p.InnerPointer, declaratorTail))
-            | (None,             [])                                                        => typeDeclaration
+            | (None,             [])                                                        => typeDeclaration.value
             | _                                                                             => throw NotSupportedException()
         }
 
@@ -156,68 +174,72 @@ namespace Nemerle.Pinvoke.CParser
         }
 
         
-        match((structDeclaration.StructDeclaratorsList, typeDeclaration))
+        comp acc()
         {
-            | ([],  Type.Union(None, fields))   => [Member.UnnamedUnion(fields)]
-            | ([],  Type.Struct(None, fields))  => [Member.UnnamedStruct(fields)]
-            | (_,   _                       )   => structDeclaration.StructDeclaratorsList.Map(CreateField)
+            match((structDeclaration.StructDeclaratorsList, typeDeclaration.value))
+            {
+                | ([],  Type.Union(None, fields))   => return [Member.UnnamedUnion(fields)]
+                | ([],  Type.Struct(None, fields))  => return [Member.UnnamedStruct(fields)]
+                | (_,   _                       )   => return structDeclaration.StructDeclaratorsList.Map(CreateField)
+            }
         }
     }
 
-    CreateType(declarationSpecifiers : list[DeclarationSpecifier]) : Type
+    CreateType(declarationSpecifiers : list[DeclarationSpecifier]) : Acc[Type]
     {
-        match(declarationSpecifiers.OfType.[DeclarationSpecifier.TypeSpecifier]().Map(x => x.Value))
+        def typeSpecifiers = declarationSpecifiers.OfType.[DeclarationSpecifier.TypeSpecifier]().Map(x => x.Value);
+        def CreateBuiltInType(typeSpecifier)
         {
-        | [typeSpecifier] => 
-            match(typeSpecifier)
-            {
-            | TypeSpecifier.StructOrUnion as value => CreateStructOrUnionTypeDeclaration(value.Specifier)
-            | TypeSpecifier.TypedefName as value => Type.Typedef(value.Name)
-            | Void      => Type.BuiltIn(BuiltInType.Void())
-            | Char      => Type.BuiltIn(BuiltInType.Char())
-            | Short     => Type.BuiltIn(BuiltInType.Short())
-            | Int       => Type.BuiltIn(BuiltInType.Int())
-            | Long      => Type.BuiltIn(BuiltInType.Long())
-            | Float     => Type.BuiltIn(BuiltInType.Float())
-            | Double    => Type.BuiltIn(BuiltInType.Double())
-            | Signed    => Type.BuiltIn(BuiltInType.Int())
-            | Unsigned  => Type.BuiltIn(BuiltInType.UnsignedInt())
-            | Bool      => Type.BuiltIn(BuiltInType.Bool())
-            | Complex   => Type.BuiltIn(BuiltInType.Complex())
-            }
-        | typeSpecifierList =>
-            {
-                def builtInType = 
-                    match(typeSpecifierList)
-                    {
-                    | [TypeSpecifier.Signed() ,           TypeSpecifier.Char()]                                                             =>  BuiltInType.SignedChar();
-                    | [TypeSpecifier.Unsigned() ,         TypeSpecifier.Char()]                                                             =>  BuiltInType.UnsignedChar();
-                    | [TypeSpecifier.Signed() ,           TypeSpecifier.Short()]                                                            =>  BuiltInType.Short();
-                    | [TypeSpecifier.Short() ,            TypeSpecifier.Int()]                                                              =>  BuiltInType.Short();
-                    | [TypeSpecifier.Signed(),            TypeSpecifier.Short(),          TypeSpecifier.Int()]                              =>  BuiltInType.Short();
-                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Short()]                                                            =>  BuiltInType.UnsignedShort();
-                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Short(),          TypeSpecifier.Int() ]                             =>  BuiltInType.UnsignedShort();
-                    | [TypeSpecifier.Signed(),            TypeSpecifier.Int()]                                                              =>  BuiltInType.Int();
-                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Int()]                                                              =>  BuiltInType.UnsignedInt();
-                    | [TypeSpecifier.Signed(),            TypeSpecifier.Long()]                                                             =>  BuiltInType.Long();
-                    | [TypeSpecifier.Long(),              TypeSpecifier.Int()]                                                              =>  BuiltInType.Long();
-                    | [TypeSpecifier.Signed(),            TypeSpecifier.Long(),           TypeSpecifier.Int() ]                             =>  BuiltInType.Long();
-                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Long()]                                                             =>  BuiltInType.UnsignedLong();
-                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Long(),           TypeSpecifier.Int() ]                             =>  BuiltInType.UnsignedLong();
-                    | [TypeSpecifier.Long(),              TypeSpecifier.Long()]                                                             =>  BuiltInType.LongLong();
-                    | [TypeSpecifier.Signed(),            TypeSpecifier.Long(),           TypeSpecifier.Long()]                             =>  BuiltInType.LongLong();
-                    | [TypeSpecifier.Long(),              TypeSpecifier.Long(),           TypeSpecifier.Int() ]                             =>  BuiltInType.LongLong();
-                    | [TypeSpecifier.Signed(),            TypeSpecifier.Long(),           TypeSpecifier.Long(),       TypeSpecifier.Int() ] =>  BuiltInType.LongLong();
-                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Long(),           TypeSpecifier.Long(),]                            =>  BuiltInType.UnsignedLongLong();
-                    | [TypeSpecifier.Unsigned(),          TypeSpecifier.Long(),           TypeSpecifier.Long(),       TypeSpecifier.Int() ] =>  BuiltInType.UnsignedLongLong();
-                    | [TypeSpecifier.Long(),              TypeSpecifier.Double()]                                                           =>  BuiltInType.LongDouble();
-                    | [TypeSpecifier.Float(),             TypeSpecifier.Complex()]                                                          =>  BuiltInType.FloatComplex();
-                    | [TypeSpecifier.Double(),            TypeSpecifier.Complex()]                                                          =>  BuiltInType.DoubleComplex();
-                    | [TypeSpecifier.Long(),              TypeSpecifier.Double(),         TypeSpecifier.Complex(),]                         =>  BuiltInType.LongDoubleComplex();
-                    | _ => throw NotSupportedException()
-                    };
+            | TypeSpecifier.Void      => Type.BuiltIn(BuiltInType.Void())
+            | TypeSpecifier.Char      => Type.BuiltIn(BuiltInType.Char())
+            | TypeSpecifier.Short     => Type.BuiltIn(BuiltInType.Short())
+            | TypeSpecifier.Int       => Type.BuiltIn(BuiltInType.Int())
+            | TypeSpecifier.Long      => Type.BuiltIn(BuiltInType.Long())
+            | TypeSpecifier.Float     => Type.BuiltIn(BuiltInType.Float())
+            | TypeSpecifier.Double    => Type.BuiltIn(BuiltInType.Double())
+            | TypeSpecifier.Signed    => Type.BuiltIn(BuiltInType.Int())
+            | TypeSpecifier.Unsigned  => Type.BuiltIn(BuiltInType.UnsignedInt())
+            | TypeSpecifier.Bool      => Type.BuiltIn(BuiltInType.Bool())
+            | TypeSpecifier.Complex   => Type.BuiltIn(BuiltInType.Complex())
+        }
 
-                Type.BuiltIn(builtInType)
+        def CreateMultiTokenBuiltInType(typeSepcifierList)
+        {
+            | [TypeSpecifier.Signed() ,           TypeSpecifier.Char()]                                                             =>  BuiltInType.SignedChar();
+            | [TypeSpecifier.Unsigned() ,         TypeSpecifier.Char()]                                                             =>  BuiltInType.UnsignedChar();
+            | [TypeSpecifier.Signed() ,           TypeSpecifier.Short()]                                                            =>  BuiltInType.Short();
+            | [TypeSpecifier.Short() ,            TypeSpecifier.Int()]                                                              =>  BuiltInType.Short();
+            | [TypeSpecifier.Signed(),            TypeSpecifier.Short(),          TypeSpecifier.Int()]                              =>  BuiltInType.Short();
+            | [TypeSpecifier.Unsigned(),          TypeSpecifier.Short()]                                                            =>  BuiltInType.UnsignedShort();
+            | [TypeSpecifier.Unsigned(),          TypeSpecifier.Short(),          TypeSpecifier.Int() ]                             =>  BuiltInType.UnsignedShort();
+            | [TypeSpecifier.Signed(),            TypeSpecifier.Int()]                                                              =>  BuiltInType.Int();
+            | [TypeSpecifier.Unsigned(),          TypeSpecifier.Int()]                                                              =>  BuiltInType.UnsignedInt();
+            | [TypeSpecifier.Signed(),            TypeSpecifier.Long()]                                                             =>  BuiltInType.Long();
+            | [TypeSpecifier.Long(),              TypeSpecifier.Int()]                                                              =>  BuiltInType.Long();
+            | [TypeSpecifier.Signed(),            TypeSpecifier.Long(),           TypeSpecifier.Int() ]                             =>  BuiltInType.Long();
+            | [TypeSpecifier.Unsigned(),          TypeSpecifier.Long()]                                                             =>  BuiltInType.UnsignedLong();
+            | [TypeSpecifier.Unsigned(),          TypeSpecifier.Long(),           TypeSpecifier.Int() ]                             =>  BuiltInType.UnsignedLong();
+            | [TypeSpecifier.Long(),              TypeSpecifier.Long()]                                                             =>  BuiltInType.LongLong();
+            | [TypeSpecifier.Signed(),            TypeSpecifier.Long(),           TypeSpecifier.Long()]                             =>  BuiltInType.LongLong();
+            | [TypeSpecifier.Long(),              TypeSpecifier.Long(),           TypeSpecifier.Int() ]                             =>  BuiltInType.LongLong();
+            | [TypeSpecifier.Signed(),            TypeSpecifier.Long(),           TypeSpecifier.Long(),       TypeSpecifier.Int() ] =>  BuiltInType.LongLong();
+            | [TypeSpecifier.Unsigned(),          TypeSpecifier.Long(),           TypeSpecifier.Long(),]                            =>  BuiltInType.UnsignedLongLong();
+            | [TypeSpecifier.Unsigned(),          TypeSpecifier.Long(),           TypeSpecifier.Long(),       TypeSpecifier.Int() ] =>  BuiltInType.UnsignedLongLong();
+            | [TypeSpecifier.Long(),              TypeSpecifier.Double()]                                                           =>  BuiltInType.LongDouble();
+            | [TypeSpecifier.Float(),             TypeSpecifier.Complex()]                                                          =>  BuiltInType.FloatComplex();
+            | [TypeSpecifier.Double(),            TypeSpecifier.Complex()]                                                          =>  BuiltInType.DoubleComplex();
+            | [TypeSpecifier.Long(),              TypeSpecifier.Double(),         TypeSpecifier.Complex(),]                         =>  BuiltInType.LongDoubleComplex();
+            | _ => throw NotSupportedException()
+        }
+        
+        comp acc()
+        {
+            match(typeSpecifiers)
+            {
+                | [TypeSpecifier.StructOrUnion as value]    => returncomp CreateStructOrUnionTypeDeclaration(value.Specifier)
+                | [TypeSpecifier.TypedefName as value]      => return Type.Typedef(value.Name)
+                | [typeSpecifier]                           => return CreateBuiltInType(typeSpecifier)
+                | typeSpecifierList                         => return Type.BuiltIn(CreateMultiTokenBuiltInType(typeSpecifierList))
             }
         }
     }

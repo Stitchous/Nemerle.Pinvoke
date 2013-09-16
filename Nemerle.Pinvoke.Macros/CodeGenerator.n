@@ -46,7 +46,8 @@ namespace Nemerle.Pinvoke.Macros
             def typeReference = GetReferenceName(field.Type);
             def typeReferenceName = typeReference.ToString();
 
-            def annotation = FromTryGet(annotations.TryGetValue, typeReferenceName);// if (annotations.ContainsKey(typeReferenceName)) Some(annotations[typeReferenceName]) else None();
+            def annotation = FromTryGet(annotations.TryGetValue, typeReferenceName);
+            // if (annotations.ContainsKey(typeReferenceName)) Some(annotations[typeReferenceName]) else None();
             
             def type = 
                 match(annotation)
@@ -115,7 +116,9 @@ namespace Nemerle.Pinvoke.Macros
            def typeExpr = GetReferenceName(typedef.Type);
            def typedefNameSliceable = Splicable.Name(<[$(typedef.Name : usesite)]>);
         
-           def topDeclaration = TopDeclaration.Alias(typedefNameSliceable,  AttributesAndModifiers(NemerleModifiers.Public, []), Typarms.Empty, typeExpr);
+           def topDeclaration = TopDeclaration.Alias(typedefNameSliceable,  
+                AttributesAndModifiers(NemerleModifiers.Public, []), Typarms.Empty, typeExpr);
+
            ClassMember.TypeDeclaration(typedefNameSliceable, topDeclaration);
         }
 
@@ -128,14 +131,15 @@ namespace Nemerle.Pinvoke.Macros
             | Type.Pointer  => []
         } 
         
-        def GenerateTopLevelEntry(entry : TopLevelEntry) : list[ClassMember.TypeDeclaration]
+        def GenerateTopLevelEntry(entry)
         {
             | TopLevelEntry.Typedef as typedef  => typedef.Aliases.Map(GenerateAlias)
             | TopLevelEntry.Type as type        => GenerateType(type.Value)
             | TopLevelEntry.Function            => []
         }   
 
-        reflectionTree.Map(entry => GenerateTopLevelEntry(entry).Map(e => typer.Env.Define(e))).Flatten().Iter(b =>b.Compile());
+        foreach(builder in reflectionTree.Map(GenerateTopLevelEntry).Flatten().Map(typer.Env.Define))
+            builder.Compile();
     }
 
 

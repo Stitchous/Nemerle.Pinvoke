@@ -38,6 +38,12 @@
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <MacroReference Include="Nemerle.ComputationExpressions.Macros, Version=1.2.0.43, Culture=neutral, PublicKeyToken=e080a9c724e2bfcd">
+      <Name>Nemerle.ComputationExpressions.Macros</Name>
+      <AssemblyName>Nemerle.ComputationExpressions.Macros.dll</AssemblyName>
+      <HintPath>C:\Program Files (x86)\Nemerle\net-4.0\Nemerle.ComputationExpressions.Macros.dll</HintPath>
+      <Private>False</Private>
+    </MacroReference>
     <MacroReference Include="Nemerle.Peg.Macros">
       <Name>Nemerle.Peg.Macros</Name>
       <AssemblyName>Nemerle.Peg.Macros.dll</AssemblyName>
@@ -45,6 +51,11 @@
       <Private>False</Private>
     </MacroReference>
     <Reference Include="mscorlib" />
+    <Reference Include="Nemerle.ComputationExpressions, Version=1.2.0.43, Culture=neutral, PublicKeyToken=e080a9c724e2bfcd">
+      <Name>Nemerle.ComputationExpressions</Name>
+      <AssemblyName>Nemerle.ComputationExpressions.dll</AssemblyName>
+      <HintPath>C:\Program Files (x86)\Nemerle\net-4.0\Nemerle.ComputationExpressions.dll</HintPath>
+    </Reference>
     <Reference Include="Nemerle.Peg">
       <Name>Nemerle.Peg</Name>
       <AssemblyName>Nemerle.Peg.dll</AssemblyName>
@@ -75,6 +86,9 @@
     </MacroReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccumulatorBuilder.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Ast\Constants\Constant.n">
       <SubType>Code</SubType>
     </Compile>

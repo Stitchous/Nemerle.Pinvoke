@@ -68,6 +68,11 @@ namespace Nemerle.Pinvoke.Macros
     {
       Macros.DefineCTX(typer);
 
+          unless (Nemerle.Macros.ImplicitCTX().Manager.IsIntelliSenseMode)
+    {
+        _ = Debugger.Launch();
+    }
+
       def parser = DeclarationsParser();
       
       def str = parser.Parse(content);

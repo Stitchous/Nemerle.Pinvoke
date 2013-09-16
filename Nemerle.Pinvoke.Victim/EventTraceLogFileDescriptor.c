@@ -6,7 +6,7 @@
   union {
     ULONG LogFileMode;
     ULONG ProcessTraceMode;
-  };
+  } A;
   EVENT_TRACE                  CurrentEvent;
   TRACE_LOGFILE_HEADER         LogfileHeader;
   PEVENT_TRACE_BUFFER_CALLBACK BufferCallback;
