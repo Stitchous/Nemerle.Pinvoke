@@ -34,7 +34,6 @@ namespace Nemerle.Pinvoke.Macros
             .SelectMany(typedef => typedef.Aliases)
             .ToDictionary(alias => alias.Name, alias => alias.Type);
 
-
         Console.WriteLine($"..$aliases");
 
         def GetSize = CodeGenerator.GetSize(_, name => aliases[name]);
@@ -75,40 +74,37 @@ namespace Nemerle.Pinvoke.Macros
             classMember
         }
 
-        def GenerateStruct(structType : Type.Struct) : list[ClassMember.TypeDeclaration]
+        
+        def GenerateStructOrUnion(type, name, members) : list[ClassMember.TypeDeclaration]
         {
             def GenFields(memberList : list[Member], offset : int)
             {
                 def result = 
-                match(memberList, offset)
+                match(type, memberList)
                 {
-                | (Member.Field(name, Type.Struct(None, _) as fieldType)  :: tail,                _) => throw NotSupportedException()
-                | (Member.Field(name, Type.Union(None, _)  as fieldType)  :: tail,                _) => throw NotSupportedException()
-                | (Member.Field as head :: tail,       _)  =>  GenerateField(head, offset):: GenFields(tail, offset + GetSize(head))
-                | (Member.UnnamedStruct as head :: tail, _) => GenFields(head.Members, offset) + GenFields(tail, offset + GetSize(head));
-                | (Member.UnnamedUnion as head :: tail, _) =>   
+                | (Type.Struct, Member.Field as head :: tail)         => GenerateField(head, offset):: GenFields(tail, offset + GetSize(head))
+                | (Type.Union,  Member.Field as head :: tail)         => GenerateField(head, offset):: GenFields(tail, offset);
+                | (_,           Member.UnnamedStruct as head :: tail) => GenFields(head.Members, offset) + GenFields(tail, offset + GetSize(head));
+                | (_,           Member.UnnamedUnion as head :: tail)  =>   
                     {
                         def unionFields = head.Members;
                         def resultFields = unionFields.Map(field => GenFields([field], offset)).Flatten();
 
                         resultFields + GenFields(tail, offset + GetSize(head))
                     }
-                    
                 | _ => []
                 };
 
                 result
             }
-                        
-            def name = structType.Name.Map(n => n).WithDefault(GenerateNameForUnnamed().Id);
 
-            def members = (structType.Members, 0) |> GenFields;
+            def fields = (members, 0) |> GenFields;
                     
-            def structure = <[decl: public struct $(name : usesite)  { ..$members }]>;
+            def structure = <[decl: public struct $(name : usesite)  { ..$fields }]>;
+            
             structure.AddCustomAttribute(<[StructLayout(LayoutKind.Explicit)]>);
 
             [structure]
-
         }
 
         def GenerateAlias(typedef)
@@ -124,8 +120,8 @@ namespace Nemerle.Pinvoke.Macros
 
         def GenerateType(type)
         {
-            | Type.Struct   as value    => GenerateStruct(value) 
-            | Type.Union
+            | Type.Struct(name, members) 
+            | Type.Union(name, members) => GenerateStructOrUnion(type, name.WithDefault(GenerateNameForUnnamed(type).Id), members) 
             | Type.BuiltIn 
             | Type.Typedef 
             | Type.Pointer  => []
@@ -173,8 +169,8 @@ namespace Nemerle.Pinvoke.Macros
        
     private GetReferenceName(type : ReflectionTree.Type) : PExpr
     {
-        | Type.Struct as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(<[GenerateNameForUnnamed()]>)
-        | Type.Union  as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(<[GenerateNameForUnnamed()]>)
+        | Type.Struct as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(<[$(GenerateNameForUnnamed(type) : name)]>)
+        | Type.Union  as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(<[$(GenerateNameForUnnamed(type) : name)]>)
         | Type.BuiltIn as value   => GetBuiltInTypeInfo(value.Type)[0]
         | Type.Typedef as value   => <[ $(value.Name : dyn)]>
         | Type.Pointer as value   => GetReferenceName(value.Pointee)
@@ -206,7 +202,8 @@ namespace Nemerle.Pinvoke.Macros
         | _                                  => throw NotSupportedException()        
     }
         
-    GenerateNameForUnnamed() : Parsetree.Name
+    [Memoize]
+    GenerateNameForUnnamed(type : ReflectionTree.Type) : Parsetree.Name
     {
         Macros.NewSymbol("unnamed");
     }

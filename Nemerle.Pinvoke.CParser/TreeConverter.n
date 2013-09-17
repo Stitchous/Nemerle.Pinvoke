@@ -22,23 +22,22 @@ namespace Nemerle.Pinvoke.CParser
 {
   public module TreeConverter
   {
-
-  
     type Acc[T] = Nemerle.Pinvoke.CParser.AccumulatorBuilder[TopLevelEntry].Accumulator[T];
     type acc = Nemerle.Pinvoke.CParser.AccumulatorBuilder[TopLevelEntry];
 
-
     public Convert(translationUnit : TranslationUnit) : list[TopLevelEntry]
     {
-        translationUnit.ExternalDeclarations.Map(x =>
+        def result = translationUnit.ExternalDeclarations.Map(x =>
             match(x)
             {
                 | ExternalDeclaration.Declaration as declaration => CreateTopLevelEntry(declaration.Value)
                 | _  => throw NotImplementedException()
-            }).Flatten()
+            });
+
+        result.Map(d => d.value).Flatten() + result.Map(d => d.accumulator).Flatten()
     }
     
-    CreateTopLevelEntry(declaration : Declaration) : list[TopLevelEntry]
+    CreateTopLevelEntry(declaration : Declaration) : Acc[list[TopLevelEntry]]
     {
         def normalDeclaration = 
             match(declaration)
@@ -51,33 +50,40 @@ namespace Nemerle.Pinvoke.CParser
         {
             | DeclarationSpecifier.StorageClass as value :: tail 
                 => match(value.Value)
-                    {
-                        | StorageClassSpecifier.Typedef => CreateTypedefEntry(tail, normalDeclaration.InitDeclarationList);
-                        | _ => throw NotImplementedException()
-                    }
+                {
+                    | StorageClassSpecifier.Typedef => CreateTypedefEntry(tail, normalDeclaration.InitDeclarationList);
+                    | _ => throw NotImplementedException()
+                }
             | _ => throw NotImplementedException()
         }
     }
 
-    CreateTypedefEntry(declarationSpecifiers : list[DeclarationSpecifier], initDeclarators : list[InitDeclarator]) :  list[TopLevelEntry]
+    CreateTypedefEntry(declarationSpecifiers : list[DeclarationSpecifier], initDeclarators : list[InitDeclarator]) :  Acc[list[TopLevelEntry]]
     {
-        def typeDeclaration = CreateType(declarationSpecifiers).value;
+        comp acc()
+        {
+            defcomp typeDeclaration = CreateType(declarationSpecifiers);
 
-        def aliases = 
-        initDeclarators.Map(
-            initDeclarator =>
-                {
+            def aliases = 
+                initDeclarators.Map(
+                    initDeclarator =>
+                    {
                     match(initDeclarator)
                     {
                     | InitDeclarator(declarator, None) => NormalizePointers(typeDeclaration, ParseDeclarator(declarator))
                     | _ => throw NotSupportedException()
                     }
                 }) 
-        .Map(TypedefAlias);
+                .Map(TypedefAlias);
 
-        def newTypeDeclarations = if(typeDeclaration is Type.Struct || typeDeclaration is Type.Union)  [TopLevelEntry.Type(typeDeclaration)] else [];
+            def newTypeDeclarations = 
+                if(typeDeclaration is Type.Struct || typeDeclaration is Type.Union)  
+                    [TopLevelEntry.Type(typeDeclaration)] 
+                else 
+                    [];
         
-        TopLevelEntry.Typedef(aliases) :: newTypeDeclarations;
+            return TopLevelEntry.Typedef(aliases) :: newTypeDeclarations;
+        }
     }
 
     ParseDeclarator(declarator : Declarator) : string * option[Pointer]
@@ -110,7 +116,7 @@ namespace Nemerle.Pinvoke.CParser
     {
         match(declarator)
         {
-            | (name, None) => (name, typeDeclaration)
+            | (name, None)          => (name, typeDeclaration)
             | (name, Some(pointer)) => NormalizePointers(Type.Pointer(typeDeclaration), (name, pointer.InnerPointer))
         }
     }
@@ -127,18 +133,19 @@ namespace Nemerle.Pinvoke.CParser
                     
                     def tops = members.Map(m => m.accumulator).Flatten();
                     def fields = members.Map(m => m.value).Flatten();
-
                     
                     defcomp fields_ = Acc(fields, tops);
-                    //defcomp r = Acc(tops, field)
-                                      
                     
                     def optionalName = value.Name.Map(i => i.Id);
-                    match(value.StructOrUnion)
-                    {
-                        | StructOrUnion.Struct => return Type.Struct(optionalName, fields_)
-                        | StructOrUnion.Union  => return Type.Union(optionalName, fields_)
-                    }
+                    
+                    def type = 
+                        match(value.StructOrUnion)
+                        {
+                        | StructOrUnion.Struct => Type.Struct(optionalName, fields_)
+                        | StructOrUnion.Union  => Type.Union(optionalName, fields_)
+                        }
+                    
+                    returncomp Acc(type, if(optionalName.IsNone) [TopLevelEntry.Type(type)] else []);
                 }
             | _ => throw NotImplementedException()
         }}
@@ -151,36 +158,36 @@ namespace Nemerle.Pinvoke.CParser
 
     CreateFields(structDeclaration : StructDeclaration) : Acc[list[Member]]
     {
-        def typeDeclaration =  CreateType(structDeclaration.DeclarationSpecifierList);
-        
-        def GetType(pointer : option[Pointer], directDeclaratorTail : list[DirectDeclaratorTailElement]) : Type
-        {
-            | (_optionalPointer, (AssignmentExpression(_typeQualifiers, Some(a))) :: tail)  => Type.Array(GetExpressionValue(a), GetType(pointer, tail))
-            | (Some(p),          declaratorTail)                                            => Type.Pointer(GetType(p.InnerPointer, declaratorTail))
-            | (None,             [])                                                        => typeDeclaration.value
-            | _                                                                             => throw NotSupportedException()
-        }
-
-        def CreateField(structDeclarator : StructDeclarator) : Member
-        {
-            | StructDeclarator.NormalDeclarator(Declarator(_, DirectDeclarator(DirectDeclaratorHead.Simple(name), _))) as normalDeclarator=>
-                {
-                    def pointer = normalDeclarator.Value.Pointer;
-                    def directDeclaratorTail = normalDeclarator.Value.DirectDeclarator.Tail;
-                    
-                    Member.Field(name.Id, GetType(pointer, directDeclaratorTail))
-                }
-            | _ => throw NotSupportedException()
-        }
-
-        
         comp acc()
         {
-            match((structDeclaration.StructDeclaratorsList, typeDeclaration.value))
+            defcomp typeDeclaration =  CreateType(structDeclaration.DeclarationSpecifierList);
+        
+            def GetType(pointer, directDeclaratorTail) : Type
             {
-                | ([],  Type.Union(None, fields))   => return [Member.UnnamedUnion(fields)]
-                | ([],  Type.Struct(None, fields))  => return [Member.UnnamedStruct(fields)]
-                | (_,   _                       )   => return structDeclaration.StructDeclaratorsList.Map(CreateField)
+        
+            | (_optionalPointer, (DirectDeclaratorTailElement.AssignmentExpression(_typeQualifiers, Some(a))) :: tail)  
+                                                                                            => Type.Array(GetExpressionValue(a), GetType(pointer, tail))
+            | (Some(p),          declaratorTail)                                            => Type.Pointer(GetType(p.InnerPointer, declaratorTail))
+            | (None,             [])                                                        => typeDeclaration
+            | _                                                                             => throw NotSupportedException()
+            }
+
+            def CreateField(structDeclarator : StructDeclarator) : Member
+            {
+                | StructDeclarator.NormalDeclarator(Declarator(_, DirectDeclarator(DirectDeclaratorHead.Simple(name), _))) as normalDeclarator=>
+                    {
+                        def pointer = normalDeclarator.Value.Pointer;
+                        def directDeclaratorTail = normalDeclarator.Value.DirectDeclarator.Tail;
+                        Member.Field(name.Id, GetType(pointer, directDeclaratorTail))
+                    }
+                | _ => throw NotSupportedException()
+            }
+        
+            match((structDeclaration.StructDeclaratorsList, typeDeclaration))
+            {
+                | ([],          Type.Union(None, fields))   => return [Member.UnnamedUnion(fields)]
+                | ([],          Type.Struct(None, fields))  => return [Member.UnnamedStruct(fields)]
+                | (declarators, _                       )   => return declarators.Map(CreateField)
             }
         }
     }
@@ -236,7 +243,7 @@ namespace Nemerle.Pinvoke.CParser
         {
             match(typeSpecifiers)
             {
-                | [TypeSpecifier.StructOrUnion as value]    => returncomp CreateStructOrUnionTypeDeclaration(value.Specifier)
+                | [TypeSpecifier.StructOrUnion as value]    => returncomp CreateStructOrUnionTypeDeclaration(value.Specifier);
                 | [TypeSpecifier.TypedefName as value]      => return Type.Typedef(value.Name)
                 | [typeSpecifier]                           => return CreateBuiltInType(typeSpecifier)
                 | typeSpecifierList                         => return Type.BuiltIn(CreateMultiTokenBuiltInType(typeSpecifierList))
