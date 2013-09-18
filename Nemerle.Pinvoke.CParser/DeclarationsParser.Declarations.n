@@ -24,7 +24,7 @@ namespace Nemerle.Pinvoke.CParser
      // declarationSpecifiers initDeclaratorList? s ';'s
      normalDeclaration(declarationSpecifiers : list[DeclarationSpecifier], initDeclarationList : option[list[InitDeclarator]], _ : NToken) : Declaration
      {
-        Declaration.Normal(declarationSpecifiers, initDeclarationList.WithDefault([]))
+        Declaration.Normal(declarationSpecifiers, initDeclarationList ?? [])
      }
 
      // "_Static_assert"s '('s constantExpression ','s stringLiteral ')'s
@@ -234,7 +234,7 @@ namespace Nemerle.Pinvoke.CParser
      // specifierQualifierList structDeclaratorList? ";"s;
      normalStructDeclaration(declarationSpecifierList : list[DeclarationSpecifier], structDeclaratorList : option[list[StructDeclarator]], _ : NToken) : StructDeclaration
      {
-        StructDeclaration(declarationSpecifierList, structDeclaratorList.WithDefault([]))
+        StructDeclaration(declarationSpecifierList, structDeclaratorList ?? [])
      } 
      
      typeQualifierSpecifierQualifierList(head : TypeQualifier, tail : list[DeclarationSpecifier]) : list[DeclarationSpecifier]
@@ -346,12 +346,12 @@ namespace Nemerle.Pinvoke.CParser
 
      assignmentExpressionDirectDeclaratorTailElement(_ : NToken, typeQualifiers : option[list[TypeQualifier]], assignmentExpression : option[AssignmentExpression], _ : NToken) : DirectDeclaratorTailElement
      {
-        DirectDeclaratorTailElement.AssignmentExpression(typeQualifiers.WithDefault([]), assignmentExpression)
+        DirectDeclaratorTailElement.AssignmentExpression(typeQualifiers ?? [], assignmentExpression)
      }
 
      static1AssignmentExpressionDirectDeclaratorTailElement(_ : NToken, _ : NToken, typeQualifiers : option[list[TypeQualifier]], assignmentExpression : AssignmentExpression, _ : NToken) : DirectDeclaratorTailElement
      {
-        DirectDeclaratorTailElement.StaticAssignmentExpression1(typeQualifiers.WithDefault([]), assignmentExpression)
+        DirectDeclaratorTailElement.StaticAssignmentExpression1(typeQualifiers ?? [], assignmentExpression)
      }
 
      static2AssignmentExpressionDirectDeclaratorTailElement(_ : NToken, typeQualifiers : list[TypeQualifier], _ : NToken, assignmentExpression : AssignmentExpression, _ : NToken) : DirectDeclaratorTailElement
@@ -361,7 +361,7 @@ namespace Nemerle.Pinvoke.CParser
 
      asterikDirectDeclaratorTailElement(_ : NToken, typeQualifiers : option[list[TypeQualifier]], _ : NToken, _ : NToken) : DirectDeclaratorTailElement
      {
-        DirectDeclaratorTailElement.Asterik(typeQualifiers.WithDefault([]))
+        DirectDeclaratorTailElement.Asterik(typeQualifiers ?? [])
      }
 
      functionWithParametersDirectDeclaratorTailElement(_ : NToken, _parameters : (list[ParameterDeclaration] * bool), _ : NToken) : DirectDeclaratorTailElement
@@ -422,12 +422,12 @@ namespace Nemerle.Pinvoke.CParser
 
      assignmentExpressionDirectAbstractDeclaratorTailElement(_ : NToken, typeQualifierList : option[list[DeclarationSpecifiers.TypeQualifier]], assignmentExpression : option[AssignmentExpression], _ : NToken) : Declarator.DirectAbstractDeclaratorTailElement
      {
-        DirectAbstractDeclaratorTailElement.AssignmentExpression(typeQualifierList.WithDefault([]), assignmentExpression)
+        DirectAbstractDeclaratorTailElement.AssignmentExpression(typeQualifierList ?? [], assignmentExpression)
      }
      
      static1AssignmentExpressionDirectAbstractDeclaratorTailElement(_ : NToken, _ : NToken, typeQualifierList : option[list[DeclarationSpecifiers.TypeQualifier]], assignmentExpression : AssignmentExpression, _ : NToken) : Declarator.DirectAbstractDeclaratorTailElement
      {
-        DirectAbstractDeclaratorTailElement.StaticAssignmentExpression1(typeQualifierList.WithDefault([]), assignmentExpression)
+        DirectAbstractDeclaratorTailElement.StaticAssignmentExpression1(typeQualifierList ?? [], assignmentExpression)
      }
 
      static2AssignmentExpressionDirectAbstractDeclaratorTailElement(_ : NToken, typeQualifierList : list[DeclarationSpecifiers.TypeQualifier], _ : NToken, assignmentExpression : AssignmentExpression, _ : NToken) : DirectAbstractDeclaratorTailElement
@@ -472,7 +472,7 @@ namespace Nemerle.Pinvoke.CParser
 
      initializerListElement(designation : option[list[Designator]], initializer : Initializer) : InitializerListElement
      {
-        InitializerListElement(designation.WithDefault([]), initializer)
+        InitializerListElement(designation ?? [], initializer)
      }
 
      initializerList(head : InitializerListElement, tail : List[(NToken * InitializerListElement)]) : list[InitializerListElement]

@@ -77,9 +77,9 @@ namespace Nemerle.Pinvoke.Macros
       
       def str = parser.Parse(content);
 
-      def reflectionTree = str.Map(CParser.TreeConverter.Convert).WithDefault([]);
+      def reflectionTree = str.Map(CParser.TreeConverter.Convert);
 
-      CodeGenerator.Generate(reflectionTree, typer, annotations)
+      CodeGenerator.Generate(reflectionTree ?? [], typer, annotations)
     }
 }
 }

@@ -46,7 +46,6 @@ namespace Nemerle.Pinvoke.Macros
             def typeReferenceName = typeReference.ToString();
 
             def annotation = FromTryGet(annotations.TryGetValue, typeReferenceName);
-            // if (annotations.ContainsKey(typeReferenceName)) Some(annotations[typeReferenceName]) else None();
             
             def type = 
                 match(annotation)
@@ -60,16 +59,15 @@ namespace Nemerle.Pinvoke.Macros
             match(field.Type)
             {
                 | Type.Array as arr => classMember.AddCustomAttribute(<[MarshalAs(UnmanagedType.ByValArray, SizeConst = $(arr.Size))]>);
-                | _                 => {}
+                | _                 => ()
             }
 
             classMember.AddCustomAttribute(<[FieldOffset($offset)]>);
 
-            foreach(attribute in annotation.Map(ann => ann.Attributes).WithDefault([]))
+            foreach(attribute in annotation.Map(ann => ann.Attributes) ?? [])
             {
                 classMember.AddCustomAttribute(attribute);
             }
-
 
             classMember
         }
@@ -121,7 +119,7 @@ namespace Nemerle.Pinvoke.Macros
         def GenerateType(type)
         {
             | Type.Struct(name, members) 
-            | Type.Union(name, members) => GenerateStructOrUnion(type, name.WithDefault(GenerateNameForUnnamed(type).Id), members) 
+            | Type.Union(name, members) => GenerateStructOrUnion(type, name ?? GenerateNameForUnnamed(type).Id, members) 
             | Type.BuiltIn 
             | Type.Typedef 
             | Type.Pointer  => []
@@ -169,8 +167,8 @@ namespace Nemerle.Pinvoke.Macros
        
     private GetReferenceName(type : ReflectionTree.Type) : PExpr
     {
-        | Type.Struct as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(<[$(GenerateNameForUnnamed(type) : name)]>)
-        | Type.Union  as value    => value.Name.Map(n => <[$(n : dyn)]>).WithDefault(<[$(GenerateNameForUnnamed(type) : name)]>)
+        | Type.Struct as value    => value.Name.Map(n => <[$(n : dyn)]>) ?? <[$(GenerateNameForUnnamed(type) : name)]>
+        | Type.Union  as value    => value.Name.Map(n => <[$(n : dyn)]>) ?? <[$(GenerateNameForUnnamed(type) : name)]>
         | Type.BuiltIn as value   => GetBuiltInTypeInfo(value.Type)[0]
         | Type.Typedef as value   => <[ $(value.Name : dyn)]>
         | Type.Pointer as value   => GetReferenceName(value.Pointee)
