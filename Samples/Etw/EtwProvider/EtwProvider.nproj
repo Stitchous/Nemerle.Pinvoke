@@ -77,16 +77,16 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <MacroProjectReference Include="..\Nemerle.Pinvoke.Macros\Nemerle.Pinvoke.Macros.nproj">
+    <Content Include="Interop.c">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <MacroProjectReference Include="..\..\..\Nemerle.Pinvoke.Macros\Nemerle.Pinvoke.Macros.nproj">
       <Name>Nemerle.Pinvoke.Macros</Name>
       <Project>{fa2e9448-79b6-49b0-8116-534a52374d61}</Project>
       <Private>False</Private>
     </MacroProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Interop.c">
-      <SubType>Content</SubType>
-    </Content>
   </ItemGroup>
   <Import Project="$(Nemerle)\Nemerle.MSBuild.targets" />
   <!--
