@@ -71,6 +71,9 @@
     <Compile Include="Functions.n">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="MofItemMarshaler.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
     <Compile Include="TraceHandle.n">
       <SubType>Code</SubType>

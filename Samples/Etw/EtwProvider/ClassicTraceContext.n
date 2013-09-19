@@ -37,7 +37,9 @@ namespace EtwProvider
                 evnt.Class.Version = 1;
                 evnt.Class.Level = TRACE_LEVEL_VERBOSE;
 
-                def result = Functions.TraceEvent(Session, ref evnt);
+                def ptr = MofItemMarshaler.Marshal(evnt, [1u :> object, 2u :> object, 0xFFFFFFFFFFFFFFFF :> System.UInt64]);
+                
+                def result = Functions.TraceEvent(Session, ptr);
 
                 Console.WriteLine($"TraceEvent result=$result");
             }

@@ -1,0 +1,49 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Extensions;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshal;
+namespace EtwProvider
+{
+  module MofItemMarshaler
+  {
+    public Marshal(header : EVENT_TRACE_HEADER, items : list[object]) : IntPtr
+    {
+        def headerSize = SizeOf(typeof(EVENT_TRACE_HEADER));
+        def bufferSize = headerSize + 
+                         SizeOf(typeof(MOF_FIELD)) * items.Length;
+        
+        def buffer = AllocHGlobal(bufferSize);
+        
+        StructureToPtr(header <- { Size = bufferSize :> ushort; }, buffer, false);
+        
+        def MarshalMof(items, ptr : IntPtr)
+        {
+            | (head::tail, _) =>
+                {
+                    def size = SizeOf(head) :> uint;
+                    def mof  = MOF_FIELD() <-
+                    {
+                        DataPtr     = ptr.ToInt64() :> ulong;
+                        Length      = size;
+                        DataType    = 0;
+                    }
+                    StructureToPtr(mof, ptr, false);
+                    MarshalMof(tail, ptr : IntPtr + size :> int)
+                }
+            | ([], _) => ()
+        }
+
+        MarshalMof(items, buffer :> IntPtr + headerSize);
+        buffer
+    }
+    
+    
+  }
+}

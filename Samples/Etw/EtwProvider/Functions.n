@@ -33,6 +33,6 @@ namespace EtwProvider
     public static extern UnregisterTraceGuids(regHandle : ulong) : int;
 
     [DllImport("advapi32", CharSet = CharSet.Unicode, ExactSpelling = true)]
-    public static extern TraceEvent(SessionHandle : TRACEHANDLE, EventTrace : ref PEVENT_TRACE_HEADER) : uint;
+    public static extern TraceEvent(SessionHandle : TRACEHANDLE, EventTrace : IntPtr) : uint;
   }
 }
