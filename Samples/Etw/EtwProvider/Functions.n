@@ -13,20 +13,13 @@ namespace EtwProvider
 {
   public module Functions
   {
+    public delegate EtwProc(requestCode : uint, requestContext : ClassicTraceContext, bufferSize : IntPtr, buffer : IntPtr) : uint;
 
-    public class ClassicTraceContext
-    {
-        public Session : ulong { get; set; }
-        public IsEnabled : bool { get ; set;}
-    }
-
-    public delegate EtwProc(requestCode : uint, requestContext : Functions.ClassicTraceContext, bufferSize : IntPtr, buffer : IntPtr) : uint;
-
-    [DllImport("advapi32", EntryPoint = "RegisterTraceGuidsW", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    [DllImport("advapi32", CharSet = CharSet.Unicode)]
     public static extern RegisterTraceGuids(
         cbFunc      : EtwProc, 
         context     : ClassicTraceContext, 
-        controlGuid : ref Guid, 
+        [MarshalAs(UnmanagedType.LPStruct)]controlGuid : Guid, 
         guidCount   : uint, 
         guidReg     : array[TRACE_GUID_REGISTRATION], 
         mofImagePath : IntPtr, 
@@ -38,5 +31,8 @@ namespace EtwProvider
 
     [DllImport("advapi32", CharSet = CharSet.Unicode, ExactSpelling = true)]
     public static extern UnregisterTraceGuids(regHandle : ulong) : int;
+
+    [DllImport("advapi32", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    public static extern TraceEvent(SessionHandle : TRACEHANDLE, EventTrace : ref PEVENT_TRACE_HEADER) : uint;
   }
 }

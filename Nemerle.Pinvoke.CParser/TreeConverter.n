@@ -68,12 +68,10 @@ namespace Nemerle.Pinvoke.CParser
                 initDeclarators.Map(
                     initDeclarator =>
                     {
-                    match(initDeclarator)
-                    {
                     | InitDeclarator(declarator, None) => NormalizePointers(typeDeclaration, ParseDeclarator(declarator))
                     | _ => throw NotSupportedException()
                     }
-                }) 
+                ) 
                 .Map(TypedefAlias);
 
             def newTypeDeclarations = 
@@ -153,7 +151,7 @@ namespace Nemerle.Pinvoke.CParser
 
     GetExpressionValue(_ : AssignmentExpression) : int
     {
-        5
+        8
     }
 
     CreateFields(structDeclaration : StructDeclaration) : Acc[list[Member]]

@@ -16,44 +16,28 @@ using EtwProvider.EtwTracer;
 
 module Program
 {
-
-  public class Context
-  {}
-
   Main() : void
   {
-    mutable handle : TraceHandle;
-
-    //def etwProc : EtwProc = (requestCode : uint, requestContext : IntPtr, bufferSize : IntPtr, buffer : IntPtr) => {0u};
-    def etwProc : EtwProc = ControlCallback;
+    
     def context = ClassicTraceContext();
-    mutable providerGuid = Guid("{C7319460-4E61-4E59-8CE1-621C9CBA384F}");
+    def providerGuid = Guid("{47C1545B-EAA1-4764-A132-59157E5D2690}");
+    def categoryGuid = Guid("{BA6A3C02-F1F6-4653-8A09-B2E249448517}");
+    def eventType    = 100ub;
+
+    using (EtwTracer.RegisterProvider(providerGuid, context))
+    {
     
-    def eventGuids = array[TRACE_GUID_REGISTRATION() <- { Guid = providerGuid; RegHandle = IntPtr.Zero; }];
+        _ = Task.Factory.StartNew(Action(() 
+            =>{
+                foreach(i in $[0..10000])
+                {
+                    Console.WriteLine(i);
+                    Thread.Sleep(1000);
+                    context.TraceEvent(categoryGuid, eventType);
+                }
+            }));
 
-    mutable regHandle;
-    def result = RegisterTraceGuids(etwProc, context, ref providerGuid,  1, eventGuids, IntPtr.Zero, IntPtr.Zero, out regHandle);
-    
-    Console.WriteLine(result);
-    Console.WriteLine(regHandle);
-
-
-    _ = Task.Factory.StartNew(Action(() 
-        =>{
-            foreach(i in $[0..10000])
-            {
-                Console.WriteLine(i);
-                Thread.Sleep(1000)
-                
-            }
-          }));
-       
-
-
-    _ = Console.ReadKey();
-    def result2 =  UnregisterTraceGuids(regHandle);
-    Console.WriteLine(result2);
-    //Console.WriteLine(regHandle.DangerousGetHandle());
-    //regHandle.Dispose();
+        _ = Console.ReadKey();
+    }
   }
 }

@@ -1,0 +1,52 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using Nemerle.Extensions;
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+
+using System.Runtime.InteropServices;
+
+namespace EtwProvider
+{
+    public class ClassicTraceContext
+    {
+        public Session : ulong { get; set; }
+        public IsEnabled : bool { get ; set;}
+
+        public TraceEvent(eventCategory : Guid,  eventType : byte) : void 
+        {
+            def WNODE_FLAG_TRACED_GUID = 0x00020000u;
+            def TRACE_LEVEL_VERBOSE    = 5ub;
+            when(IsEnabled)
+            {
+                mutable evnt = EVENT_TRACE_HEADER() <-
+                {
+                    Size = Marshal.SizeOf(typeof(EVENT_TRACE_HEADER)) :> System.UInt16;
+
+                    Guid = eventCategory;
+                    Flags = WNODE_FLAG_TRACED_GUID;
+                }
+
+                evnt.Class.Type = eventType;
+                evnt.Class.Version = 1;
+                evnt.Class.Level = TRACE_LEVEL_VERBOSE;
+
+                def result = Functions.TraceEvent(Session, ref evnt);
+
+                Console.WriteLine($"TraceEvent result=$result");
+            }
+        }
+
+        [Memoize]
+        public GetProcessId() : uint
+        {
+            Process.GetCurrentProcess().Id :> uint
+        }
+    }
+}

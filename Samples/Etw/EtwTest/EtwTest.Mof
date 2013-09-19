@@ -1,0 +1,26 @@
+#pragma namespace("\\\\.\\root\\wmi")
+#pragma classflags("forceupdate")
+#pragma autorecover
+
+[dynamic: ToInstance, Description("EtwTestProvider"),
+ Guid("{47C1545B-EAA1-4764-A132-59157E5D2690}")]
+class EtwTestProvider : EventTrace
+{
+};
+
+[dynamic: ToInstance, Description("EtwTestCategory"): Amended,
+ Guid("{BA6A3C02-F1F6-4653-8A09-B2E249448517}"),
+ EventVersion(1)]
+class EtwTestCategory : EtwTestProvider
+{
+};
+
+[dynamic: ToInstance, Description("EtwTestCategory_Data"): Amended,
+ EventType(100),
+ EventName("EtwTestCategory_Data")]
+class EtwTestCategory_Data : EtwTestCategory
+{
+    [WmiDataId(1), Description("Component ID"): Amended, read] uint32 ComponentId;
+    [WmiDataId(2), Description("Operation ID"): Amended, read] uint32 OperationId;
+	[WmiDataId(3), Description("Duration"): Amended, read] uint64 Duration;
+};
