@@ -235,6 +235,9 @@
     <Content Include="Gallery\Bugs\test2.c">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="Gallery\Bugs\test3.c">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="packages.config">
       <SubType>Content</SubType>
     </Content>

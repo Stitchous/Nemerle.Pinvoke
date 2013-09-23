@@ -16,7 +16,11 @@ namespace EtwProvider
     TypeAnnotations = [
         LPTSTR  : (string,          MarshalAs(UnmanagedType.LPWStr)), 
         LPCGUID : (System.Object),
-        HANDLE  : (IntPtr)])]
+        GUID    : (System.Guid),
+        HANDLE  : (IntPtr),
+        POBJECT : (object)]
+        ),
+        ]
 
   public class Class1
   {

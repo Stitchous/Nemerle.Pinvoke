@@ -62,10 +62,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.n" />
+    <Compile Include="ClassicTraceContext.n">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="EtwTracer.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Functions.n">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MofItemMarshaler.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
