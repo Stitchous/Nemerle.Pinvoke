@@ -1,16 +1,10 @@
 ﻿using Nemerle;
-using Nemerle.Assertions;
-using Nemerle.Collections;
 using Nemerle.Compiler;
 using Nemerle.Compiler.Parsetree;
-using Nemerle.Compiler.Typedtree;
-using Nemerle.Text;
-using Nemerle.Utility;
- 
+
 using System;
 using SCG = System.Collections.Generic;
 using System.Linq;
-using System.ComponentModel;
  
 namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
 {
@@ -20,7 +14,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
     public macro NotifyPropertyChanged(tb : TypeBuilder, raiseChangedMethod = null)
     {
         ignore(raiseChangedMethod);
-        
+
         if(tb.TrySetMacroAttributeSpecified(this))
         {
             AddInterface(tb);
@@ -43,7 +37,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
     public macro NotifyPropertyChanged(tb : TypeBuilder, raiseChangedMethod =  null)
     {
         ignore(raiseChangedMethod);
-        
+
         when(tb.TrySetMacroAttributeSpecified(this))
             FixProperties(tb, GetMacroName());
     }
@@ -51,9 +45,9 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
     public macro RaisePropertyChanged(property : PExpr, raiseChangedMethod = <[ () ]>)
     {
         CreateRaiseChangedMethodCall(Macros.ImplicitCTX().CurrentTypeBuilder,
-                                    property,
-                                    raiseChangedMethod,
-                                    GetMacroName());
+                                     property,
+                                     raiseChangedMethod,
+                                     GetMacroName());
     }
 
     [MacroUsage(MacroPhase.BeforeInheritance, MacroTargets.Property, Inherited = false, AllowMultiple = false)]  
@@ -77,47 +71,51 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
             tb.AddImplementedInterface(<[ System.ComponentModel.INotifyPropertyChanged ]>);
         }
 
-        public ImplementInterface(typer            : Typer, 
-                                tb                 : TypeBuilder, 
-                                raiseChangedMethod : PExpr, 
-                                macroName          : string) : void
+        public ImplementInterface(typer              : Typer, 
+                                  tb                 : TypeBuilder, 
+                                  raiseChangedMethod : PExpr, 
+                                  macroName          : string) : void
         {
-            Macros.DefineCTX(typer);
-
-            when(tb.IsDelegate  || 
-                 tb.IsEnum      || 
-                 tb.IsInterface || 
-                 tb.IsModule)
-                Message.Error(tb.Location, 
-                              $"Macro $macroName is not valid on this declaration type. It is only valid on 'class' declarations.");
-
-            def interfaceAlreadyImplemented = tb.BaseClass.TryRequire(<[ ttype: System.ComponentModel.INotifyPropertyChanged ]>);
-
-            def raiseChangedMethodName = match(raiseChangedMethod)
-                                         {
-                                             | <[ $(methodName : name) ]> => methodName
-                                             | <[()]> => _defaultRaiseChangedMethodName
-                                             | e => Message.Error(e.Location, 
-                                                                   $"Specify a valid method for property changed event raising (e.g. $macroName(OnPropertyChanged)).");
-                                                    _defaultRaiseChangedMethodName
-                                         };
-
-            unless (interfaceAlreadyImplemented)
+            def ImplementInterface()
             {
-                tb.Define(<[ decl: public event PropertyChanged : System.ComponentModel.PropertyChangedEventHandler; ]>);
+                Macros.DefineCTX(typer);
 
-                def raiseChangedMethodDecl = <[ decl:
-                                                protected virtual $(raiseChangedMethodName : name)(propertyName: string) : void
+                def interfaceAlreadyImplemented = tb.BaseClass.TryRequire(<[ ttype: System.ComponentModel.INotifyPropertyChanged ]>);
+
+                def raiseChangedMethodName = match(raiseChangedMethod)
                                                 {
-                                                    def handler = PropertyChanged;
-                                                    when (handler != null)
-                                                        handler(this, System.ComponentModel.PropertyChangedEventArgs(propertyName));
-                                                }]>;
+                                                    | <[ $(methodName : name) ]> => methodName
+                                                    | <[()]> => _defaultRaiseChangedMethodName
+                                                    | e => Message.Error(e.Location, 
+                                                                    $"Specify a valid method for property changed event raising (e.g. $macroName(OnPropertyChanged)).");
+                                                        _defaultRaiseChangedMethodName
+                                                };
 
-                tb.Define(raiseChangedMethodDecl);
+                unless (interfaceAlreadyImplemented)
+                {
+                    tb.Define(<[ decl: public event PropertyChanged : System.ComponentModel.PropertyChangedEventHandler; ]>);
+
+                    def raiseChangedMethodDecl = <[ decl:
+                                                    protected virtual $(raiseChangedMethodName : name)(propertyName: string) : void
+                                                    {
+                                                        def handler = PropertyChanged;
+                                                        when (handler != null)
+                                                            handler(this, System.ComponentModel.PropertyChangedEventArgs(propertyName));
+                                                    }]>;
+
+                    tb.Define(raiseChangedMethodDecl);
+                }
+
+                SetRaiseChangedMethodName(tb, raiseChangedMethodName);
             }
 
-            SetRaiseChangedMethodName(tb, raiseChangedMethodName);
+            if (tb.IsDelegate  || 
+                tb.IsEnum      || 
+                tb.IsInterface || 
+                tb.IsModule)
+                Message.Error(tb.Location, $"Macro $macroName is not valid on this declaration type. It is only valid on 'class' declarations.");
+            else
+                ImplementInterface()
         }
 
         public CreateRaiseChangedMethodCall(tb : TypeBuilder, property : PExpr, raiseChangedMethod : PExpr, macroName : string) : PExpr
@@ -127,7 +125,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
                 Message.Error(loc, message);
                 <[]>
             }
-            
+
             def OnRaiseChangedMethodNotFound()
             {
                 OnError(raiseChangedMethod.Location, $"Specify a valid method for property changed event raising (e.g. $macroName(PropName, OnPropertyChanged)).")
@@ -150,7 +148,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
                              {
                                  | <[ $(methodName : name) ]> 
                                  | <[()]> when tb.UserData.Contains(_raiseChangedMethodKey) 
-                                          with methodName = GetRaiseChangedMethodName(tb)
+                                        with methodName = GetRaiseChangedMethodName(tb)
                                  | <[()]> with methodName = _defaultRaiseChangedMethodName
                                       => if (tb.MethodExists(methodName)) Some(methodName) else None()
                                  | _  => None()
@@ -174,7 +172,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
                 else
                     tb.UserData[(_dependentPropsKey, propertyName)] :> list[PExpr]
             }
-            
+
             def ValidateDependentProps(dependentProps)
             {
                 foreach(dependentProp in dependentProps)
@@ -184,13 +182,13 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
                                       $"Class '$(tb.FullName)' does not contain a property with the name '$dependentProp'.")
                 }
             }
-            
+
             def GetRaiseChangedMethodCalls(methodName, propertyName)
             {
                 def dependentProps = GetDependentProps(tb, propertyName);
-                
+
                 ValidateDependentProps(dependentProps);
-                
+
                 def selfSetterRaising = 
                     if(_ignoredProperties.Contains(tb, propertyName))
                         <[]>
@@ -233,7 +231,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
             {
                 tb.UserData[(_dependentPropsKey, propName)] = dependentProps
             }
-            
+
             unless(property.setter.HasValue)
                 Message.Warning($"$macroName macro ignored on property without a setter.");
 
@@ -241,7 +239,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
             {
                 | <[ HideSelfChanges ]>           => _ = _ignoredProperties.Add(tb, property.Name);
                 | <[ Dependent = $prop ]> when options is [_] 
-                                          with props = [prop]
+                                        with props = [prop]
                 | <[ Dependent = [..$props] ]>    => SetDependentProps(tb, property.Name, props)
                 | e => Message.Error(e.Location, 
                                      $"Invalid options syntax in $macroName macro, valid options are: 'Dependent = [Prop1, Prop2]' and 'HideSelfChanges'.")
@@ -252,7 +250,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
         {
             macroInstance.GetName().Split(':').First()
         }
-        
+
         public TrySetMacroAttributeSpecified(this tb : TypeBuilder, macroInstance : IMacro, data : object = null) : bool
         {
             def key = (macroInstance.GetType().GUID, data);

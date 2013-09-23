@@ -79,7 +79,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer
         [NotifyChangedOptions(Dependent=ShouldShowModel)]
         public ShouldShowError  : bool { get; private set; }
 
-        public ShouldShowModel  : bool   { get {!ShouldShowError}}
+        public ShouldShowModel  : bool   { get {!ShouldShowError} }
 
         public ErrorText : string { get; private set; }
 
