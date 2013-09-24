@@ -122,3 +122,27 @@ typedef struct _WNODE_HEADER {
   ULONG ClientContext;
   ULONG Flags;
 } WNODE_HEADER, *PWNODE_HEADER;
+
+//// Manifest-based
+
+typedef struct _EVENT_DESCRIPTOR {
+
+    USHORT      Id;
+    UCHAR       Version;
+    UCHAR       Channel;
+    UCHAR       Level;
+    UCHAR       Opcode;
+    USHORT      Task;
+    ULONGLONG   Keyword;
+
+} EVENT_DESCRIPTOR, *PEVENT_DESCRIPTOR;
+
+typedef struct _EVENT_DATA_DESCRIPTOR {
+
+    ULONGLONG   Ptr;        // Pointer to data
+    ULONG       Size;       // Size of data in bytes
+    ULONG       Reserved;
+
+} EVENT_DATA_DESCRIPTOR, *PEVENT_DATA_DESCRIPTOR;
+
+typedef const EVENT_DESCRIPTOR *PCEVENT_DESCRIPTOR;

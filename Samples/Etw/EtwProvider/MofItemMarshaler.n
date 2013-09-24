@@ -23,27 +23,35 @@ namespace EtwProvider
         
         StructureToPtr(header <- { Size = bufferSize :> ushort; }, buffer, false);
         
-        def MarshalMof(items, ptr : IntPtr)
+        def MarshalMof(item, ptr)
+        {
+            def size = SizeOf(item) :> uint;
+            def itemBuffer = AllocHGlobal(size :> int);
+            StructureToPtr(item, itemBuffer, false);
+
+            def mof  = MOF_FIELD() <-
+            {
+                DataPtr     = itemBuffer.ToInt32() :> ulong;
+                Length      = size;
+                DataType    = 0;
+            }
+            StructureToPtr(mof, ptr, false);
+
+            SizeOf(mof)
+        }
+
+        def MarshalMofList(items, ptr : IntPtr)
         {
             | (head::tail, _) =>
                 {
-                    def size = SizeOf(head) :> uint;
-                    def mof  = MOF_FIELD() <-
-                    {
-                        DataPtr     = ptr.ToInt64() :> ulong;
-                        Length      = size;
-                        DataType    = 0;
-                    }
-                    StructureToPtr(mof, ptr, false);
-                    MarshalMof(tail, ptr : IntPtr + size :> int)
+                    def size = MarshalMof(head, ptr);
+                    MarshalMofList(tail, ptr : IntPtr + size :> int)
                 }
             | ([], _) => ()
         }
 
-        MarshalMof(items, buffer :> IntPtr + headerSize);
+        MarshalMofList(items, buffer :> IntPtr + headerSize);
         buffer
     }
-    
-    
   }
 }

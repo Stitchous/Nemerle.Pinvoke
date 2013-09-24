@@ -11,7 +11,7 @@ using System.Linq;
 namespace EtwProvider
 {
   
-  public module EtwTracer
+  public module ClassicEtwTracer
   {
     public ControlCallback(requestCode : uint, requestContext : ClassicTraceContext, bufferSize : IntPtr, buffer : IntPtr) : uint
     {

@@ -34,5 +34,26 @@ namespace EtwProvider
 
     [DllImport("advapi32", CharSet = CharSet.Unicode, ExactSpelling = true)]
     public static extern TraceEvent(SessionHandle : TRACEHANDLE, EventTrace : IntPtr) : uint;
+
+
+    // ManifestBased
+
+    [DllImport("advapi32", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    public static extern EventRegister(
+        [MarshalAs(UnmanagedType.LPStruct)]providerId : Guid,
+        enableCallback  : IntPtr,
+        callbackContext : IntPtr,
+        regHandle       : out ulong) : uint;
+
+    [DllImport("advapi32", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    public static extern EventUnregister(regHandle : ulong) : int;
+
+    [DllImport("advapi32", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    public static extern EventWrite(
+        RegHandle : ulong,
+        EventDescriptor : PCEVENT_DESCRIPTOR ,
+        UserDataCount : ULONG ,
+        UserData : PEVENT_DATA_DESCRIPTOR) : ULONG;
+    
   }
 }

@@ -65,7 +65,7 @@
     <Compile Include="ClassicTraceContext.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="EtwTracer.n">
+    <Compile Include="ClassicEtwTracer.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Functions.n">
