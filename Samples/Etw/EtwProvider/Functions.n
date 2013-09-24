@@ -48,12 +48,12 @@ namespace EtwProvider
     [DllImport("advapi32", CharSet = CharSet.Unicode, ExactSpelling = true)]
     public static extern EventUnregister(regHandle : ulong) : int;
 
-
-    ULONG EventWrite(
+    [DllImport("advapi32", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    public static extern EventWrite(
         RegHandle : ulong,
         EventDescriptor : PCEVENT_DESCRIPTOR ,
         UserDataCount : ULONG ,
-  _In_opt_  PEVENT_DATA_DESCRIPTOR UserData
-);
+        UserData : PEVENT_DATA_DESCRIPTOR) : ULONG;
+    
   }
 }
