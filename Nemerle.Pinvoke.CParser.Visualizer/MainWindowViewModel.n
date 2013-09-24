@@ -26,7 +26,7 @@ using Nemerle.Pinvoke.CParser.Visualizer.Model;
 
 namespace Nemerle.Pinvoke.CParser.Visualizer
 {
-    [ImplementsNotifyPropertyChanged]
+    [NotifyPropertyChanged]
     public class MainWindowViewModel
     {
         public this()
@@ -74,23 +74,12 @@ namespace Nemerle.Pinvoke.CParser.Visualizer
         
         public ReflectionTreeRoot : IEnumerable[GrammarNode] { get; private set; }
 
-        public Source    : string { get; set; }
+        public Source : string { get; set; }
 
-        private mutable _shouldShowError  : bool;
-        public ShouldShowError  : bool   
-        { 
-            get 
-            { 
-                _shouldShowError 
-            }
-            private set 
-            { 
-                _shouldShowError = value; 
-                ShouldShowModel = !value; 
-            }
-        }
+        [NotifyChangedOptions(Dependent=ShouldShowModel)]
+        public ShouldShowError  : bool { get; private set; }
 
-        public ShouldShowModel  : bool   { get; private set; }
+        public ShouldShowModel  : bool   { get {!ShouldShowError}}
 
         public ErrorText : string { get; private set; }
 
