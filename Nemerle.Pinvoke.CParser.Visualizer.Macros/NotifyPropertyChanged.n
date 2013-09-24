@@ -148,7 +148,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
                              {
                                  | <[ $(methodName : name) ]> 
                                  | <[()]> when tb.UserData.Contains(_raiseChangedMethodKey) 
-                                        with methodName = GetRaiseChangedMethodName(tb)
+                                          with methodName = GetRaiseChangedMethodName(tb)
                                  | <[()]> with methodName = _defaultRaiseChangedMethodName
                                       => if (tb.MethodExists(methodName)) Some(methodName) else None()
                                  | _  => None()
@@ -177,7 +177,7 @@ namespace Nemerle.Pinvoke.CParser.Visualizer.Macros
             {
                 foreach(dependentProp in dependentProps)
                 {
-                    unless(tb.GetProperties().Exists(prop => prop.Name == dependentProp.ToString()))
+                    when(!(dependentProp is PExpr.Ref) && !tb.GetProperties().Exists(prop => prop.Name == (dependentProp :> PExpr.Ref).name.Id))
                         Message.Error(dependentProp.Location, 
                                       $"Class '$(tb.FullName)' does not contain a property with the name '$dependentProp'.")
                 }

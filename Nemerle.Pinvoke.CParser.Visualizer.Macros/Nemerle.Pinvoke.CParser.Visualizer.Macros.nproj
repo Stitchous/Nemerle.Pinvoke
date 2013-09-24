@@ -70,7 +70,7 @@
     <Compile Include="GrammarNodeBuilder.n">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="NotifyPropertyChangedHelper.n">
+    <Compile Include="NotifyPropertyChanged.n">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.n" />
