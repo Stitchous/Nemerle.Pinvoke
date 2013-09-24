@@ -21,8 +21,10 @@ namespace EtwProvider
 
         public TraceEvent(eventCategory : Guid,  eventType : byte) : void 
         {
+            def WNODE_FLAG_USE_MOF_PTR = 0x00100000u;
             def WNODE_FLAG_TRACED_GUID = 0x00020000u;
             def TRACE_LEVEL_VERBOSE    = 5ub;
+
             when(IsEnabled)
             {
                 mutable evnt = EVENT_TRACE_HEADER() <-
@@ -30,14 +32,15 @@ namespace EtwProvider
                     Size = Marshal.SizeOf(typeof(EVENT_TRACE_HEADER)) :> System.UInt16;
 
                     Guid = eventCategory;
-                    Flags = WNODE_FLAG_TRACED_GUID;
+                    Flags = WNODE_FLAG_TRACED_GUID | WNODE_FLAG_USE_MOF_PTR;
                 }
 
                 evnt.Class.Type = eventType;
                 evnt.Class.Version = 1;
                 evnt.Class.Level = TRACE_LEVEL_VERBOSE;
 
-                def ptr = MofItemMarshaler.Marshal(evnt, [1u :> object, 2u :> object, 0xFFFFFFFFFFFFFFFF :> System.UInt64]);
+
+                def ptr = MofItemMarshaler.Marshal(evnt, [1u :> object, 0xDEADBEEFu :> object, 0xFFFFFFFFFFFFFFFF :> System.UInt64]);
                 
                 def result = Functions.TraceEvent(Session, ptr);
 
